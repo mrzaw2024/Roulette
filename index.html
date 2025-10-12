@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>0–36 → Group Converter</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: "Noto Sans Myanmar", "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #0c1c24, #1a2f3a, #243b47);
+        color: #ffffff;
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .app-container {
+        width: 100%;
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #00e6b8;
+        margin-bottom: 5px;
+        text-shadow: 0 2px 5px rgba(0, 230, 184, 0.3);
+    }
+    
+    .display-section {
+        margin-bottom: 15px;
+    }
+    
+    .display-card {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .display-label {
+        font-size: 14px;
+        color: #a0d2c6;
+        margin-bottom: 6px;
+        display: block;
+        font-weight: 500;
+    }
+    
+    .last20-display {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        color: #00ffcc;
+        text-align: center;
+        padding: 10px;
+        background: rgba(0, 255, 204, 0.08);
+        border-radius: 10px;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+    }
+    
+    .sum-display {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #ffcc00;
+        text-align: center;
+        padding: 8px;
+        background: rgba(255, 204, 0, 0.08);
+        border-radius: 10px;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+    }
+    
+    .input-section {
+        margin-bottom: 15px;
+    }
+    
+    textarea {
+        width: 100%;
+        height: 80px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 12px;
+        font-size: 16px;
+        outline: none;
+        resize: none;
+        background: rgba(0, 0, 0, 0.2);
+        color: #ffffff;
+        transition: all 0.3s;
+    }
+    
+    textarea:focus {
+        border-color: #00e6b8;
+        box-shadow: 0 0 0 2px rgba(0, 230, 184, 0.2);
+    }
+    
+    textarea::placeholder {
+        color: #88a0a0;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    button {
+        flex: 1;
+        padding: 12px 16px;
+        font-size: 15px;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    
+    .add-btn {
+        background: linear-gradient(135deg, #00e6b8, #00c9a7);
+        color: #00382e;
+        box-shadow: 0 4px 10px rgba(0, 230, 184, 0.3);
+    }
+    
+    .add-btn:hover {
+        background: linear-gradient(135deg, #00d4a9, #00b894);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 230, 184, 0.4);
+    }
+    
+    .clear-btn {
+        background: linear-gradient(135deg, #ff6b6b, #ff5252);
+        color: white;
+        box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+    }
+    
+    .clear-btn:hover {
+        background: linear-gradient(135deg, #ff5252, #ff3838);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
+    }
+    
+    .result-section {
+        margin-top: 10px;
+    }
+    
+    .result-box {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .result-label {
+        font-size: 15px;
+        color: #00e6b8;
+        margin-bottom: 8px;
+        display: block;
+        font-weight: 600;
+    }
+    
+    .mapped-sequence {
+        font-size: 16px;
+        letter-spacing: 1.2px;
+        color: #ffffff;
+        word-break: break-all;
+        line-height: 1.4;
+    }
+    
+    .footer {
+        margin-top: 15px;
+        text-align: center;
+        font-size: 11px;
+        color: #88a0a0;
+        opacity: 0.7;
+    }
+    
+    @media (max-width: 600px) {
+        .app-container {
+            padding: 20px 15px;
+        }
+        
+        h1 {
+            font-size: 22px;
+        }
+        
+        .last20-display {
+            font-size: 24px;
+            letter-spacing: 2px;
+            min-height: 50px;
+        }
+        
+        .sum-display {
+            font-size: 20px;
+            min-height: 45px;
+        }
+        
+        textarea {
+            height: 70px;
+            font-size: 15px;
+            padding: 10px;
+        }
+        
+        button {
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <h1>0–36 Group Converter</h1>
+        </div>
+        
+        <div class="display-section">
+            <div class="display-card">
+                <span class="display-label">နောက်ဆုံး 20 ကြိမ်</span>
+                <div class="last20-display" id="last20Display"></div>
+            </div>
+            
+            <div class="display-card">
+                <span class="display-label">ကိန်း ၂ ခုပေါင်းခြင်း</span>
+                <div class="sum-display" id="sumDisplay"></div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <textarea id="numberInput" placeholder="ဂဏန်းများကို ( , ) ဖြင့် ထည့်ပါ... (ဥပမာ: 12, 25, 7, 36)"></textarea>
+            
+            <div class="button-group">
+                <button class="add-btn" onclick="addNumbers()">
+                    <span>➕</span> Add
+                </button>
+                <button class="clear-btn" onclick="clearData()">
+                    <span>🗑️</span> Clear
+                </button>
+            </div>
+        </div>
+        
+        <div class="result-section">
+            <div class="result-box">
+                <span class="result-label">Mapped Sequence</span>
+                <div class="mapped-sequence" id="mappedBox"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Data is automatically saved in your browser
+        </div>
+    </div>
+
+<script>
+function loadSavedData() {
+    let saved = localStorage.getItem("savedNumbers");
+    if (saved) {
+        return JSON.parse(saved);
+    }
+    return [];
+}
+
+function saveData(numbers) {
+    localStorage.setItem("savedNumbers", JSON.stringify(numbers));
+}
+
+function addNumbers() {
+    let input = document.getElementById("numberInput").value;
+    let newNums = input.split(",").map(n => n.trim()).filter(n => n !== "" && !isNaN(n));
+    if (newNums.length === 0) {
+        alert("ကျေးဇူးပြု၍ ဂဏန်းများ ထည့်ပါ!");
+        return;
+    }
+
+    let allNumbers = loadSavedData().concat(newNums);
+    saveData(allNumbers);
+    document.getElementById("numberInput").value = "";
+    showResults(allNumbers);
+}
+
+function clearData() {
+    if (confirm("ဒေတာများအားလုံးကို ဖျက်မှာ သေချာပါသလား?")) {
+        localStorage.removeItem("savedNumbers");
+        document.getElementById("numberInput").value = "";
+        document.getElementById("last20Display").textContent = "";
+        document.getElementById("sumDisplay").textContent = "";
+        document.getElementById("mappedBox").textContent = "";
+        showResults([]);
+    }
+}
+
+function calculateSums(sequence) {
+    if (sequence.length < 2) return "";
+    
+    let sums = [];
+    for (let i = 0; i < sequence.length - 1; i++) {
+        let sum = parseInt(sequence[i]) + parseInt(sequence[i + 1]);
+        sums.push(sum);
+    }
+    return sums.join('');
+}
+
+function showResults(numbers) {
+    // Group mapping logic
+    let mapped = numbers.map(num => {
+        num = parseInt(num);
+        if (num >= 1 && num <= 12) return 1;
+        if (num >= 13 && num <= 24) return 2;
+        if (num >= 25 && num <= 36) return 3;
+        return 0;
+    });
+
+    // Mapped Sequence (Full)
+    document.getElementById("mappedBox").textContent = mapped.join("");
+
+    // Last 20 (continuous) - အပေါ်ဆုံးမှာ ပြရန်
+    let last20 = mapped.slice(-20).join("");
+    document.getElementById("last20Display").textContent = last20 || "-";
+
+    // ကိန်း ၂ ခုပေါင်းတာ
+    let sumResult = calculateSums(last20);
+    document.getElementById("sumDisplay").textContent = sumResult || "-";
+}
+
+// Initial Load
+showResults(loadSavedData());
+</script>
+
+</body>
+</html>
