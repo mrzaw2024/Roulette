@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Digit Wise Calculator (A/B/C/D)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 8px;
+            font-size: 14px;
+        }
+        
+        .container {
+            max-width: 100%;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 4px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        
+        .control-group {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            min-width: 150px;
+        }
+        
+        .control-title {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .count-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .count-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .count-btn:active {
+            background: #3d8b40;
+        }
+        
+        .count-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        .type-selector {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .type-btn {
+            padding: 8px 12px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #555;
+            cursor: pointer;
+        }
+        
+        .type-btn.active {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .input-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .number-input {
+            width: 55px;
+            height: 55px;
+            font-size: 1.4em;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            color: #2c3e50;
+            padding: 0;
+        }
+        
+        .arrow {
+            font-size: 1.2em;
+            color: #4CAF50;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-primary:active {
+            background: #3d8b40;
+        }
+        
+        .btn-reset {
+            width: auto;
+            padding: 8px 16px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .btn-reset:active {
+            background: #f57c00;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 3px 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.8em;
+        }
+        
+        .progress-container {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .filter-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .filter-tab {
+            flex-shrink: 0;
+            padding: 8px 12px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: #555;
+            white-space: nowrap;
+        }
+        
+        .filter-tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .pair-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .pair-card.perfect {
+            border-color: #28a745;
+            background: #e8f5e9;
+        }
+        
+        .pair-card.good {
+            border-color: #ffc107;
+            background: #fff3cd;
+        }
+        
+        .pair-header {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        
+        .match-badges {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin: 5px 0;
+            flex-wrap: wrap;
+        }
+        
+        .match-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+        }
+        
+        .match-badge.correct {
+            background: #28a745;
+            color: white;
+        }
+        
+        .match-badge.incorrect {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .final-result {
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .final-result-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #155724;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        
+        .details-modal {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #dc3545;
+            color: white;
+            border: none;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+        
+        .step-calc {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .step-calc.correct {
+            border-left-color: #28a745;
+            background: #e8f5e9;
+        }
+        
+        .step-calc.incorrect {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            background: #f8d7da;
+            border-radius: 8px;
+            color: #721c24;
+            font-size: 0.9em;
+        }
+        
+        .match-count {
+            text-align: center;
+            margin: 4px 0;
+            color: #666;
+            font-size: 0.8em;
+        }
+        
+        .stop-btn {
+            width: 100%;
+            padding: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.2em;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-group {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .number-input {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2em;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .pair-card {
+                padding: 8px;
+            }
+            
+            .pair-header {
+                font-size: 0.85em;
+            }
+            
+            .match-badge {
+                width: 18px;
+                height: 18px;
+                font-size: 0.65em;
+            }
+            
+            .final-result-value {
+                font-size: 1em;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .number-input {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1em;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Touch optimization */
+        input, button {
+            font-size: 16px;
+        }
+        
+        .btn-primary, .filter-tab, .count-btn, .type-btn, .btn-reset {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .btn-primary:active, .filter-tab:active, .count-btn:active, .type-btn:active, .btn-reset:active {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>အနည်းဆုံး ၂ကြိမ်မှန်သည့် A/B/C/D တွဲများ</h1>
+            <p>၃ ခု (သို့) ၄ ခုဖြင့် ရှာဖွေနိုင်ပါသည်</p>
+        </div>
+        
+        <div class="input-section">
+            <div class="control-panel">
+                <div class="control-group">
+                    <div class="control-title">ဂဏန်းအရေအတွက်</div>
+                    <div class="count-control">
+                        <button class="count-btn" onclick="decreaseCount()">-</button>
+                        <div class="count-value" id="numberCount">4</div>
+                        <button class="count-btn" onclick="increaseCount()">+</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title">ရှာမည့်အမျိုးအစား</div>
+                    <div class="type-selector">
+                        <button class="type-btn active" onclick="setSearchType('3')">A/B/C (၃ ခု)</button>
+                        <button class="type-btn" onclick="setSearchType('4')">A/B/C/D (၄ ခု)</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title">ပြန်စမည်</div>
+                    <button class="btn-reset" onclick="resetInputs()">ပြန်စမယ်</button>
+                </div>
+            </div>
+            
+            <h3 class="section-title">ဂဏန်းများ ထည့်သွင်းပါ</h3>
+            
+            <div id="inputContainer">
+                <!-- Dynamic inputs will be generated here -->
+            </div>
+            
+            <button class="btn-primary" onclick="run()">ရှာဖွေမယ်</button>
+        </div>
+        
+        <div id="loading" class="loading" style="display:none;">
+            <div class="loading-spinner"></div>
+            <div id="progress-text">ပြင်ဆင်နေသည်...</div>
+            <div id="progress-percent">0%</div>
+            <button class="stop-btn" onclick="stopSearch()" style="display:none; margin-top: 15px;">ရပ်မည်</button>
+        </div>
+        
+        <div id="progress-container" class="progress-container" style="display:none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-details">0 တွဲ စစ်ဆေးပြီး (0% ပြည့်ပြီ)</div>
+        </div>
+        
+        <div id="results-area"></div>
+    </div>
+
+    <script>
+        let currentCount = 4;
+        let searchType = '3'; // '3' for A/B/C, '4' for A/B/C/D
+        let defaultNumbers = [41, 17, 42, 35];
+        let worker = null;
+        let isSearching = false;
+        
+        // Initialize inputs
+        function initializeInputs() {
+            const container = document.getElementById('inputContainer');
+            container.innerHTML = '';
+            
+            const row = document.createElement('div');
+            row.className = 'input-row';
+            
+            for (let i = 0; i < currentCount; i++) {
+                const input = document.createElement('input');
+                input.className = 'number-input';
+                input.id = `n${i+1}`;
+                input.type = 'number';
+                input.value = defaultNumbers[i] !== undefined ? defaultNumbers[i] : 0;
+                input.setAttribute('inputmode', 'numeric');
+                input.setAttribute('pattern', '[0-9]*');
+                input.min = 0;
+                input.max = 99;
+                
+                row.appendChild(input);
+                
+                // Add arrow except after last input
+                if (i < currentCount - 1) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'arrow';
+                    arrow.textContent = '→';
+                    row.appendChild(arrow);
+                }
+            }
+            
+            container.appendChild(row);
+            
+            // Update count display
+            document.getElementById('numberCount').textContent = currentCount;
+        }
+        
+        // Increase count
+        function increaseCount() {
+            if (currentCount < 10) { // Maximum 10 numbers
+                currentCount++;
+                // Add a default value for the new input
+                defaultNumbers.push(0);
+                initializeInputs();
+            }
+        }
+        
+        // Decrease count
+        function decreaseCount() {
+            if (currentCount > 3) { // Minimum 3 numbers
+                currentCount--;
+                defaultNumbers.pop();
+                initializeInputs();
+            }
+        }
+        
+        // Set search type
+        function setSearchType(type) {
+            searchType = type;
+            
+            // Update button states
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update header based on type
+            const header = document.querySelector('.header h1');
+            if (type === '3') {
+                header.textContent = 'အနည်းဆုံး ၂ကြိမ်မှန်သည့် A/B/C တွဲများ';
+            } else {
+                header.textContent = 'အနည်းဆုံး ၂ကြိမ်မှန်သည့် A/B/C/D တွဲများ';
+            }
+        }
+        
+        // Reset inputs
+        function resetInputs() {
+            defaultNumbers = [41, 17, 42, 35];
+            if (currentCount > 4) {
+                // Trim to 4 if we have more
+                currentCount = 4;
+                defaultNumbers = defaultNumbers.slice(0, 4);
+            }
+            initializeInputs();
+        }
+        
+        // Create Web Worker for background processing
+        function createWorker() {
+            if (window.Worker) {
+                const workerCode = `
+                    // digit-wise add function
+                    function digitAdd(x, y) {
+                        var xT = Math.floor(x/10);
+                        var xO = x % 10;
+                        var yT = Math.floor(y/10);
+                        var yO = y % 10;
+
+                        var t = (xT + yT) % 10;
+                        var o = (xO + yO) % 10;
+
+                        return t*10 + o;
+                    }
+
+                    // Check all steps for triple or quadruple
+                    function checkAllSteps(nums, A, B, C, D) {
+                        var matches = 0;
+                        var stepResults = [];
+                        
+                        for(var i = 0; i < nums.length - 1; i++) {
+                            var r1 = digitAdd(nums[i], A);
+                            var r2 = digitAdd(nums[i], B);
+                            var r3 = digitAdd(nums[i], C);
+                            
+                            var concat = "" + r1 + r2 + r3;
+                            
+                            // Add D if search type is 4
+                            if (D !== null) {
+                                var r4 = digitAdd(nums[i], D);
+                                concat += r4;
+                            }
+                            
+                            var match = concat.indexOf(nums[i+1].toString()) !== -1;
+                            
+                            var stepResult = {
+                                from: nums[i],
+                                to: nums[i+1],
+                                r1: r1,
+                                r2: r2,
+                                r3: r3,
+                                concat: concat,
+                                match: match
+                            };
+                            
+                            if (D !== null) {
+                                stepResult.r4 = r4;
+                            }
+                            
+                            stepResults.push(stepResult);
+                            
+                            if(match) matches++;
+                        }
+                        
+                        const totalSteps = nums.length - 1;
+                        
+                        var result = {
+                            A: A,
+                            B: B,
+                            C: C,
+                            matches: matches,
+                            totalSteps: totalSteps,
+                            stepResults: stepResults,
+                            perfect: matches === totalSteps,
+                            good: matches >= Math.ceil(totalSteps * 0.67)
+                        };
+                        
+                        if (D !== null) {
+                            result.D = D;
+                        }
+                        
+                        return result;
+                    }
+
+                    // Main search function
+                    self.onmessage = function(e) {
+                        var data = e.data;
+                        var nums = data.nums;
+                        var searchType = data.searchType;
+                        var minRequiredMatches = data.minRequiredMatches;
+                        var batchSize = data.batchSize || 10000;
+                        
+                        var results = [];
+                        var totalChecked = 0;
+                        var lastUpdate = Date.now();
+                        
+                        var maxA = 100;
+                        var maxB = 100;
+                        var maxC = 100;
+                        var maxD = searchType === '4' ? 100 : 1;
+                        
+                        // Calculate total combinations
+                        var totalCombinations = maxA * maxB * maxC;
+                        if (searchType === '4') {
+                            totalCombinations *= maxD;
+                        }
+                        
+                        // Optimized search loops
+                        if (searchType === '3') {
+                            for(var A = 0; A < maxA; A++) {
+                                for(var B = 0; B < maxB; B++) {
+                                    for(var C = 0; C < maxC; C++) {
+                                        totalChecked++;
+                                        var result = checkAllSteps(nums, A, B, C, null);
+                                        
+                                        if(result.matches >= minRequiredMatches) {
+                                            results.push(result);
+                                        }
+                                        
+                                        // Send progress update every batch
+                                        if (totalChecked % batchSize === 0 || totalChecked === totalCombinations) {
+                                            var progress = Math.round((totalChecked / totalCombinations) * 100);
+                                            self.postMessage({
+                                                type: 'progress',
+                                                totalChecked: totalChecked,
+                                                totalCombinations: totalCombinations,
+                                                progress: progress,
+                                                found: results.length
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            // Search for A/B/C/D
+                            for(var A = 0; A < maxA; A++) {
+                                for(var B = 0; B < maxB; B++) {
+                                    for(var C = 0; C < maxC; C++) {
+                                        for(var D = 0; D < maxD; D++) {
+                                            totalChecked++;
+                                            var result = checkAllSteps(nums, A, B, C, D);
+                                            
+                                            if(result.matches >= minRequiredMatches) {
+                                                results.push(result);
+                                            }
+                                            
+                                            // Send progress update every batch
+                                            if (totalChecked % batchSize === 0 || totalChecked === totalCombinations) {
+                                                var progress = Math.round((totalChecked / totalCombinations) * 100);
+                                                self.postMessage({
+                                                    type: 'progress',
+                                                    totalChecked: totalChecked,
+                                                    totalCombinations: totalCombinations,
+                                                    progress: progress,
+                                                    found: results.length
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Sort results by matches (descending)
+                        results.sort(function(a, b) {
+                            if(b.matches !== a.matches) {
+                                return b.matches - a.matches;
+                            }
+                            if(a.A !== b.A) return a.A - b.A;
+                            if(a.B !== b.B) return a.B - b.B;
+                            if(a.C !== b.C) return a.C - b.C;
+                            if (searchType === '4') {
+                                return a.D - b.D;
+                            }
+                            return 0;
+                        });
+                        
+                        // Send final results
+                        self.postMessage({
+                            type: 'results',
+                            results: results,
+                            totalChecked: totalChecked,
+                            totalCombinations: totalCombinations
+                        });
+                    };
+                `;
+                
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                return new Worker(URL.createObjectURL(blob));
+            }
+            return null;
+        }
+        
+        // Run search
+        function run() {
+            if (isSearching) {
+                alert("ရှာဖွေမှု လုပ်ဆောင်နေဆဲဖြစ်ပါသည်။ ကျေးဇူးပြု၍ စောင့်ပါ။");
+                return;
+            }
+            
+            var nums = [];
+            for(var i = 1; i <= currentCount; i++) {
+                var val = parseInt(document.getElementById(`n${i}`).value) || 0;
+                if (val < 0 || val > 99 || isNaN(val)) {
+                    alert(`ဂဏန်း ${i}: 0 မှ 99 အထိသာ ထည့်သွင်းပါ`);
+                    return;
+                }
+                nums.push(val);
+            }
+            
+            // Validate inputs
+            if(nums.length < 3) {
+                alert("အနည်းဆုံး ဂဏန်း ၃လုံး ထည့်သွင်းပါ");
+                return;
+            }
+            
+            // Calculate minimum required matches
+            const totalSteps = nums.length - 1;
+            const minRequiredMatches = Math.max(2, Math.ceil(totalSteps * 0.67));
+            
+            // Show loading
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("progress-container").style.display = "block";
+            document.getElementById("results-area").innerHTML = "";
+            document.querySelector(".stop-btn").style.display = "block";
+            
+            isSearching = true;
+            
+            // Create and start worker
+            worker = createWorker();
+            
+            if (!worker) {
+                // Fallback to main thread if Web Worker not supported
+                alert("ကျေးဇူးပြု၍ ခေတ်မှီ browser တစ်ခုသုံးပါ။ Web Worker အား ထောက်ပံ့မှုမရှိပါ။");
+                isSearching = false;
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("progress-container").style.display = "none";
+                return;
+            }
+            
+            worker.onmessage = function(e) {
+                var data = e.data;
+                
+                if (data.type === 'progress') {
+                    // Update progress
+                    var percent = data.progress;
+                    document.getElementById("progress-fill").style.width = percent + "%";
+                    document.getElementById("progress-details").textContent = 
+                        data.totalChecked.toLocaleString() + " တွဲ စစ်ဆေးပြီး (" + percent + "% ပြည့်ပြီ) - " + 
+                        data.found + " တွဲ တွေ့ရှိ";
+                    
+                    document.getElementById("progress-text").textContent = "ရှာဖွေနေသည်...";
+                    document.getElementById("progress-percent").textContent = percent + "% ပြည့်ပြီ";
+                }
+                else if (data.type === 'results') {
+                    // Process final results
+                    processResults(nums, data);
+                    isSearching = false;
+                    
+                    // Clean up worker
+                    if (worker) {
+                        worker.terminate();
+                        worker = null;
+                    }
+                }
+            };
+            
+            worker.onerror = function(error) {
+                console.error("Worker error:", error);
+                alert("ရှာဖွေမှုတွင် အမှားတစ်ခုဖြစ်ပွားခဲ့သည်။");
+                isSearching = false;
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("progress-container").style.display = "none";
+                
+                if (worker) {
+                    worker.terminate();
+                    worker = null;
+                }
+            };
+            
+            // Start the worker
+            worker.postMessage({
+                nums: nums,
+                searchType: searchType,
+                minRequiredMatches: minRequiredMatches,
+                batchSize: 10000 // Update progress every 10k checks
+            });
+        }
+        
+        // Stop search
+        function stopSearch() {
+            if (worker && isSearching) {
+                worker.terminate();
+                worker = null;
+                isSearching = false;
+                
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("progress-container").style.display = "none";
+                document.querySelector(".stop-btn").style.display = "none";
+                
+                alert("ရှာဖွေမှု ရပ်ဆိုင်းလိုက်ပါပြီ။");
+            }
+        }
+        
+        // Process results from worker
+        function processResults(nums, data) {
+            var allResults = data.results;
+            var totalSteps = nums.length - 1;
+            var minRequiredMatches = Math.max(2, Math.ceil(totalSteps * 0.67));
+            
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("progress-container").style.display = "none";
+            document.querySelector(".stop-btn").style.display = "none";
+            
+            var html = "";
+            
+            if(allResults.length > 0) {
+                // Calculate statistics
+                var perfectCount = allResults.filter(p => p.matches === totalSteps).length;
+                var goodCount = allResults.filter(p => p.matches >= minRequiredMatches && p.matches < totalSteps).length;
+                
+                // Stats section
+                html += `<div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">စစ်ဆေးခဲ့</div>
+                        <div class="stat-value">${data.totalChecked.toLocaleString()}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">တွေ့ရှိ</div>
+                        <div class="stat-value">${allResults.length.toLocaleString()}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">${totalSteps}ကြိမ်မှန်</div>
+                        <div class="stat-value">${perfectCount}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">${minRequiredMatches}+ကြိမ်မှန်</div>
+                        <div class="stat-value">${goodCount}</div>
+                    </div>
+                </div>`;
+                
+                // Show total combinations info
+                html += `<div style="text-align: center; margin-bottom: 10px; font-size: 0.8em; color: #666;">
+                    စုစုပေါင်း ${data.totalCombinations.toLocaleString()} တွဲမှ ရှာဖွေပြီးပါပြီ
+                </div>`;
+                
+                // Filter tabs
+                html += `<div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterResults('all')">အားလုံး (${allResults.length.toLocaleString()})</button>
+                    <button class="filter-tab" onclick="filterResults('perfect')">${totalSteps}ကြိမ်မှန် (${perfectCount})</button>
+                    <button class="filter-tab" onclick="filterResults('good')">${minRequiredMatches}+ကြိမ်မှန် (${goodCount})</button>
+                </div>`;
+                
+                // Results grid - show first 300 results for performance
+                var displayResults = allResults.slice(0, 300);
+                
+                html += `<div id="resultsGrid" class="results-grid">`;
+                
+                displayResults.forEach(function(item, index) {
+                    var cardClass = item.perfect ? "perfect" : "good";
+                    
+                    // Calculate final result
+                    var final_r1 = digitAdd(nums[nums.length-1], item.A);
+                    var final_r2 = digitAdd(nums[nums.length-1], item.B);
+                    var final_r3 = digitAdd(nums[nums.length-1], item.C);
+                    var finalResult = "" + final_r1 + final_r2 + final_r3;
+                    
+                    // Add D if exists
+                    if (searchType === '4' && item.D !== undefined) {
+                        var final_r4 = digitAdd(nums[nums.length-1], item.D);
+                        finalResult += final_r4;
+                    }
+                    
+                    // Create match badges for all steps
+                    var badgesHtml = '';
+                    for(var i = 0; i < totalSteps; i++) {
+                        var isMatch = item.stepResults[i].match;
+                        badgesHtml += `<div class="match-badge ${isMatch ? 'correct' : 'incorrect'}">
+                            ${isMatch ? '✓' : '✗'}
+                        </div>`;
+                    }
+                    
+                    // Create header based on type
+                    var headerHtml = `A=${item.A}<br>B=${item.B}<br>C=${item.C}`;
+                    if (searchType === '4' && item.D !== undefined) {
+                        headerHtml += `<br>D=${item.D}`;
+                    }
+                    
+                    html += `<div class="pair-card ${cardClass}" onclick="showDetails(${JSON.stringify(nums)}, ${item.A}, ${item.B}, ${item.C}${item.D !== undefined ? `, ${item.D}` : ''})">
+                        <div class="pair-header">${headerHtml}</div>
+                        
+                        <div class="match-badges">
+                            ${badgesHtml}
+                        </div>
+                        
+                        <div class="match-count">${item.matches} / ${totalSteps} မှန်</div>
+                        
+                        <div class="final-result">
+                            <div style="font-size:0.7em; color:#666;">နောက်ဆုံးအဖြေ</div>
+                            <div class="final-result-value">${finalResult}</div>
+                        </div>
+                    </div>`;
+                });
+                
+                html += `</div>`;
+                
+                // Show message if there are more results
+                if (allResults.length > 300) {
+                    html += `<div style="text-align: center; margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 8px; color: #1565c0;">
+                        <strong>သတိပြုရန်:</strong> ${allResults.length.toLocaleString()} တွဲ တွေ့ရှိပြီး၊ အကောင်းဆုံး 300 တွဲကိုသာ ပြသထားပါသည်။
+                    </div>`;
+                }
+                
+            } else {
+                html = `<div class="no-results">
+                    <p>အနည်းဆုံး ${minRequiredMatches}ကြိမ်မှန်သည့် တွဲများ မတွေ့ရှိပါ။</p>
+                    <p>ဂဏန်းများကို ပြန်ပြောင်းကြည့်ပါ။</p>
+                </div>`;
+            }
+            
+            document.getElementById("results-area").innerHTML = html;
+        }
+        
+        // digit-wise add function for main thread
+        function digitAdd(x, y){
+            var xT = Math.floor(x/10);
+            var xO = x % 10;
+            var yT = Math.floor(y/10);
+            var yO = y % 10;
+
+            var t = (xT + yT) % 10;
+            var o = (xO + yO) % 10;
+
+            return t*10 + o;
+        }
+        
+        // Filter results
+        function filterResults(filterType) {
+            event.stopPropagation();
+            
+            var tabs = document.querySelectorAll('.filter-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            var cards = document.querySelectorAll('.pair-card');
+            
+            cards.forEach(function(card) {
+                var show = false;
+                var isPerfect = card.classList.contains('perfect');
+                var isGood = card.classList.contains('good');
+                
+                switch(filterType) {
+                    case 'all':
+                        show = true;
+                        break;
+                    case 'perfect':
+                        show = isPerfect;
+                        break;
+                    case 'good':
+                        show = isGood;
+                        break;
+                }
+                
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+        
+        // Show detailed modal
+        function showDetails(nums, A, B, C, D = null) {
+            // Prevent multiple modals
+            if(document.querySelector('.modal-overlay')) {
+                document.body.removeChild(document.querySelector('.modal-overlay'));
+            }
+            
+            // Calculate matches manually
+            var matches = 0;
+            var stepResults = [];
+            var totalSteps = nums.length - 1;
+            
+            for(var i = 0; i < totalSteps; i++) {
+                var r1 = digitAdd(nums[i], A);
+                var r2 = digitAdd(nums[i], B);
+                var r3 = digitAdd(nums[i], C);
+                var concat = "" + r1 + r2 + r3;
+                
+                if (D !== null) {
+                    var r4 = digitAdd(nums[i], D);
+                    concat += r4;
+                }
+                
+                var match = concat.indexOf(nums[i+1].toString()) !== -1;
+                
+                var stepResult = {
+                    from: nums[i],
+                    to: nums[i+1],
+                    r1: r1,
+                    r2: r2,
+                    r3: r3,
+                    concat: concat,
+                    match: match
+                };
+                
+                if (D !== null) {
+                    stepResult.r4 = r4;
+                }
+                
+                stepResults.push(stepResult);
+                
+                if(match) matches++;
+            }
+            
+            var perfect = matches === totalSteps;
+            var minRequiredMatches = Math.max(2, Math.ceil(totalSteps * 0.67));
+            var good = matches >= minRequiredMatches && matches < totalSteps;
+            
+            var modalOverlay = document.createElement('div');
+            modalOverlay.className = 'modal-overlay';
+            
+            var detailsModal = document.createElement('div');
+            detailsModal.className = 'details-modal';
+            
+            // Create header based on type
+            var headerHtml = `A=${A}, B=${B}, C=${C}`;
+            if (searchType === '4' && D !== null) {
+                headerHtml += `, D=${D}`;
+            }
+            
+            var content = `
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+                
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size: 1.2em; font-weight: bold; color: #2c3e50; text-align: center;">
+                        ${headerHtml}
+                    </div>
+                    <div style="background: #4CAF50; color: white; padding: 8px; border-radius: 6px; text-align: center; margin-top: 8px;">
+                        <div style="font-size: 1.1em; font-weight: bold;">${matches}/${totalSteps} မှန်</div>
+                        <div style="font-size: 0.9em;">${perfect ? 'အဆင့်အားလုံးမှန်ပါသည်' : good ? 'အဆင့်အများစုမှန်ပါသည်' : 'အဆင့်အနည်းစုမှန်ပါသည်'}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Show all steps
+            stepResults.forEach(function(step, index) {
+                content += `
+                    <div class="step-calc ${step.match ? 'correct' : 'incorrect'}">
+                        <div style="font-weight: bold; margin-bottom: 5px;">
+                            အဆင့် ${index+1}: ${step.from} → ${step.to} 
+                            <span style="color: ${step.match ? '#28a745' : '#dc3545'}">
+                                ${step.match ? '✓' : '✗'}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.9em;">
+                            <div>${step.from} + ${A} = ${step.r1}</div>
+                            <div>${step.from} + ${B} = ${step.r2}</div>
+                            <div>${step.from} + ${C} = ${step.r3}</div>`;
+                
+                // Add D if exists
+                if (searchType === '4' && D !== null && step.r4 !== undefined) {
+                    content += `<div>${step.from} + ${D} = ${step.r4}</div>`;
+                }
+                
+                content += `<div><b>ပေါင်းလဒ်: ${step.concat}</b></div>
+                            <div style="margin-top: 3px; font-size: 0.85em;">
+                                နောက်ဂဏန်း ${step.to} ပါဝင်မှု: 
+                                ${step.match ? 
+                                    '<span style="color:#28a745; font-weight:bold;">✓ ပါဝင်သည်</span>' : 
+                                    '<span style="color:#dc3545; font-weight:bold;">✗ မပါဝင်ပါ</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Final result
+            var final_r1 = digitAdd(nums[nums.length-1], A);
+            var final_r2 = digitAdd(nums[nums.length-1], B);
+            var final_r3 = digitAdd(nums[nums.length-1], C);
+            var finalResult = "" + final_r1 + final_r2 + final_r3;
+            
+            // Add D if exists
+            if (searchType === '4' && D !== null) {
+                var final_r4 = digitAdd(nums[nums.length-1], D);
+                finalResult += final_r4;
+            }
+            
+            content += `
+                <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #28a745;">
+                    <div style="font-weight: bold; color: #155724; text-align: center; margin-bottom: 8px;">
+                        နောက်ဆုံးအဖြေ
+                    </div>
+                    <div style="text-align: center; font-size: 0.9em; margin-bottom: 8px;">
+                        ${nums[nums.length-1]} + ${A} = ${final_r1}<br>
+                        ${nums[nums.length-1]} + ${B} = ${final_r2}<br>
+                        ${nums[nums.length-1]} + ${C} = ${final_r3}`;
+            
+            // Add D if exists
+            if (searchType === '4' && D !== null) {
+                content += `<br>${nums[nums.length-1]} + ${D} = ${final_r4}`;
+            }
+            
+            content += `</div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.8em; color: #666;">နောက်ဆုံးထွက်ရှိမည့်အဖြေ</div>
+                        <div style="font-size: 1.8em; font-weight: bold; color: #155724;">${finalResult}</div>
+                    </div>
+                </div>
+            `;
+            
+            detailsModal.innerHTML = content;
+            modalOverlay.appendChild(detailsModal);
+            document.body.appendChild(modalOverlay);
+            
+            // Close modal when clicking outside
+            modalOverlay.addEventListener('click', function(e) {
+                if(e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close modal function
+        function closeModal() {
+            var modal = document.querySelector('.modal-overlay');
+            if(modal) {
+                document.body.removeChild(modal);
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInputs();
+            
+            // Prevent form submission on enter
+            document.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter' && e.target.classList.contains('number-input')) {
+                    e.preventDefault();
+                    run();
+                }
+            });
+        });
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (worker && isSearching) {
+                worker.terminate();
+            }
+        });
+    </script>
+</body>
+</html>
