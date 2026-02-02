@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thai SET 2D & အထူးနံပါတ် စစ်ဆေးစနစ်</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pyidaungsu', 'Noto Sans Myanmar', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2d4059, #3f6ca6);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #2d4059, #3f6ca6);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-btn.active {
+            color: #2d4059;
+            border-bottom: 3px solid #2d4059;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #2d4059;
+            font-size: 1.1rem;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+            line-height: 1.5;
+        }
+        
+        textarea:focus {
+            border-color: #3f6ca6;
+            outline: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(to right, #2d4059, #3f6ca6);
+            color: white;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(to right, #ea5455, #ff7b7b);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .results-container {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2d4059;
+        }
+        
+        .result-title {
+            color: #2d4059;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-item {
+            background-color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .results-table th {
+            background-color: #2d4059;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            font-size: 0.9rem;
+        }
+        
+        .results-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9rem;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .results-table tr:hover {
+            background-color: #e6f7ff;
+        }
+        
+        .input-cell {
+            font-weight: bold;
+            color: #2d4059;
+        }
+        
+        .special-numbers-cell {
+            text-align: center;
+        }
+        
+        .special-numbers-display {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .special-number-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.1rem;
+        }
+        
+        .number-1 {
+            background: linear-gradient(to right, #2d4059, #3f6ca6);
+        }
+        
+        .number-2 {
+            background: linear-gradient(to right, #ea5455, #ff7b7b);
+        }
+        
+        .expected-cell {
+            text-align: center;
+            font-weight: bold;
+            color: #2d4059;
+        }
+        
+        .check-cell {
+            text-align: center;
+        }
+        
+        .check-result {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 100px;
+        }
+        
+        .check-true {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+        
+        .check-false {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+        
+        .check-details {
+            font-size: 0.8rem;
+            margin-top: 3px;
+            color: #666;
+        }
+        
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f1f8ff;
+            border-radius: 10px;
+            border-left: 5px solid #ffd460;
+        }
+        
+        .summary-title {
+            color: #2d4059;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .summary-item {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d4059;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #2d4059;
+            color: white;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .results-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+            }
+            
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-check-circle"></i> Thai SET 2D & အထူးနံပါတ် စစ်ဆေးစနစ်</h1>
+            <p>နည်းလမ်း ၂ မျိုးဖြင့် စစ်ဆေးခြင်း</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tab1">ထီအထူးနံပါတ်</button>
+            <button class="tab-btn" data-tab="tab2">Thai SET 2D</button>
+        </div>
+        
+        <!-- Tab 1: 2D Key -->
+        <div id="tab1" class="tab-content active">
+            <div class="input-group">
+                <label for="dataInput1"><i class="fas fa-paste"></i> ဒေတာအားလုံး ထည့်သွင်းပါ</label>
+                <textarea id="dataInput1" placeholder="ဥပမာ:
+1,268.69 = 72
+1,276.57 = 09
+1,271.80 = 80
+...">1,268.69 = 72
+1,276.57 = 09
+1,271.80 = 80
+1,277.58 = 42
+1,275.34 = 23
+1,274.82 = 06
+1,273.20 = 78
+1,273.77 = 81
+1,269.38 = 92
+1,261.39 = 25
+1,265.22 = 79
+1,269.87 = 30
+1,255.33 = 49
+1,253.54 = 31
+1,253.83 = 03
+1,254.10 = 52
+1,257.55 = 03
+1,273.40 = 37
+1,261.03 = 85
+1,260.68 = 45
+1,259.94 = 57
+1,256.85 = 75
+1,252.07 = 76
+1,250.07 = 50
+1,253.65 = 94
+1,252.19 = 36
+1,264.63 = 85
+1,269.68 = 41
+1,272.34 = 17
+1,271.11 = 42
+1,270.34 = 35
+1,275.33 = 95
+1,266.59 = 78
+1,264.77 = 96
+1,259.49 = 51
+1,259.25 = 76
+1,256.67 = 39
+1,254.03 = 01
+1,257.40 = 77
+1,259.67 = 38
+1,282.73 = 57
+1,280.05 = 15
+1,277.21 = 53
+1,274.75 = 70
+1,262.97 = 08
+1,253.60 = 45
+1,260.64 = 98
+1,254.09 = 24
+1,248.32 = 01
+1,242.20 = 73
+1,236.57 = 01
+1,235.30 = 28
+1,244.92 = 07
+1,244.30 = 04
+1,252.00 = 96
+1,261.39 = 72
+1,264.77 = 03
+1,275.60 = 45
+1,280.44 = 05
+1,283.20 = 31
+1,301.83 = 76
+1,296.37 = 71
+1,315.37 = 68
+1,317.56 = 42
+1,321.94 = 44
+1,311.64 = 43
+1,319.64 = 91
+1,314.39 = 70
+1,310.27 = 72
+1,307.07 = 54
+1,330.45 = 51
+1,334.45 = 60
+1,337.06 = 03
+1,338.90 = 87
+1,336.08 = 73
+1,331.07 = 50</textarea>
+            </div>
+            
+            <div class="button-group">
+                <button class="calculate-btn" id="calculateBtn1">
+                    <i class="fas fa-check-double"></i> အားလုံးစစ်ဆေးပါ
+                </button>
+                <button class="clear-btn" id="clearBtn1">
+                    <i class="fas fa-broom"></i> ရှင်းလင်းပါ
+                </button>
+            </div>
+            
+            <div class="results-container">
+                <div class="result-header">
+                    <div class="result-title">စစ်ဆေးရလဒ်များ</div>
+                    <div class="stats">
+                        <div class="stat-item" id="totalCount1">စုစုပေါင်း: 0</div>
+                        <div class="stat-item" id="correctCount1">မှန်သည်များ: 0</div>
+                    </div>
+                </div>
+                
+                <table class="results-table" id="resultsTable1">
+                    <thead>
+                        <tr>
+                            <th width="15%">ကိန်းဂဏန်း</th>
+                            <th width="25%">အထူးနံပါတ် ၂ ခု</th>
+                            <th width="15%">မျှော်မှန်းရလဒ်</th>
+                            <th width="25%">စစ်ဆေးချက်</th>
+                            <th width="20%">ရလဒ်</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody1">
+                        <!-- ရလဒ်များ ဒီမှာပြမည် -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="summary" id="summarySection1" style="display: none;">
+                <div class="summary-title">
+                    <i class="fas fa-chart-pie"></i> စစ်ဆေးရလဒ် အကျဉ်းချုပ်
+                </div>
+                <div class="summary-grid" id="summaryGrid1">
+                    <!-- စာရင်းဇယား ဒီမှာပြမည် -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 2: Thai SET 2D -->
+        <div id="tab2" class="tab-content">
+            <div class="input-group">
+                <label for="dataInput2"><i class="fas fa-paste"></i> ဒေတာအားလုံး ထည့်သွင်းပါ</label>
+                <textarea id="dataInput2" placeholder="ဥပမာ:
+1283.20 +7.60 =05
+1301.83 +18.63 =31
+1317.56 +21.19 =68
+...">1283.20 +7.60 =05
+1301.83 +18.63 =31
+1317.56 +21.19 =68</textarea>
+            </div>
+            
+            <div class="button-group">
+                <button class="calculate-btn" id="calculateBtn2">
+                    <i class="fas fa-check-double"></i> အားလုံးစစ်ဆေးပါ
+                </button>
+                <button class="clear-btn" id="clearBtn2">
+                    <i class="fas fa-broom"></i> ရှင်းလင်းပါ
+                </button>
+            </div>
+            
+            <div class="results-container">
+                <div class="result-header">
+                    <div class="result-title">စစ်ဆေးရလဒ်များ</div>
+                    <div class="stats">
+                        <div class="stat-item" id="totalCount2">စုစုပေါင်း: 0</div>
+                        <div class="stat-item" id="correctCount2">မှန်သည်များ: 0</div>
+                    </div>
+                </div>
+                
+                <div id="result2">
+                    <!-- ရလဒ်များ ဒီမှာပြမည် -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>ဤကိရိယာသည် အထူးနံပါတ် ၂ ခုနှင့် မျှော်မှန်းရလဒ်ကို တိုက်စစ်ပေးပါသည်</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and buttons
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Tab 1: 2D Key Functions
+            const calculateBtn1 = document.getElementById('calculateBtn1');
+            const clearBtn1 = document.getElementById('clearBtn1');
+            const dataInput1 = document.getElementById('dataInput1');
+            const resultsBody1 = document.getElementById('resultsBody1');
+            const totalCount1 = document.getElementById('totalCount1');
+            const correctCount1 = document.getElementById('correctCount1');
+            const summarySection1 = document.getElementById('summarySection1');
+            const summaryGrid1 = document.getElementById('summaryGrid1');
+            
+            calculateBtn1.addEventListener('click', function() {
+                processAllData1();
+            });
+            
+            clearBtn1.addEventListener('click', function() {
+                dataInput1.value = '';
+                resultsBody1.innerHTML = '';
+                totalCount1.textContent = 'စုစုပေါင်း: 0';
+                correctCount1.textContent = 'မှန်သည်များ: 0';
+                summarySection1.style.display = 'none';
+            });
+            
+            // Tab 2: Thai SET 2D Functions
+            const calculateBtn2 = document.getElementById('calculateBtn2');
+            const clearBtn2 = document.getElementById('clearBtn2');
+            const dataInput2 = document.getElementById('dataInput2');
+            const result2 = document.getElementById('result2');
+            const totalCount2 = document.getElementById('totalCount2');
+            const correctCount2 = document.getElementById('correctCount2');
+            
+            calculateBtn2.addEventListener('click', function() {
+                processAllData2();
+            });
+            
+            clearBtn2.addEventListener('click', function() {
+                dataInput2.value = '';
+                result2.innerHTML = '';
+                totalCount2.textContent = 'စုစုပေါင်း: 0';
+                correctCount2.textContent = 'မှန်သည်များ: 0';
+            });
+            
+            // Initialize with default data
+            processAllData1();
+            processAllData2();
+            
+            // ================== TAB 1 FUNCTIONS ==================
+            function processAllData1() {
+                const inputText = dataInput1.value.trim();
+                if (!inputText) {
+                    alert("ကျေးဇူးပြု၍ ဒေတာထည့်သွင်းပါ။");
+                    return;
+                }
+                
+                const lines = inputText.split('\n');
+                const results = [];
+                let correctCounter = 0;
+                
+                lines.forEach((line) => {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) return;
+                    
+                    const parts = trimmedLine.split('=');
+                    if (parts.length < 2) return;
+                    
+                    const inputNumber = parts[0].trim();
+                    const expectedResult = parts[1].trim();
+                    
+                    const specialNumbers = calculateSpecialNumbers(inputNumber);
+                    const checkResult = checkSpecialNumbers(specialNumbers, expectedResult);
+                    
+                    if (checkResult.isCorrect) correctCounter++;
+                    
+                    results.push({
+                        input: inputNumber,
+                        special1: specialNumbers.special1,
+                        special2: specialNumbers.special2,
+                        expected: expectedResult,
+                        checkResult: checkResult
+                    });
+                });
+                
+                displayResults1(results, correctCounter);
+            }
+            
+            function calculateSpecialNumbers(inputNumber) {
+                let lastTwoDigits = "";
+                const cleanNumber = inputNumber.replace(/,/g, '');
+                
+                if (cleanNumber.includes('.')) {
+                    const numberParts = cleanNumber.split('.');
+                    if (numberParts.length > 1 && numberParts[1].length >= 2) {
+                        lastTwoDigits = numberParts[1].substring(numberParts[1].length - 2);
+                    } else if (numberParts.length > 1 && numberParts[1].length === 1) {
+                        lastTwoDigits = numberParts[1] + "0";
+                    }
+                } else {
+                    lastTwoDigits = cleanNumber.substring(cleanNumber.length - 2);
+                }
+                
+                const closingNum = parseInt(lastTwoDigits);
+                const specialNum1 = 17 + closingNum;
+                const specialNum2 = closingNum - 17;
+                
+                return {
+                    special1: specialNum1,
+                    special2: specialNum2,
+                    closingNum: closingNum
+                };
+            }
+            
+            function checkSpecialNumbers(specialNumbers, expectedResult) {
+                const special1Str = specialNumbers.special1.toString();
+                const special2Str = specialNumbers.special2.toString();
+                const expectedStr = expectedResult;
+                
+                let isCorrect = false;
+                let reason = "";
+                const expectedDigits = expectedStr.split('');
+                
+                let foundInSpecial1 = false;
+                let foundInSpecial2 = false;
+                
+                expectedDigits.forEach(digit => {
+                    if (special1Str.includes(digit)) {
+                        foundInSpecial1 = true;
+                    }
+                    if (special2Str.includes(digit)) {
+                        foundInSpecial2 = true;
+                    }
+                });
+                
+                if (foundInSpecial1 || foundInSpecial2) {
+                    isCorrect = true;
+                    
+                    if (foundInSpecial1 && foundInSpecial2) {
+                        reason = `${specialNumbers.special1} နှင့် ${specialNumbers.special2} တွင် ${expectedResult} ၏ ဂဏန်းများ ပါဝင်သည်`;
+                    } else if (foundInSpecial1) {
+                        reason = `${specialNumbers.special1} တွင် ${expectedResult} ၏ ဂဏန်းများ ပါဝင်သည်`;
+                    } else {
+                        reason = `${specialNumbers.special2} တွင် ${expectedResult} ၏ ဂဏန်းများ ပါဝင်သည်`;
+                    }
+                } else {
+                    isCorrect = false;
+                    reason = `${specialNumbers.special1} သို့မဟုတ် ${specialNumbers.special2} တွင် ${expectedResult} ၏ ဂဏန်းများ မပါဝင်`;
+                }
+                
+                return {
+                    isCorrect: isCorrect,
+                    reason: reason,
+                    foundInSpecial1: foundInSpecial1,
+                    foundInSpecial2: foundInSpecial2
+                };
+            }
+            
+            function displayResults1(results, correctCountValue) {
+                resultsBody1.innerHTML = '';
+                
+                results.forEach((result) => {
+                    const row = document.createElement('tr');
+                    
+                    const specialNumbersHTML = `
+                        <div class="special-numbers-display">
+                            <div class="special-number-item number-1">${result.special1}</div>
+                            <div class="special-number-item number-2">${result.special2}</div>
+                        </div>
+                    `;
+                    
+                    const checkDetails = result.checkResult.reason;
+                    
+                    const resultClass = result.checkResult.isCorrect ? 'check-true' : 'check-false';
+                    const resultIcon = result.checkResult.isCorrect ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+                    const resultText = result.checkResult.isCorrect ? 'မှန်သည်' : 'မှားသည်';
+                    
+                    row.innerHTML = `
+                        <td class="input-cell">${result.input}</td>
+                        <td class="special-numbers-cell">${specialNumbersHTML}</td>
+                        <td class="expected-cell">${result.expected}</td>
+                        <td class="check-cell">
+                            <div class="check-result ${resultClass}">
+                                ${resultIcon} ${resultText}
+                            </div>
+                            <div class="check-details">${checkDetails}</div>
+                        </td>
+                        <td class="check-cell">
+                            ${result.checkResult.foundInSpecial1 ? 
+                                `<div class="check-details" style="color: #2d4059;"><i class="fas fa-check-circle"></i> ${result.special1} တွင် ပါဝင်</div>` : 
+                                `<div class="check-details" style="color: #999;"><i class="fas fa-times-circle"></i> ${result.special1} တွင် မပါဝင်</div>`}
+                            ${result.checkResult.foundInSpecial2 ? 
+                                `<div class="check-details" style="color: #2d4059;"><i class="fas fa-check-circle"></i> ${result.special2} တွင် ပါဝင်</div>` : 
+                                `<div class="check-details" style="color: #999;"><i class="fas fa-times-circle"></i> ${result.special2} တွင် မပါဝင်</div>`}
+                        </td>
+                    `;
+                    
+                    resultsBody1.appendChild(row);
+                });
+                
+                totalCount1.textContent = `စုစုပေါင်း: ${results.length}`;
+                const correctPercentage = results.length > 0 ? Math.round((correctCountValue / results.length) * 100) : 0;
+                correctCount1.textContent = `မှန်သည်များ: ${correctCountValue} (${correctPercentage}%)`;
+                
+                displaySummary1(results.length, correctCountValue, correctPercentage);
+            }
+            
+            function displaySummary1(total, correct, percentage) {
+                summarySection1.style.display = 'block';
+                
+                summaryGrid1.innerHTML = `
+                    <div class="summary-item">
+                        <div class="summary-value">${total}</div>
+                        <div class="summary-label">စုစုပေါင်း ဒေတာ</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" style="color: #4caf50;">${correct}</div>
+                        <div class="summary-label">မှန်သည်များ</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" style="color: #f44336;">${total - correct}</div>
+                        <div class="summary-label">မှားသည်များ</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">${percentage}%</div>
+                        <div class="summary-label">မှန်ကန်မှုရာခိုင်နှုန်း</div>
+                    </div>
+                `;
+            }
+            
+            // ================== TAB 2 FUNCTIONS ==================
+            function last2(n){
+                return Math.abs(n).toFixed(2).slice(-2);
+            }
+            
+            function oneDigitMatch(a,b){
+                return a[0]===b[0] || a[1]===b[1];
+            }
+            
+            function processAllData2(){
+                let lines = dataInput2.value.trim().split(/\n+/);
+                let html = '';
+                let totalCount = 0;
+                let correctCount = 0;
+                
+                lines.forEach(line => {
+                    let m = line.match(/([0-9.,]+)\s*([+-])\s*([0-9.]+)\s*=\s*(\d{2})/);
+                    if(!m) return;
+                    
+                    totalCount++;
+                    
+                    let close = parseFloat(m[1].replace(',',''));
+                    let sign = m[2];
+                    let ch = parseFloat(m[3]);
+                    let actual = m[4];
+                    if(sign === '-') ch = -ch;
+                    
+                    let d1 = parseInt(last2(close));
+                    let d2 = parseInt(last2(ch));
+                    
+                    let m1 = ((d1 + d2) % 100).toString().padStart(2,'0');               // Decimal
+                    let m2 = ((Math.floor(close) + Math.floor(ch)) % 100).toString().padStart(2,'0'); // Trend
+                    let m3 = ((d1 + d2 - 7 + 100) % 100).toString().padStart(2,'0');     // Thai adjust
+                    
+                    let preds = [m1, m2, m3];
+                    let hit = preds.some(p => p === actual || oneDigitMatch(p, actual));
+                    
+                    if (hit) correctCount++;
+                    
+                    html += `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #334155; padding:12px 0;">
+                        <div style="flex: 1;">
+                            ${line}<br>
+                            <span style="font-size:13px; color:#94a3b8;">🔹 ${preds.join(' , ')}</span>
+                        </div>
+                        <div style="color: ${hit ? '#22c55e' : '#ef4444'}; font-weight:bold; margin-left:15px;">
+                            ${hit ? '✔️ မှန်' : '❌ မှား'}
+                        </div>
+                    </div>`;
+                });
+                
+                result2.innerHTML = html;
+                totalCount2.textContent = `စုစုပေါင်း: ${totalCount}`;
+                const correctPercentage = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+                correctCount2.textContent = `မှန်သည်များ: ${correctCount} (${correctPercentage}%)`;
+            }
+        });
+    </script>
+</body>
+</html>
