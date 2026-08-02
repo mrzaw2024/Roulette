@@ -1,937 +1,765 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Lottery Analysis Tool v55</title>
+  <title>Lottery Analysis - Adaptive Strategy v2</title>
   <style>
-    :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --accent-red: #ef4444; --accent-blue: #3b82f6; --border-color: #334155; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; max-width: 1200px; margin: 0 auto; }
-    .box { background: var(--card-bg); border-top: 4px solid var(--accent-blue); padding: 20px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
-    .title { font-weight: bold; margin-bottom: 12px; font-size: 18px; color: #60a5fa; }
-    input[type="number"], input[type="text"] { width: 100%; padding: 12px; margin-top: 6px; font-size: 16px; background: #0f172a; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; box-sizing: border-box; }
-    .btn-container { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-    button { padding: 12px; font-size: 16px; flex: 1; min-width: 100px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --border: #334155;
+      --blue: #3b82f6;
+      --red: #ef4444;
+      --green: #22c55e;
+      --orange: #f97316;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-top: 4px solid var(--blue);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #60a5fa;
+      margin-bottom: 12px;
+    }
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-top: 4px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      color: #fff;
+      flex: 1;
+      min-width: 100px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-green { background: var(--green); }
+    .btn-red { background: var(--red); }
+    .btn-gray { background: #475569; }
+    .btn-blue { background: var(--blue); }
     .hidden { display: none !important; }
-    table { border-collapse: collapse; width: 100%; margin-top: 15px; background: #0f172a; border-radius: 8px; overflow: hidden; }
-    th, td { border: 1px solid var(--border-color); padding: 12px; text-align: center; vertical-align: middle; }
-    th { background-color: #1e293b; color: #94a3b8; position: sticky; top: 0; z-index: 10; }
-    .table-wrapper { max-height: 600px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border-color); }
-    .tab-container { display: flex; margin-bottom: 15px; background: #1e293b; padding: 6px; border-radius: 8px; gap: 5px; }
-    .tab { padding: 12px 20px; background: transparent; cursor: pointer; border-radius: 6px; color: #94a3b8; font-weight: bold; flex: 1; text-align: center; font-size: 15px; }
-    .tab.active { background: var(--accent-blue); color: white; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .road-map-wrapper { width: 100%; overflow-x: auto; margin-top: 15px; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
-    .road-map-table { border-collapse: collapse; margin: 0 auto; }
-    .road-map-table td { width: 32px; height: 32px; padding: 0; border: 1px solid var(--border-color); text-align: center; vertical-align: middle; }
-    .circle { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: white; }
-    .circle.color-0 { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    .circle.color-1 { background: linear-gradient(135deg, #f97316, #ea580c); }
-    .circle.color-2 { background: linear-gradient(135deg, #22c55e, #16a34a); }
-    .circle.color-3 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-    .circle.color-purple { background: linear-gradient(135deg, #c084fc, #a855f7); }
-    .circle.color-skip { background: #475569; }
-    .stats-counter { display: flex; gap: 20px; margin-top: 15px; font-weight: bold; background: #0f172a; padding: 10px 15px; border-radius: 8px; flex-wrap: wrap; }
-    .stat-b { color: #ef4444; }
-    .stat-s { color: #22c55e; }
-    .stat-0 { color: #ef4444; }
-    .stat-1 { color: #f97316; }
-    .stat-2 { color: #22c55e; }
-    .stat-3 { color: #3b82f6; }
-    .stat-last { color: #60a5fa; font-size: 14px; }
-    .prediction-panel { background: #0f172a; border-radius: 12px; padding: 25px 15px; margin-top: 15px; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 10px; }
-    .pred-badge { font-size: 24px; font-weight: bold; padding: 14px 40px; border-radius: 16px; color: white; min-width: 260px; text-align: center; background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-    .pred-badge.none { background: #334155; }
-    .pred-badge.waiting { background: linear-gradient(135deg, #f59e0b, #d97706); animation: pulse-wait 1.5s infinite; }
-    @keyframes pulse-wait { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    .big-digit-display { font-size: 22px; font-weight: 700; display: block; }
-    .win-match { color: #22c55e; }
-    .win-miss { color: #ef4444; }
-    .iframe-container { width: 100%; height: 750px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #000; }
-    .iframe-container iframe { width: 100%; height: 100%; border: 0; display: block; }
-    #liveStatus { font-weight: bold; padding: 6px 12px; border-radius: 6px; display: inline-block; margin-top: 8px; }
-    .status-suspended { background: #334155; color: #94a3b8; }
-    .status-running { background: #15803d; color: #22c55e; animation: pulse 2s infinite; }
-    .status-waiting { background: #92400e; color: #fbbf24; animation: pulse 1.5s infinite; }
-    .status-error { background: #7f1d1d; color: #f87171; animation: pulse 1s infinite; }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-    .block-display { font-size: 14px; color: #94a3b8; margin-top: 5px; }
-    .status-detail { font-size: 12px; color: #64748b; margin-left: 10px; }
-    .last-update { font-size: 13px; color: #94a3b8; margin-top: 5px; }
-    .refresh-btn { background: #3b82f6; padding: 8px 16px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 13px; }
-    .input-hint { font-size: 12px; color: #64748b; margin-top: 4px; }
-    .warning-box { background: #7f1d1d; padding: 10px 15px; border-radius: 8px; margin-top: 10px; color: #f87171; display: none; }
-    .warning-box.show { display: block; }
-    .waiting-message { color: #fbbf24; font-size: 16px; padding: 10px; text-align: center; }
-    .loading-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
-    @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
-    .retry-count { color: #94a3b8; font-size: 13px; margin-top: 5px; }
-    .total-records { color: #60a5fa; font-size: 13px; margin-left: 10px; }
-    .cache-info { color: #94a3b8; font-size: 12px; margin-top: 5px; }
-    .cached-badge { background: #1e293b; color: #60a5fa; padding: 2px 10px; border-radius: 12px; font-size: 11px; margin-left: 8px; }
-    .delete-row-btn { background: var(--accent-red); color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 14px; cursor: pointer; min-width: unset; flex: unset; }
-    .delete-row-btn:hover { background: #dc2626; }
-    .strategy-badge { background: #1e293b; color: #94a3b8; padding: 4px 12px; border-radius: 20px; font-size: 13px; }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .status-stop { background: #334155; color: #94a3b8; }
+    .status-run { background: #15803d; color: #4ade80; animation: pulse 2s infinite; }
+    .status-wait { background: #92400e; color: #fbbf24; animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .pred-box {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      margin-top: 12px;
+    }
+    .pred-number {
+      font-size: 36px;
+      font-weight: 900;
+      padding: 16px 40px;
+      border-radius: 16px;
+      display: inline-block;
+      color: #fff;
+      min-width: 120px;
+    }
+    .pred-number.waiting {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      animation: pulse 1.5s infinite;
+    }
+    .pred-number.none {
+      background: #334155;
+    }
+    .strategy-label {
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+    .stats {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      background: var(--bg);
+      padding: 12px 18px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-weight: 600;
+    }
+    .stat-0 { color: var(--red); }
+    .stat-1 { color: var(--orange); }
+    .stat-2 { color: var(--green); }
+    .stat-3 { color: var(--blue); }
+    .stat-last { color: #60a5fa; }
+    .table-wrap {
+      max-height: 500px;
+      overflow-y: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-top: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg);
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 8px;
+      text-align: center;
+    }
+    th {
+      background: var(--card);
+      color: #94a3b8;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+    .circle-0 { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .circle-1 { background: linear-gradient(135deg, #f97316, #c2410c); }
+    .circle-2 { background: linear-gradient(135deg, #22c55e, #15803d); }
+    .circle-3 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .win { color: var(--green); }
+    .lose { color: var(--red); }
+    .road-map {
+      overflow-x: auto;
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-top: 12px;
+    }
+    .road-map table td {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+    }
+    .del-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .del-btn:hover { background: #b91c1c; }
+    .mt-2 { margin-top: 12px; }
+    .mb-2 { margin-bottom: 12px; }
+    .text-muted { color: #94a3b8; font-size: 13px; }
+    .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   </style>
 </head>
 <body>
 
-<div id="loginBox" class="box">
-  <div class="title">✨ Secure Access Portal</div>
-  <input type="text" id="accessKeyInput" placeholder="Enter key..." />
-  <div class="btn-container">
-    <button onclick="verifyKey()" style="background: var(--accent-blue); width: 100%;">Verify & Launch</button>
+<!-- LOGIN -->
+<div id="loginBox" class="card">
+  <div class="card-title">🔐 Access Portal</div>
+  <input type="text" id="accessKey" placeholder="Enter any key..." />
+  <div class="btn-group">
+    <button class="btn btn-blue" onclick="login()">Launch</button>
   </div>
-  <div id="error" style="color:var(--accent-red); margin-top:10px; font-weight:bold;"></div>
+  <div id="loginError" style="color:var(--red); margin-top:8px;"></div>
 </div>
 
+<!-- MAIN APP -->
 <div id="appBox" class="hidden">
-  <div class="tab-container">
-    <div class="tab active" onclick="switchTab('blockAnalysis')">⚡ Live Analysis Engine</div>
-    <div class="tab" onclick="switchTab('browserSpace')">🌐 Web Space</div>
+
+  <!-- TAB -->
+  <div style="display:flex; gap:6px; background:var(--card); padding:6px; border-radius:8px; margin-bottom:16px;">
+    <button class="btn" style="background:var(--blue); flex:1;" onclick="switchTab('analysis')">📊 Analysis</button>
+    <button class="btn" style="background:transparent; color:#94a3b8; flex:1;" onclick="switchTab('browser')">🌐 Browser</button>
   </div>
 
-  <div id="blockAnalysis" class="tab-content active">
-    <div class="box">
-      <div class="title">📈 Auto-Tracking Stream + Adaptive Strategy (3‑miss rotation)</div>
-      
-      <div id="warningBox" class="warning-box">⚠️ Warning: Using cached data. Click Clear Cache to start fresh.</div>
-      
-      <label>📦 Target Block Sequence:</label>
-      <input type="number" id="startBlock" value="84424346" placeholder="Enter block number e.g. 84424346">
-      <div class="input-hint">💡 Enter the block number you want to start from (e.g., 84424346)</div>
-      
-      <label>🔢 Max Stream Frame Count:</label>
-      <input type="number" id="count" value="300">
-      
-      <div class="btn-container">
-        <button id="btnStart" onclick="startLiveTracking()" style="background: #22c55e;">▶️ Start Stream</button>
-        <button id="btnStop" onclick="stopLiveTracking()" style="background: var(--accent-red);">⏸️ Terminate</button>
-        <button id="btnClear" onclick="clearStoredData()" style="background: #475569;">🗑️ Clear Cache</button>
-        <button onclick="forceRefresh()" style="background: #3b82f6;">🔄 Refresh <span class="cached-badge" id="cacheBadge">📦 Cached</span></button>
+  <!-- TAB 1: ANALYSIS -->
+  <div id="tabAnalysis">
+    <div class="card">
+      <div class="card-title">📈 Live Stream + Adaptive Strategy</div>
+
+      <label>🎯 Start Block:</label>
+      <input type="number" id="startBlock" value="84424346" />
+
+      <label>📊 Max Records:</label>
+      <input type="number" id="maxCount" value="300" />
+
+      <div class="btn-group">
+        <button class="btn btn-green" id="btnStart" onclick="startStream()">▶️ Start</button>
+        <button class="btn btn-red" onclick="stopStream()">⏹️ Stop</button>
+        <button class="btn btn-gray" onclick="clearAll()">🗑️ Clear</button>
+        <button class="btn btn-blue" onclick="refreshData()">🔄 Refresh</button>
       </div>
 
-      <div>
-        <span id="liveStatus" class="status-suspended">⏸️ Status: Suspended</span>
-        <span id="currentBlockDisplay" class="block-display">Block: --</span>
-        <span id="lastUpdateTime" class="last-update">Last update: --</span>
-        <span id="totalRecordsDisplay" class="total-records">Total: 0</span>
-        <span id="cacheInfo" class="cache-info">📦 Cache: <span id="cacheStatus">Empty</span></span>
+      <div class="flex mt-2">
+        <span id="statusBadge" class="status-badge status-stop">⏸️ Stopped</span>
+        <span id="blockDisplay" class="text-muted">Block: --</span>
+        <span id="totalDisplay" class="text-muted">Total: 0</span>
+        <span id="cacheDisplay" class="text-muted">📦 Cache: 0</span>
       </div>
 
-      <div class="prediction-panel">
-        <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
-        <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
-        <div style="font-size:12px; color:#64748b;" id="blockInfo">Started from: -- | Current: --</div>
-        <div id="strategyIndicator" class="strategy-badge">Strategy: ███ 0</div>
-        <div id="waitingMessage" class="waiting-message" style="display:none;">⏳ Internet ပြန်လည်ချိတ်ဆက်နေပါသည်... <span class="loading-dots"></span></div>
-        <div id="retryCount" class="retry-count" style="display:none;">ပြန်လည်ကြိုးစားမှု: 0 (၃ စက္ကန့်တစ်ခါ)</div>
+      <!-- PREDICTION -->
+      <div class="pred-box">
+        <div id="predictionDisplay" class="pred-number waiting">⏳ စောင့်ဆိုင်းနေပါ...</div>
+        <div id="predictionDetail" class="text-muted" style="margin-top:6px;">ဒေတာ 0/10</div>
+        <div id="strategyDisplay" class="strategy-label">Strategy: Freq (0/3)</div>
       </div>
 
-      <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
-      <div class="stats-counter">
-        <div>0: <span id="count0" class="stat-0">0</span></div>
-        <div>1: <span id="count1" class="stat-1">0</span></div>
-        <div>2: <span id="count2" class="stat-2">0</span></div>
-        <div>3: <span id="count3" class="stat-3">0</span></div>
-        <div class="stat-last">Last: <span id="lastResult">--</span></div>
-        <div class="stat-last">Total: <span id="totalCount">0</span></div>
+      <!-- STATS -->
+      <div class="stats">
+        <span class="stat-0">0: <span id="c0">0</span></span>
+        <span class="stat-1">1: <span id="c1">0</span></span>
+        <span class="stat-2">2: <span id="c2">0</span></span>
+        <span class="stat-3">3: <span id="c3">0</span></span>
+        <span class="stat-last">Last: <span id="lastResult">--</span></span>
       </div>
-      
-      <div class="road-map-wrapper">
-        <table class="road-map-table" id="roadMapTable"></table>
+
+      <!-- ROAD MAP -->
+      <div class="card-title" style="margin-top:16px;">🗺️ Big Road</div>
+      <div class="road-map" id="roadMapContainer">
+        <table id="roadMapTable"></table>
       </div>
-      
-      <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (အကန့်အသတ်မရှိ)</h3>
-      <div class="table-wrapper" id="tableWrapper">
-        <div id="output"></div>
+
+      <!-- HISTORY -->
+      <div class="card-title" style="margin-top:16px;">📋 History</div>
+      <div class="table-wrap" id="historyWrap">
+        <div id="historyOutput" style="padding:20px; text-align:center; color:#64748b;">ဒေတာမရှိသေးပါ</div>
       </div>
     </div>
   </div>
 
-  <div id="browserSpace" class="tab-content">
-    <div class="box">
-      <div class="title">📊 Synchronized Platform Workspace</div>
-      <div class="iframe-container">
-        <iframe id="browserFrame" src="https://www.6lottery.com" frameborder="0" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+  <!-- TAB 2: BROWSER -->
+  <div id="tabBrowser" class="hidden">
+    <div class="card">
+      <div class="card-title">🌐 External Platform</div>
+      <div style="border-radius:8px; overflow:hidden; background:#000; height:600px;">
+        <iframe src="https://www.6lottery.com" style="width:100%; height:100%; border:none;"></iframe>
       </div>
-      <div style="margin-top:12px;">
-        <button onclick="window.open('https://www.6lottery.com', '_blank')" style="background:var(--border-color); width:200px; padding:12px;">Launch In New Tab</button>
+      <div class="btn-group">
+        <button class="btn btn-blue" onclick="window.open('https://www.6lottery.com','_blank')">🔗 Open New Tab</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ===== MAIN APPLICATION LOGIC =====
-let liveIntervalId = null;
-let currentTrackingBlock = 84424346;
-let trackedResults = [];
-let nextCalculatedBet = "Waiting";
+// ============================================
+//  STATE
+// ============================================
+let tracked = [];
+let processed = new Set();
+let currentBlock = 84424346;
 let isRunning = false;
+let intervalId = null;
 let fetchAttempts = 0;
-let errorCount = 0;
-let userRequestedBlock = 84424346;
-let retryInterval = 3000;
-let hasCachedData = false;
-let isFirstLoad = true;
-let processedBlocks = new Set();
 
-// ---- Adaptive strategy state ----
-let strategyMissCounter = 0;          // consecutive misses for current strategy
-let strategyRotation = 0;             // 0,1,2,3 → which strategy is active (0 = pure frequency, 1 = trend, 2 = anti-trend, 3 = balanced)
-const STRATEGY_NAMES = ["Freq", "Trend", "Anti", "Balanced"];
-const MAX_MISS_BEFORE_ROTATION = 3;
+// Strategy state
+let strategyIndex = 0;        // 0=Freq, 1=Trend, 2=Anti, 3=Balanced
+let missCount = 0;
+const MAX_MISS = 3;
+const STRATEGIES = ['Freq', 'Trend', 'Anti', 'Balanced'];
+const CATS = ['0','1','2','3'];
 
-function getStrategyLabel() {
-  return `${STRATEGY_NAMES[strategyRotation]} (${strategyMissCounter}/${MAX_MISS_BEFORE_ROTATION})`;
+// ============================================
+//  UTILITY
+// ============================================
+function $(id) { return document.getElementById(id); }
+
+function getMaxCount() {
+  return parseInt($('maxCount').value) || 300;
 }
 
-function rotateStrategyIfNeeded() {
-  if (strategyMissCounter >= MAX_MISS_BEFORE_ROTATION) {
-    strategyRotation = (strategyRotation + 1) % 4;
-    strategyMissCounter = 0;
-    // force a prediction re-run immediately
-    recalculateAllPredictions();
-    updatePredictionDisplay();
-    updateStrategyIndicator();
-    saveData();
-  }
+function getStartBlock() {
+  return parseInt($('startBlock').value) || 84424346;
 }
 
-// ===== DATA STORAGE FUNCTIONS =====
-function saveData() {
+function saveState() {
   try {
-    localStorage.setItem("savedTargetBlock", currentTrackingBlock);
-    localStorage.setItem("savedMaxCount", document.getElementById("count").value);
-    localStorage.setItem("savedTrackedResults", JSON.stringify(trackedResults));
-    localStorage.setItem("savedPrediction", nextCalculatedBet);
-    localStorage.setItem("savedLastBlock", currentTrackingBlock);
-    localStorage.setItem("savedProcessedBlocks", JSON.stringify([...processedBlocks]));
-    localStorage.setItem("savedTimestamp", Date.now());
-    localStorage.setItem("strategyRotation", strategyRotation);
-    localStorage.setItem("strategyMissCounter", strategyMissCounter);
-    hasCachedData = true;
-    updateCacheInfo();
-  } catch(e) { console.log("Save error:", e); }
+    localStorage.setItem('tracked', JSON.stringify(tracked));
+    localStorage.setItem('processed', JSON.stringify([...processed]));
+    localStorage.setItem('currentBlock', currentBlock);
+    localStorage.setItem('strategyIndex', strategyIndex);
+    localStorage.setItem('missCount', missCount);
+  } catch(e) {}
 }
 
-function loadData() {
+function loadState() {
   try {
-    const inputBlock = document.getElementById("startBlock").value.trim();
-    if (inputBlock && !isNaN(inputBlock) && parseInt(inputBlock) > 0) {
-      userRequestedBlock = parseInt(inputBlock);
-      currentTrackingBlock = userRequestedBlock;
-    }
-    
-    const storedBlock = localStorage.getItem("savedTargetBlock");
-    if (storedBlock && !inputBlock) {
-      currentTrackingBlock = parseInt(storedBlock);
-      document.getElementById("startBlock").value = currentTrackingBlock;
-    }
-    
-    const storedCount = localStorage.getItem("savedMaxCount");
-    if (storedCount) document.getElementById("count").value = storedCount;
-    
-    const storedResults = localStorage.getItem("savedTrackedResults");
-    if (storedResults) {
-      trackedResults = JSON.parse(storedResults);
-      hasCachedData = trackedResults.length > 0;
-      
-      const storedProcessed = localStorage.getItem("savedProcessedBlocks");
-      if (storedProcessed) {
-        processedBlocks = new Set(JSON.parse(storedProcessed));
-      }
-      
-      // Load strategy state
-      const sRot = localStorage.getItem("strategyRotation");
-      if (sRot !== null) strategyRotation = parseInt(sRot) % 4;
-      const sMiss = localStorage.getItem("strategyMissCounter");
-      if (sMiss !== null) strategyMissCounter = parseInt(sMiss);
-      
-      if (trackedResults.length > 0) {
-        updateTrendBoard();
-        updateTableDisplay();
-        updatePredictionDisplay();
-        updateStats();
-        updateStrategyIndicator();
-        const lastBlock = trackedResults[trackedResults.length-1].blockNum;
-        document.getElementById("currentBlockDisplay").innerText = `Block: ${lastBlock}`;
-        document.getElementById("blockInfo").innerText = `Started from: ${trackedResults[0].blockNum} | Current: ${lastBlock}`;
-        document.getElementById("totalRecordsDisplay").innerText = `Total: ${trackedResults.length}`;
-        document.getElementById("cacheStatus").innerText = `${trackedResults.length} records`;
-        document.getElementById("cacheBadge").style.display = "inline";
-      }
-    }
-    
-    const storedPred = localStorage.getItem("savedPrediction");
-    if (storedPred) {
-      nextCalculatedBet = storedPred;
-      updatePredictionDisplay();
-    }
-    
-    const storedLastBlock = localStorage.getItem("savedLastBlock");
-    if (storedLastBlock && !inputBlock) {
-      currentTrackingBlock = parseInt(storedLastBlock);
-      document.getElementById("startBlock").value = currentTrackingBlock;
-    }
-    
-    document.getElementById("blockInfo").innerText = `Started from: ${document.getElementById("startBlock").value} | Current: ${currentTrackingBlock}`;
-    updateCacheInfo();
-    
-    if (trackedResults.length > 0 && localStorage.getItem("savedTrackedResults")) {
-      document.getElementById("warningBox").classList.add("show");
-    }
-  } catch(e) { console.log("Load error:", e); }
+    const t = localStorage.getItem('tracked');
+    if (t) tracked = JSON.parse(t);
+    const p = localStorage.getItem('processed');
+    if (p) processed = new Set(JSON.parse(p));
+    const b = localStorage.getItem('currentBlock');
+    if (b) currentBlock = parseInt(b);
+    const si = localStorage.getItem('strategyIndex');
+    if (si !== null) strategyIndex = parseInt(si) % 4;
+    const mc = localStorage.getItem('missCount');
+    if (mc !== null) missCount = parseInt(mc);
+    $('startBlock').value = currentBlock;
+  } catch(e) {}
 }
 
-function updateCacheInfo() {
-  const cacheStatus = document.getElementById("cacheStatus");
-  const cacheBadge = document.getElementById("cacheBadge");
-  if (trackedResults.length > 0) {
-    cacheStatus.innerText = `${trackedResults.length} records`;
-    cacheBadge.style.display = "inline";
-    cacheBadge.innerText = `📦 ${trackedResults.length} cached`;
+// ============================================
+//  AUTH
+// ============================================
+function login() {
+  const key = $('accessKey').value.trim();
+  if (key) {
+    localStorage.setItem('auth', key);
+    $('loginBox').classList.add('hidden');
+    $('appBox').classList.remove('hidden');
+    loadState();
+    renderAll();
   } else {
-    cacheStatus.innerText = "Empty";
-    cacheBadge.style.display = "none";
+    $('loginError').textContent = 'Enter any key to continue';
   }
 }
 
-function updateStrategyIndicator() {
-  document.getElementById("strategyIndicator").innerText = `Strategy: ${STRATEGY_NAMES[strategyRotation]} (miss ${strategyMissCounter}/${MAX_MISS_BEFORE_ROTATION})`;
-}
-
-// ===== AUTHENTICATION =====
-window.addEventListener('DOMContentLoaded', () => {
-  const activeKey = localStorage.getItem("activeKey");
-  if (activeKey) {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("appBox").classList.remove("hidden");
-    document.getElementById("startBlock").value = 84424346;
-    currentTrackingBlock = 84424346;
-    loadData();
-    isFirstLoad = false;
+window.onload = function() {
+  if (localStorage.getItem('auth')) {
+    $('loginBox').classList.add('hidden');
+    $('appBox').classList.remove('hidden');
+    loadState();
+    renderAll();
   }
-});
+};
 
-function verifyKey() {
-  const key = document.getElementById("accessKeyInput").value.trim();
-  if (key !== "") {
-    localStorage.setItem("activeKey", key);
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("appBox").classList.remove("hidden");
-    document.getElementById("startBlock").value = 84424346;
-    currentTrackingBlock = 84424346;
-    loadData();
-    isFirstLoad = false;
-  } else {
-    document.getElementById("error").innerText = "Enter any key to continue";
-  }
-}
-
-function switchTab(tabId) {
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-  const activeTab = document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`);
-  if (activeTab) activeTab.classList.add('active');
-  document.getElementById(tabId).classList.add('active');
-}
-
-// ===== HASH ANALYSIS =====
-function analyzeHashData(blockHash) {
-  if (!blockHash) return { result: "Skip", colorClass: "color-skip", digit: "-" };
-  let targetDigit = null;
-  for (let i = blockHash.length - 1; i >= 0; i--) {
-    const char = blockHash[i];
-    if (char >= '0' && char <= '9') { targetDigit = parseInt(char); break; }
-  }
-  if (targetDigit === null) return { result: "Skip", colorClass: "color-skip", digit: "-" };
-  let category;
-  if (targetDigit === 0) category = 0;
-  else if (targetDigit <= 3) category = 1;
-  else if (targetDigit <= 6) category = 2;
-  else category = 3;
-  const resText = String(category);
-  const color = "color-" + category;
-  return { result: resText, colorClass: color, digit: targetDigit };
-}
-
-// ===== PREDICTION ENGINE WITH 3‑MISS ROTATION =====
-const CATEGORIES = ["0", "1", "2", "3"];
-const NO_MATCH = "❓";
-
-function recalculateAllPredictions() {
-  const SEQ_LENGTHS = [5, 4, 3];
-  const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
-  const transitionMaps = { 5: {}, 4: {}, 3: {} };
-  const valid = [];
-  const predictedSoFar = [];
-
-  function buildKey(len) {
-    if (valid.length < len) return null;
-    const parts = [];
-    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
-    return parts.join(",");
-  }
-
-  function predictNext() {
-    // Build frequency-based ranking
-    const freq = { "0": 0, "1": 0, "2": 0, "3": 0 };
-    valid.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
-    const freqRank = CATEGORIES.slice().sort((a,b) => freq[b] - freq[a]);
-
-    // Build trend from last 5
-    const trend = { "0": 0, "1": 0, "2": 0, "3": 0 };
-    const last5 = valid.slice(-5);
-    last5.forEach(v => { trend[v] = (trend[v] || 0) + 1; });
-    const trendRank = CATEGORIES.slice().sort((a,b) => trend[b] - trend[a]);
-
-    // Anti-trend: pick least common in last 5
-    const antiRank = CATEGORIES.slice().sort((a,b) => trend[a] - trend[b]);
-
-    // Balanced: mix freq + trend
-    const balancedScore = {};
-    CATEGORIES.forEach(c => {
-      balancedScore[c] = (freq[c] || 0) + (trend[c] || 0);
-    });
-    const balancedRank = CATEGORIES.slice().sort((a,b) => balancedScore[b] - balancedScore[a]);
-
-    // Pick based on current strategy
-    let pick;
-    switch(strategyRotation) {
-      case 0: pick = freqRank[0]; break;
-      case 1: pick = trendRank[0]; break;
-      case 2: pick = antiRank[0]; break;
-      case 3: pick = balancedRank[0]; break;
-      default: pick = freqRank[0];
-    }
-
-    // Anti-repeat safety
-    const lastTwo = predictedSoFar.slice(-2);
-    if (lastTwo.length === 2 && lastTwo[0] === lastTwo[1] && lastTwo[0] === pick) {
-      // pick second best from current strategy
-      const backup = [freqRank[0], trendRank[0], antiRank[0], balancedRank[0]];
-      for (let alt of backup) {
-        if (alt !== pick && alt !== undefined) { pick = alt; break; }
-      }
-    }
-    return pick;
-  }
-
-  for (let i = 0; i < trackedResults.length; i++) {
-    const row = trackedResults[i];
-    let betPrediction;
-    if (valid.length < 10) {
-      betPrediction = "Waiting";
+function switchTab(tab) {
+  ['analysis','browser'].forEach(t => {
+    const el = $(`tab${t.charAt(0).toUpperCase()+t.slice(1)}`);
+    if (t === tab) {
+      el.classList.remove('hidden');
     } else {
-      betPrediction = predictNext();
+      el.classList.add('hidden');
     }
-    row.betPrediction = betPrediction;
-    const cur = row.appResult;
-    if (CATEGORIES.includes(cur)) {
-      valid.push(cur);
-      if (betPrediction !== "Waiting" && betPrediction !== NO_MATCH) {
-        predictedSoFar.push(betPrediction);
-        // Update miss counter for strategy
-        if (betPrediction === cur) {
-          strategyMissCounter = 0;
-        } else {
-          strategyMissCounter++;
-          rotateStrategyIfNeeded();
-        }
-        updateStrategyIndicator();
-        saveData();
-      }
-    }
-  }
-
-  if (valid.length < 10) {
-    nextCalculatedBet = "Waiting";
-  } else {
-    // get prediction for upcoming block
-    const predicted = predictNext();
-    nextCalculatedBet = predicted;
-  }
-  saveData();
-}
-
-// ===== UPDATE DISPLAY FUNCTIONS =====
-function updatePredictionDisplay() {
-  const predBox = document.getElementById("nextBlockPrediction");
-  const detailEl = document.getElementById("predictionDetail");
-  const waitingMsg = document.getElementById("waitingMessage");
-  const retryEl = document.getElementById("retryCount");
-  
-  if (nextCalculatedBet === "Waiting" || trackedResults.length < 10) {
-    predBox.className = "pred-badge waiting";
-    predBox.innerText = "⏳ Internet ပြန်လည်ချိတ်ဆက်နေပါသည်...";
-    detailEl.innerText = `ဒေတာ ${trackedResults.length}/10 ရှိပါသည်`;
-    waitingMsg.style.display = "block";
-    retryEl.style.display = "block";
-  } else if (nextCalculatedBet === NO_MATCH) {
-    waitingMsg.style.display = "none";
-    retryEl.style.display = "none";
-    predBox.className = "pred-badge none";
-    predBox.style.background = "";
-    predBox.innerText = `${NO_MATCH} ခန့်မှန်းမှု မရှိပါ`;
-    detailEl.innerText = "ယခင်တွင် ဒီအစီအစဉ် (Triple/Pair) ရှာမတွေ့ပါ";
-  } else {
-    waitingMsg.style.display = "none";
-    retryEl.style.display = "none";
-    predBox.className = "pred-badge";
-    const catColors = {
-      "0": "linear-gradient(135deg, #ef4444, #dc2626)",
-      "1": "linear-gradient(135deg, #f97316, #ea580c)",
-      "2": "linear-gradient(135deg, #22c55e, #16a34a)",
-      "3": "linear-gradient(135deg, #3b82f6, #1d4ed8)"
-    };
-    predBox.style.background = catColors[nextCalculatedBet] || catColors["0"];
-    predBox.innerText = `🔮 ${nextCalculatedBet}`;
-    detailEl.innerText = `"${nextCalculatedBet}" ထွက်ရန် ခန့်မှန်းထားသည် (${STRATEGY_NAMES[strategyRotation]})`;
-  }
-  updateStrategyIndicator();
-}
-
-function updateStats() {
-  let counts = { "0": 0, "1": 0, "2": 0, "3": 0 };
-  trackedResults.forEach(r => {
-    if (counts.hasOwnProperty(r.appResult)) counts[r.appResult]++;
   });
-  document.getElementById("count0").innerText = counts["0"];
-  document.getElementById("count1").innerText = counts["1"];
-  document.getElementById("count2").innerText = counts["2"];
-  document.getElementById("count3").innerText = counts["3"];
-  document.getElementById("totalCount").innerText = trackedResults.length;
-  document.getElementById("totalRecordsDisplay").innerText = `Total: ${trackedResults.length}`;
-  updateCacheInfo();
-  
-  if (trackedResults.length > 0) {
-    const last = trackedResults[trackedResults.length - 1];
-    document.getElementById("lastResult").innerText = CATEGORIES.includes(last.appResult) ? last.appResult : "--";
+}
+
+// ============================================
+//  HASH ANALYZER
+// ============================================
+function analyzeHash(hash) {
+  if (!hash) return { result: 'Skip', digit: '-' };
+  let digit = null;
+  for (let i = hash.length - 1; i >= 0; i--) {
+    const ch = hash[i];
+    if (ch >= '0' && ch <= '9') { digit = parseInt(ch); break; }
+  }
+  if (digit === null) return { result: 'Skip', digit: '-' };
+  let cat;
+  if (digit === 0) cat = '0';
+  else if (digit <= 3) cat = '1';
+  else if (digit <= 6) cat = '2';
+  else cat = '3';
+  return { result: cat, digit: digit };
+}
+
+// ============================================
+//  PREDICTION ENGINE
+// ============================================
+function getPrediction() {
+  const valid = tracked.filter(r => CATS.includes(r.result)).map(r => r.result);
+  if (valid.length < 10) return 'Waiting';
+
+  // Build frequency
+  const freq = { '0':0,'1':0,'2':0,'3':0 };
+  valid.forEach(v => freq[v]++);
+  const freqRank = CATS.slice().sort((a,b) => freq[b] - freq[a]);
+
+  // Trend (last 5)
+  const trend = { '0':0,'1':0,'2':0,'3':0 };
+  valid.slice(-5).forEach(v => trend[v]++);
+  const trendRank = CATS.slice().sort((a,b) => trend[b] - trend[a]);
+
+  // Anti-trend
+  const antiRank = CATS.slice().sort((a,b) => trend[a] - trend[b]);
+
+  // Balanced
+  const bal = {};
+  CATS.forEach(c => bal[c] = (freq[c] || 0) + (trend[c] || 0));
+  const balRank = CATS.slice().sort((a,b) => bal[b] - bal[a]);
+
+  let pick;
+  switch(strategyIndex) {
+    case 0: pick = freqRank[0]; break;
+    case 1: pick = trendRank[0]; break;
+    case 2: pick = antiRank[0]; break;
+    case 3: pick = balRank[0]; break;
+    default: pick = freqRank[0];
+  }
+
+  // Anti-repeat: don't pick same as last 2
+  const lastTwo = tracked.slice(-2).filter(r => CATS.includes(r.result)).map(r => r.result);
+  const lastTwoPreds = tracked.slice(-2).filter(r => r.pred && CATS.includes(r.pred)).map(r => r.pred);
+  if (lastTwoPreds.length === 2 && lastTwoPreds[0] === lastTwoPreds[1] && lastTwoPreds[0] === pick) {
+    // pick second best from current strategy
+    const backups = [freqRank[0], trendRank[0], antiRank[0], balRank[0]];
+    for (let alt of backups) {
+      if (alt !== pick && alt !== undefined) { pick = alt; break; }
+    }
+  }
+
+  return pick;
+}
+
+function updateMissCount(actual, predicted) {
+  if (predicted === 'Waiting') return;
+  if (actual === predicted) {
+    missCount = 0;
+  } else {
+    missCount++;
+    if (missCount >= MAX_MISS) {
+      strategyIndex = (strategyIndex + 1) % 4;
+      missCount = 0;
+    }
   }
 }
 
-function updateTrendBoard() {
+// ============================================
+//  RENDER
+// ============================================
+function renderAll() {
+  renderStats();
+  renderRoadMap();
+  renderHistory();
+  renderPrediction();
+  renderStrategy();
+  renderStatus();
+  saveState();
+}
+
+function renderStats() {
+  const counts = { '0':0,'1':0,'2':0,'3':0 };
+  tracked.forEach(r => { if (CATS.includes(r.result)) counts[r.result]++; });
+  $('c0').textContent = counts['0'];
+  $('c1').textContent = counts['1'];
+  $('c2').textContent = counts['2'];
+  $('c3').textContent = counts['3'];
+  if (tracked.length > 0) {
+    const last = tracked[tracked.length-1];
+    $('lastResult').textContent = CATS.includes(last.result) ? last.result : '--';
+  }
+  $('totalDisplay').textContent = `Total: ${tracked.length}`;
+  $('cacheDisplay').textContent = `📦 Cache: ${tracked.length}`;
+}
+
+function renderRoadMap() {
+  const valid = tracked.filter(r => CATS.includes(r.result));
+  if (valid.length === 0) {
+    $('roadMapTable').innerHTML = '';
+    return;
+  }
+
   const rows = 6, cols = 50;
-  let grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
-  let colIndex = 0, rowIndex = 0, lastResultText = null;
-  const valid = trackedResults.filter(r => CATEGORIES.includes(r.appResult));
+  const grid = Array.from({length: rows}, () => Array(cols).fill(null));
+  let col = 0, row = 0, last = null;
 
-  valid.forEach((item, idx) => {
-    if (lastResultText === null) {
-      grid[rowIndex][colIndex] = item;
-    } else if (item.appResult === lastResultText) {
-      if (rowIndex + 1 < rows && grid[rowIndex + 1][colIndex] === "" && (rowIndex === 0 || grid[rowIndex][colIndex + 1] === "")) {
-        rowIndex++;
+  valid.forEach(item => {
+    if (last === null) {
+      grid[row][col] = item;
+    } else if (item.result === last) {
+      if (row + 1 < rows && grid[row+1][col] === null && (row === 0 || grid[row][col+1] === null)) {
+        row++;
       } else {
-        colIndex++;
-        rowIndex = 0;
+        col++;
+        row = 0;
       }
-      if (colIndex < cols) grid[rowIndex][colIndex] = item;
+      if (col < cols) grid[row][col] = item;
     } else {
-      rowIndex = 0;
-      let nextCol = 0;
-      while (nextCol < cols && grid[0][nextCol] !== "") { nextCol++; }
-      colIndex = nextCol;
-      if (colIndex < cols) grid[rowIndex][colIndex] = item;
+      row = 0;
+      let nc = 0;
+      while (nc < cols && grid[0][nc] !== null) nc++;
+      col = nc;
+      if (col < cols) grid[row][col] = item;
     }
-    lastResultText = item.appResult;
+    last = item.result;
   });
 
-  let displayCols = 24, startCol = 0;
-  if (colIndex >= displayCols) { startCol = colIndex - (displayCols - 1); }
-  updateStats();
+  let startCol = 0;
+  if (col >= 24) startCol = col - 23;
 
-  let html = "";
+  let html = '';
   for (let r = 0; r < rows; r++) {
-    html += "<tr>";
-    for (let c = startCol; c < startCol + displayCols; c++) {
-      let cell = (c < cols) ? grid[r][c] : "";
-      if (cell && CATEGORIES.includes(cell.appResult)) {
-        html += `<td><div class="circle color-${cell.appResult}">${cell.appResult}</div></td>`;
+    html += '<tr>';
+    for (let c = startCol; c < startCol + 24; c++) {
+      const item = (c < cols) ? grid[r][c] : null;
+      if (item && CATS.includes(item.result)) {
+        html += `<td><div class="circle circle-${item.result}">${item.result}</div></td>`;
       } else {
         html += `<td></td>`;
       }
     }
-    html += "</tr>";
+    html += '</tr>';
   }
-  document.getElementById("roadMapTable").innerHTML = html;
-  saveData();
+  $('roadMapTable').innerHTML = html;
 }
 
-function updateTableDisplay() {
-  if (trackedResults.length === 0) {
-    document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာမရှိသေးပါ</p>";
+function renderHistory() {
+  if (tracked.length === 0) {
+    $('historyOutput').innerHTML = '<p style="color:#64748b; text-align:center;">ဒေတာမရှိသေးပါ</p>';
     return;
   }
-  
-  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
-  for (let i = trackedResults.length - 1; i >= 0; i--) {
-    let row = trackedResults[i];
-    if (!row) continue;
-    let win = row.betPrediction === row.appResult;
-    let cls = (row.betPrediction === "Waiting" || row.betPrediction === NO_MATCH) ? "" : (win ? "win-match" : "win-miss");
-    let betDisplay = row.betPrediction || "-";
-    let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
-    let catDisplay = CATEGORIES.includes(row.appResult)
-      ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
-      : "-";
-    table += `<tr><td>${row.blockNum}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
+
+  let html = `<table><thead><tr><th>Block</th><th>Pred</th><th>Result</th><th>Cat</th><th>Del</th></tr></thead><tbody>`;
+  for (let i = tracked.length - 1; i >= 0; i--) {
+    const r = tracked[i];
+    const pred = r.pred || '-';
+    const isWin = pred === r.result;
+    const cls = (pred === 'Waiting') ? '' : (isWin ? 'win' : 'lose');
+    const catDisplay = CATS.includes(r.result) ? `<div class="circle circle-${r.result}">${r.result}</div>` : '-';
+    html += `<tr>
+      <td>${r.block}</td>
+      <td class="${cls}">${pred}</td>
+      <td><strong>${r.digit}</strong></td>
+      <td>${catDisplay}</td>
+      <td><button class="del-btn" onclick="deleteRecord(${r.block})">🗑️</button></td>
+    </tr>`;
   }
-  document.getElementById("output").innerHTML = table + "</tbody></table>";
-  
-  const wrapper = document.getElementById("tableWrapper");
-  if (wrapper) {
-    wrapper.scrollTop = 0;
+  $('historyOutput').innerHTML = html + '</tbody></table>';
+}
+
+function renderPrediction() {
+  const pred = getPrediction();
+  const el = $('predictionDisplay');
+  const detail = $('predictionDetail');
+
+  if (pred === 'Waiting') {
+    el.className = 'pred-number waiting';
+    el.textContent = '⏳ စောင့်ဆိုင်းနေပါ...';
+    detail.textContent = `ဒေတာ ${tracked.filter(r=>CATS.includes(r.result)).length}/10`;
+  } else {
+    const colors = {
+      '0': 'linear-gradient(135deg, #ef4444, #b91c1c)',
+      '1': 'linear-gradient(135deg, #f97316, #c2410c)',
+      '2': 'linear-gradient(135deg, #22c55e, #15803d)',
+      '3': 'linear-gradient(135deg, #3b82f6, #1d4ed8)'
+    };
+    el.className = 'pred-number';
+    el.style.background = colors[pred] || '#334155';
+    el.textContent = `🔮 ${pred}`;
+    detail.textContent = `"${pred}" ထွက်ရန် ခန့်မှန်း (${STRATEGIES[strategyIndex]})`;
   }
 }
 
-// ===== DELETE A SINGLE RECORD =====
-function deleteRecord(blockNum) {
-  if (!confirm(`Block ${blockNum} ကို ဖျက်မှာ သေချာပါသလား?`)) return;
-
-  const idx = trackedResults.findIndex(r => r.blockNum === blockNum);
-  if (idx === -1) return;
-
-  trackedResults.splice(idx, 1);
-  processedBlocks.delete(blockNum);
-
-  recalculateAllPredictions();
-  updateTrendBoard();
-  updateTableDisplay();
-  updatePredictionDisplay();
-  updateStats();
-  updateStrategyIndicator();
-  saveData();
+function renderStrategy() {
+  $('strategyDisplay').textContent = `Strategy: ${STRATEGIES[strategyIndex]} (miss ${missCount}/${MAX_MISS})`;
 }
 
-// ===== SHOW WAITING MESSAGE =====
-function showWaitingMessage() {
-  const statusEl = document.getElementById("liveStatus");
-  statusEl.className = "status-waiting";
-  statusEl.innerText = "⏳ Status: ပြန်လည်ချိတ်ဆက်နေပါသည်...";
-  
-  const waitingMsg = document.getElementById("waitingMessage");
-  waitingMsg.style.display = "block";
-  waitingMsg.innerHTML = "⏳ Internet ပြန်လည်ချိတ်ဆက်နေပါသည်... <span class='loading-dots'></span>";
-  
-  const retryEl = document.getElementById("retryCount");
-  retryEl.style.display = "block";
-  retryEl.innerText = `ပြန်လည်ကြိုးစားမှု: ${fetchAttempts} (၃ စက္ကန့်တစ်ခါ)`;
-}
-
-function hideWaitingMessage() {
-  const statusEl = document.getElementById("liveStatus");
+function renderStatus() {
+  const el = $('statusBadge');
   if (isRunning) {
-    statusEl.className = "status-running";
-    statusEl.innerText = "▶️ Status: Running";
+    el.className = 'status-badge status-run';
+    el.textContent = '▶️ Running';
+  } else {
+    el.className = 'status-badge status-stop';
+    el.textContent = '⏸️ Stopped';
   }
-  const waitingMsg = document.getElementById("waitingMessage");
-  waitingMsg.style.display = "none";
-  const retryEl = document.getElementById("retryCount");
-  retryEl.style.display = "none";
+  $('blockDisplay').textContent = `Block: ${currentBlock}`;
 }
 
-// ===== FETCH BLOCK DATA WITH CACHE CHECK =====
-async function fetchNextLiveBlock() {
-  const maxHistory = parseInt(document.getElementById("count").value) || 300;
-  const currentBlock = currentTrackingBlock;
-  
-  if (processedBlocks.has(currentBlock)) {
-    console.log(`⏭️ Block ${currentBlock} already processed, skipping...`);
-    currentTrackingBlock += 20;
-    document.getElementById("startBlock").value = currentTrackingBlock;
-    saveData();
-    return;
-  }
-  
-  showWaitingMessage();
-  
+// ============================================
+//  FETCH BLOCK
+// ============================================
+async function fetchBlock(blockNum) {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
-    const response = await fetch("https://api.trongrid.io/wallet/getblockbynum", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ num: currentBlock }),
-      signal: controller.signal
+    const res = await fetch('https://api.trongrid.io/wallet/getblockbynum', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ num: blockNum })
     });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    
-    if (data.blockID) {
-      const analysis = analyzeHashData(data.blockID);
-      
-      processedBlocks.add(currentBlock);
-      
-      trackedResults.push({
-        blockNum: currentBlock,
-        blockHash: data.blockID,
-        appResult: analysis.result,
-        colorClass: analysis.colorClass,
-        digit: analysis.digit,
-        betPrediction: "Waiting"
-      });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.blockID) throw new Error('No blockID');
+    return data;
+  } catch(e) {
+    throw e;
+  }
+}
 
-      if (trackedResults.length > maxHistory) {
-        const removed = trackedResults.shift();
-        if (removed) {
-          processedBlocks.delete(removed.blockNum);
-        }
-      }
+async function processNextBlock() {
+  if (processed.has(currentBlock)) {
+    currentBlock += 20;
+    $('startBlock').value = currentBlock;
+    saveState();
+    return;
+  }
 
-      try {
-        recalculateAllPredictions();
-        updateTrendBoard();
-        updateTableDisplay();
-        updatePredictionDisplay();
-        updateStats();
-        updateStrategyIndicator();
-      } catch (displayError) {
-        console.error("Display update error (data was still saved):", displayError);
-      }
+  try {
+    const data = await fetchBlock(currentBlock);
+    const analysis = analyzeHash(data.blockID);
 
-      document.getElementById("currentBlockDisplay").innerText = `Block: ${currentBlock}`;
-      document.getElementById("lastUpdateTime").innerText = `Last update: ${new Date().toLocaleTimeString()}`;
-      
-      const startBlock = trackedResults.length > 0 ? trackedResults[0].blockNum : currentBlock;
-      document.getElementById("blockInfo").innerText = `Started from: ${startBlock} | Current: ${currentBlock}`;
-      
-      currentTrackingBlock += 20;
-      document.getElementById("startBlock").value = currentTrackingBlock;
-      saveData();
-      errorCount = 0;
-      fetchAttempts = 0;
-      
-      hideWaitingMessage();
-      
-      const statusEl = document.getElementById("liveStatus");
-      statusEl.className = "status-running";
-      statusEl.innerText = "▶️ Status: Running";
-      
-      document.getElementById("warningBox").classList.remove("show");
-      
-      console.log(`✅ Block ${currentBlock} processed successfully`);
-    } else {
-      throw new Error("No blockID in response");
+    const pred = getPrediction();
+
+    // Store
+    tracked.push({
+      block: currentBlock,
+      hash: data.blockID,
+      result: analysis.result,
+      digit: analysis.digit,
+      pred: pred
+    });
+
+    // Update miss count
+    if (CATS.includes(analysis.result) && pred !== 'Waiting') {
+      updateMissCount(analysis.result, pred);
     }
-  } catch (error) {
-    console.error("Fetch error:", error);
-    errorCount++;
+
+    processed.add(currentBlock);
+
+    // Limit
+    const maxCount = getMaxCount();
+    while (tracked.length > maxCount) {
+      const removed = tracked.shift();
+      if (removed) processed.delete(removed.block);
+    }
+
+    currentBlock += 20;
+    $('startBlock').value = currentBlock;
+
+    renderAll();
+
+  } catch(e) {
+    console.error('Fetch error:', e);
     fetchAttempts++;
-    
-    const waitingMsg = document.getElementById("waitingMessage");
-    waitingMsg.style.display = "block";
-    waitingMsg.innerHTML = `⏳ Internet ပြန်လည်ချိတ်ဆက်နေပါသည်... (${fetchAttempts}) <span class='loading-dots'></span><br><span style="color:#f87171; font-size:12px;">Error: ${error.message || error}</span>`;
-    
-    const retryEl = document.getElementById("retryCount");
-    retryEl.style.display = "block";
-    retryEl.innerText = `ပြန်လည်ကြိုးစားမှု: ${fetchAttempts} (၃ စက္ကန့်တစ်ခါ)`;
-    
-    if (fetchAttempts < 10) {
-      try {
-        const altResponse = await fetch("https://api.trongrid.io/wallet/getblockbynum?nocache=" + Date.now(), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ num: currentBlock })
-        });
-        if (altResponse.ok) {
-          const altData = await altResponse.json();
-          if (altData.blockID) {
-            const analysis = analyzeHashData(altData.blockID);
-            processedBlocks.add(currentBlock);
-            trackedResults.push({
-              blockNum: currentBlock,
-              blockHash: altData.blockID,
-              appResult: analysis.result,
-              colorClass: analysis.colorClass,
-              digit: analysis.digit,
-              betPrediction: "Waiting"
-            });
-            if (trackedResults.length > maxHistory) {
-              const removed = trackedResults.shift();
-              if (removed) {
-                processedBlocks.delete(removed.blockNum);
-              }
-            }
-            try {
-              recalculateAllPredictions();
-              updateTrendBoard();
-              updateTableDisplay();
-              updatePredictionDisplay();
-              updateStats();
-              updateStrategyIndicator();
-            } catch (displayError) {
-              console.error("Display update error (data was still saved):", displayError);
-            }
-            currentTrackingBlock += 20;
-            document.getElementById("startBlock").value = currentTrackingBlock;
-            document.getElementById("currentBlockDisplay").innerText = `Block: ${currentBlock}`;
-            document.getElementById("lastUpdateTime").innerText = `Last update: ${new Date().toLocaleTimeString()}`;
-            const startBlock = trackedResults.length > 0 ? trackedResults[0].blockNum : currentBlock;
-            document.getElementById("blockInfo").innerText = `Started from: ${startBlock} | Current: ${currentBlock}`;
-            saveData();
-            errorCount = 0;
-            fetchAttempts = 0;
-            document.getElementById("warningBox").classList.remove("show");
-            hideWaitingMessage();
-            console.log(`✅ Block ${currentBlock} processed successfully (alt)`);
-          }
-        }
-      } catch (altError) {
-        console.log("Alternative fetch failed:", altError);
-      }
-    }
+    // Show waiting state
+    $('statusBadge').className = 'status-badge status-wait';
+    $('statusBadge').textContent = `⏳ Connecting... (${fetchAttempts})`;
   }
 }
 
-// ===== CONTROL FUNCTIONS =====
-function startLiveTracking() {
-  const inputBlock = document.getElementById("startBlock").value.trim();
-  let newBlock;
-  if (inputBlock && !isNaN(inputBlock) && parseInt(inputBlock) > 0) {
-    newBlock = parseInt(inputBlock);
-  } else {
-    newBlock = 84424346;
-    document.getElementById("startBlock").value = newBlock;
-  }
-
-  currentTrackingBlock = newBlock;
-  userRequestedBlock = newBlock;
-  processedBlocks.delete(newBlock);
-  document.getElementById("blockInfo").innerText = `Started from: ${newBlock} | Current: ${newBlock}`;
-
-  document.getElementById("warningBox").classList.remove("show");
-
-  if (liveIntervalId) {
-    clearInterval(liveIntervalId);
-    liveIntervalId = null;
-  }
-
+// ============================================
+//  CONTROLS
+// ============================================
+function startStream() {
+  if (isRunning) return;
+  const block = getStartBlock();
+  currentBlock = block;
+  $('startBlock').value = block;
   isRunning = true;
-  errorCount = 0;
   fetchAttempts = 0;
+  renderStatus();
 
-  showWaitingMessage();
-  saveData();
+  // Run immediately then interval
+  processNextBlock();
+  intervalId = setInterval(processNextBlock, 3000);
 
-  liveIntervalId = setInterval(fetchNextLiveBlock, retryInterval);
-  fetchNextLiveBlock();
-
-  const statusEl = document.getElementById("liveStatus");
-  statusEl.className = "status-waiting";
-  statusEl.innerText = "⏳ Status: ပြန်လည်ချိတ်ဆက်နေပါသည်...";
-
-  document.getElementById("btnStart").style.background = "#15803d";
-  document.getElementById("btnStart").innerText = "⏳ Running...";
+  $('btnStart').textContent = '⏳ Running...';
+  $('btnStart').style.background = '#15803d';
 }
 
-function stopLiveTracking() {
+function stopStream() {
   isRunning = false;
-  clearInterval(liveIntervalId);
-  liveIntervalId = null;
-  errorCount = 0;
-  fetchAttempts = 0;
-  
-  const statusEl = document.getElementById("liveStatus");
-  statusEl.className = "status-suspended";
-  statusEl.innerText = "⏸️ Status: Suspended";
-  
-  const waitingMsg = document.getElementById("waitingMessage");
-  waitingMsg.style.display = "none";
-  const retryEl = document.getElementById("retryCount");
-  retryEl.style.display = "none";
-  
-  document.getElementById("btnStart").style.background = "#22c55e";
-  document.getElementById("btnStart").innerText = "▶️ Start Stream";
-  
-  saveData();
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+  renderStatus();
+  $('btnStart').textContent = '▶️ Start';
+  $('btnStart').style.background = '#22c55e';
+  saveState();
 }
 
-function forceRefresh() {
+function refreshData() {
   if (isRunning) {
-    fetchAttempts = 0;
-    errorCount = 0;
-    fetchNextLiveBlock();
-    document.getElementById("lastUpdateTime").innerText = `Manual refresh: ${new Date().toLocaleTimeString()}`;
-    console.log("🔄 Refresh clicked - keeping cached data");
+    processNextBlock();
   } else {
-    loadData();
-    document.getElementById("lastUpdateTime").innerText = `Loaded from cache: ${new Date().toLocaleTimeString()}`;
-    console.log("🔄 Refresh clicked - loaded from cache");
+    renderAll();
   }
 }
 
-function clearStoredData() {
-  if (confirm("Clear all cached data? This will start fresh from your current block.")) {
-    const inputBlock = document.getElementById("startBlock").value.trim();
-    let startBlock = 84424346;
-    if (inputBlock && !isNaN(inputBlock) && parseInt(inputBlock) > 0) {
-      startBlock = parseInt(inputBlock);
-    }
-    
-    localStorage.clear();
-    trackedResults = [];
-    nextCalculatedBet = "Waiting";
-    processedBlocks = new Set();
-    currentTrackingBlock = startBlock;
-    userRequestedBlock = startBlock;
-    hasCachedData = false;
-    strategyMissCounter = 0;
-    strategyRotation = 0;
-    document.getElementById("startBlock").value = startBlock;
-    document.getElementById("blockInfo").innerText = `Started from: ${startBlock} | Current: ${startBlock}`;
-    document.getElementById("count0").innerText = "0";
-    document.getElementById("count1").innerText = "0";
-    document.getElementById("count2").innerText = "0";
-    document.getElementById("count3").innerText = "0";
-    document.getElementById("totalCount").innerText = "0";
-    document.getElementById("lastResult").innerText = "--";
-    document.getElementById("roadMapTable").innerHTML = "";
-    document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
-    document.getElementById("currentBlockDisplay").innerText = `Block: ${startBlock}`;
-    document.getElementById("totalRecordsDisplay").innerText = "Total: 0";
-    document.getElementById("cacheStatus").innerText = "Empty";
-    document.getElementById("cacheBadge").style.display = "none";
-    document.getElementById("warningBox").classList.remove("show");
-    document.getElementById("waitingMessage").style.display = "none";
-    document.getElementById("retryCount").style.display = "none";
-    updatePredictionDisplay();
-    updateStrategyIndicator();
-    stopLiveTracking();
-    
-    saveData();
-    location.reload();
+function deleteRecord(blockNum) {
+  if (!confirm(`Delete block ${blockNum}?`)) return;
+  const idx = tracked.findIndex(r => r.block === blockNum);
+  if (idx === -1) return;
+  tracked.splice(idx, 1);
+  processed.delete(blockNum);
+  // Recalculate predictions
+  renderAll();
+  saveState();
+}
+
+function clearAll() {
+  if (!confirm('Clear all data?')) return;
+  tracked = [];
+  processed = new Set();
+  strategyIndex = 0;
+  missCount = 0;
+  currentBlock = getStartBlock();
+  $('startBlock').value = currentBlock;
+  renderAll();
+  saveState();
+  if (isRunning) {
+    stopStream();
+    startStream();
   }
 }
 
-// ===== KEYBOARD SHORTCUTS =====
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.getElementById('accessKeyInput') === document.activeElement) {
-    verifyKey();
-  }
+// ============================================
+//  KEYBOARD SHORTCUTS
+// ============================================
+document.addEventListener('keydown', (e) => {
   if (e.key === 'r' || e.key === 'R') {
-    if (!e.ctrlKey && !e.metaKey) {
-      forceRefresh();
-    }
+    if (!e.ctrlKey && !e.metaKey) refreshData();
+  }
+  if (e.key === 'Enter' && $('accessKey') === document.activeElement) {
+    login();
   }
 });
 
-console.log("✅ Premium Lottery Analysis Tool v55 Loaded Successfully");
-console.log("📊 0→0, 1/2/3→1, 4/5/6→2, 7/8/9→3");
-console.log("🔄 Adaptive strategy: 3 consecutive misses → rotate (Freq→Trend→Anti→Balanced)");
-console.log(`🔄 Auto-retry every ${retryInterval/1000} seconds`);
-console.log(`📈 Tracked Results: ${trackedResults.length}`);
-console.log("📋 Showing ALL records without limit");
-console.log("💾 Data is cached - Refresh won't clear data");
-console.log("📦 Processed blocks:", processedBlocks.size);
-console.log("⌨️ Press 'R' key to force refresh (keeps cache)");
+console.log('✅ Adaptive Strategy v2 loaded');
+console.log('🔄 3 misses → rotate strategy (Freq→Trend→Anti→Balanced)');
 </script>
+
 </body>
 </html>
