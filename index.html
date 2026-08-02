@@ -351,15 +351,15 @@ const NO_MATCH = "❓"; // shown when no formula can find a confident pick
 // a losing streak.
 const FORMULA_NAMES = ["Sequence Cascade"];
 let currentFormulaIndex = 0; // always 0 — kept only for display compatibility
-let nextUsedLength = null;   // which pattern length (2/3/4/5) produced the upcoming prediction
+let nextUsedLength = null;   // which pattern length (5/4/3/2) produced the upcoming prediction
 
 function recalculateAllPredictions() {
   // The whole history is replayed from scratch every time so the engine
   // always ends up in a state consistent with the full trackedResults
   // array — including after a row is deleted. No formula-switching:
-  // the 2→3→4→5 cascade keeps being used no matter how long the losing
+  // the 5→4→3→2 cascade keeps being used no matter how long the losing
   // streak runs.
-  const SEQ_LENGTHS = [2, 3, 4, 5];
+  const SEQ_LENGTHS = [5, 4, 3, 2];
   const valid = []; // chronological category strings seen so far
 
   // --- Raw-digit pattern matching ---
@@ -371,11 +371,11 @@ function recalculateAllPredictions() {
   // At each length we check whether that exact digit-pattern occurred
   // earlier in the data. If it did, we look at what digit came right after
   // it (aggregated across every earlier time it occurred) and predict the
-  // digit that followed most often. We try length 2 first (most likely to
-  // have prior data, since there are only 100 possible 2-digit patterns);
-  // if that result is tied between two digits (not decisive), or the
-  // pattern was never seen, we escalate to length 3, then 4, then 5 —
-  // hoping the longer, more specific pattern breaks the tie.
+  // digit that followed the LEAST often (not the most). We try length 5
+  // first (the most specific pattern); if that result is tied between two
+  // digits (not decisive), or the pattern was never seen, we drop down to
+  // length 4, then 3, then 2 — hoping a shorter, more common pattern has
+  // enough data to break the tie.
   const DIGITS = ["0","1","2","3","4","5","6","7","8","9"];
   const makeDigitCounter = () => { const o = {}; DIGITS.forEach(d => o[d] = 0); return o; };
   const digitTransitionMaps = { 5: {}, 4: {}, 3: {}, 2: {} };
@@ -395,22 +395,29 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  // --- Sequence Cascade (raw-digit pattern match, 2 → 3 → 4 → 5) ---
+  // --- Sequence Cascade (raw-digit pattern match, 5 → 4 → 3 → 2) ---
   // Returns { category, length } where length tells you which pattern size
-  // (2, 3, 4, or 5) actually produced the pick, or { category: NO_MATCH, length: null }
+  // (5, 4, 3, or 2) actually produced the pick, or { category: NO_MATCH, length: null }
   // if none of the four lengths found a decisive pattern.
+  //
+  // Prediction rule: among the digits that actually followed this pattern
+  // before, pick the LEAST-frequent one (the digit that followed the
+  // fewest times) — not the most-frequent one. If the two least-frequent
+  // digits are tied, that's not decisive, so drop down to a shorter pattern.
   function predictSequenceCascade() {
     for (const len of SEQ_LENGTHS) {
       const key = buildDigitKey(len);
       if (key === null) continue; // not enough history yet for this length
       const stats = digitTransitionMaps[len][key];
-      const total = stats ? DIGITS.reduce((s, d) => s + stats[d], 0) : 0;
-      if (total === 0) continue; // this exact pattern never occurred before — try the next longer one
-      const ranked = DIGITS.slice().sort((a, b) => stats[b] - stats[a]);
-      if (stats[ranked[0]] > stats[ranked[1]]) return { category: digitToCategory(ranked[0]), length: len };
-      // Tied at this level — not decisive, escalate to a longer, more specific sequence.
+      const seen = DIGITS.filter(d => stats && stats[d] > 0); // digits that actually followed this pattern at least once
+      if (seen.length === 0) continue; // this exact pattern never occurred before — try a shorter one
+      const rankedAsc = seen.sort((a, b) => stats[a] - stats[b]); // ascending: least-frequent first
+      if (rankedAsc.length === 1 || stats[rankedAsc[0]] < stats[rankedAsc[1]]) {
+        return { category: digitToCategory(rankedAsc[0]), length: len };
+      }
+      // Tied for least-frequent at this level — not decisive, try a shorter sequence.
     }
-    // Not found (or always tied) at length 2, 3, 4, AND 5 — no basis to guess.
+    // Not found (or always tied) at length 5, 4, 3, AND 2 — no basis to guess.
     return { category: NO_MATCH, length: null };
   }
 
