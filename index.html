@@ -327,101 +327,122 @@ function analyzeHashData(blockHash) {
 const CATEGORIES = ["0", "1", "2", "3"];
 const NO_MATCH = "❓"; // shown when neither a triple nor a pair match was ever seen before
 
-function getPredictionFromHistory(historyArray) {
-  const valid = historyArray.filter(r => CATEGORIES.includes(r.appResult));
-  if (valid.length < 10) return "Waiting";
-
+function recalculateAllPredictions() {
   // Three levels of historical statistics are used, from most specific to
-  // most general:
-  //   5-in-a-row (quintuple) → 4-in-a-row (quadruple) → 3-in-a-row (triple)
-  // For each level, we ask: "has this EXACT sequence of the last N results
-  // ever happened before in the collected history, and if so, what came
-  // right after it?" We check the longest sequence (5) first. If that exact
-  // 5-sequence never occurred before, we drop down to 4, then 3.
-  // If NONE of the three ever occurred before, there is nothing real to base
-  // a guess on, so we return NO_MATCH instead of guessing blindly.
+  // most general: 5-in-a-row (quintuple) → 4-in-a-row (quadruple) →
+  // 3-in-a-row (triple). We check the longest sequence first; if that exact
+  // sequence never occurred before (or is tied), we drop down to the next.
+  //
+  // ON TOP OF THAT, each level's recent accuracy is tracked. If the level
+  // that was actually used to make a prediction turns out WRONG twice in a
+  // row, that level is temporarily skipped for exactly the next prediction
+  // round (the cascade falls through to the other two levels instead). Once
+  // that one round has passed, the level is eligible again with a clean
+  // slate. If, during a "banned" round, none of the remaining levels find a
+  // confident match either, no prediction is made (NO_MATCH) rather than
+  // guessing.
   const SEQ_LENGTHS = [5, 4, 3];
   const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
+  const transitionMaps = { 5: {}, 4: {}, 3: {} };
+  const missStreak = { 5: 0, 4: 0, 3: 0 };
+  const banned = { 5: false, 4: false, 3: false };
+  const valid = []; // chronological category strings seen so far
+  const predictedSoFar = []; // recent real (non-Waiting/NO_MATCH) picks, for anti-repeat
 
-  // transitionMaps[len] = { "cat,cat,...(len items)": {"0":n,"1":n,"2":n,"3":n} }
-  const transitionMaps = {};
-  SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
+  function buildKey(len) {
+    if (valid.length < len) return null;
+    const parts = [];
+    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
+    return parts.join(",");
+  }
 
-  for (let i = 0; i < valid.length; i++) {
-    const cur = valid[i].appResult;
-    SEQ_LENGTHS.forEach(len => {
-      if (i >= len) {
-        const keyParts = [];
-        for (let k = len; k >= 1; k--) keyParts.push(valid[i - k].appResult);
-        const key = keyParts.join(",");
-        const map = transitionMaps[len];
-        if (!map[key]) map[key] = makeCounter();
-        map[key][cur]++;
+  function predictNext() {
+    for (const len of SEQ_LENGTHS) {
+      if (banned[len]) continue;
+      const key = buildKey(len);
+      if (key === null) continue;
+      const stats = transitionMaps[len][key];
+      const total = stats ? CATEGORIES.reduce((s, c) => s + stats[c], 0) : 0;
+      if (total === 0) continue;
+      const ranked = CATEGORIES.slice().sort((a, b) => stats[b] - stats[a]);
+      if (stats[ranked[0]] > stats[ranked[1]]) {
+        return { pick: ranked[0], level: len, ranked };
       }
-    });
-  }
-
-  // Try each sequence length, longest first, and use the first one whose
-  // exact current sequence has actually been seen before (total > 0) AND
-  // whose top category has a CLEAR lead (not tied with the runner-up).
-  // A tie (e.g. "0" and "3" both happened once after the same sequence)
-  // means the data doesn't actually favor one category over another, so we
-  // must NOT just default to picking one — we cascade down to a shorter,
-  // possibly more decisive sequence instead.
-  let source = null;
-  for (const len of SEQ_LENGTHS) {
-    if (valid.length < len) continue;
-    const keyParts = [];
-    for (let k = len; k >= 1; k--) keyParts.push(valid[valid.length - k].appResult);
-    const currentKey = keyParts.join(",");
-    const stats = transitionMaps[len][currentKey];
-    const total = stats ? CATEGORIES.reduce((sum, c) => sum + stats[c], 0) : 0;
-    if (total === 0) continue;
-
-    const ranked = CATEGORIES.slice().sort((a, b) => stats[b] - stats[a]);
-    const topCount = stats[ranked[0]];
-    const secondCount = stats[ranked[1]];
-    if (topCount > secondCount) {
-      // Clear leader at this level — use it.
-      source = stats;
-      break;
+      // Tied at this level — not decisive, try a shorter sequence.
     }
-    // Tied at this level — don't guess here, try a shorter sequence.
+    return { pick: NO_MATCH, level: null, ranked: null };
   }
 
-  // Neither the last 5, 4, nor 3 results ever occurred before as an
-  // exact sequence with a clear leading outcome — no real basis for a
-  // confident prediction.
-  if (!source) return NO_MATCH;
+  function runPredictionRound() {
+    const bannedThisRound = SEQ_LENGTHS.filter(l => banned[l]);
+    let { pick, level, ranked } = predictNext();
+    // The ban only ever lasts exactly one prediction round.
+    bannedThisRound.forEach(l => { banned[l] = false; });
 
-  const rankedCategories = CATEGORIES.slice().sort((a, b) => source[b] - source[a]);
-  let pick = rankedCategories[0];
-
-  // Anti-repeat safety net: if the same category was predicted for the last
-  // 2 rounds already, don't pick it a 3rd time in a row — move to the
-  // next-best one instead.
-  const lastTwoPredictions = valid.slice(-2)
-    .map(r => r.betPrediction)
-    .filter(p => p && p !== "Waiting" && p !== NO_MATCH);
-  if (lastTwoPredictions.length === 2 &&
-      lastTwoPredictions[0] === lastTwoPredictions[1] &&
-      lastTwoPredictions[0] === pick) {
-    pick = rankedCategories[1];
+    if (level !== null) {
+      // Anti-repeat safety net: don't pick the same category a 3rd round in a row.
+      const lastTwo = predictedSoFar.slice(-2);
+      if (lastTwo.length === 2 && lastTwo[0] === lastTwo[1] && lastTwo[0] === pick) {
+        pick = ranked[1];
+      }
+    }
+    return { pick, level };
   }
 
-  return pick;
-}
-
-function recalculateAllPredictions() {
   for (let i = 0; i < trackedResults.length; i++) {
-    if (i === 0) {
-      trackedResults[i].betPrediction = "Waiting";
+    const row = trackedResults[i];
+    let betPrediction, usedLevel = null;
+
+    if (valid.length < 10) {
+      betPrediction = "Waiting";
     } else {
-      const history = trackedResults.slice(0, i);
-      trackedResults[i].betPrediction = getPredictionFromHistory(history);
+      const result = runPredictionRound();
+      betPrediction = result.pick;
+      usedLevel = result.level;
     }
+
+    row.betPrediction = betPrediction;
+    row.predictionLevel = usedLevel;
+    if (usedLevel !== null) predictedSoFar.push(betPrediction);
+
+    // ----- Feed this row's ACTUAL result into the running state -----
+    const cur = row.appResult;
+    const curIsValid = CATEGORIES.includes(cur);
+
+    if (curIsValid) {
+      SEQ_LENGTHS.forEach(len => {
+        const key = buildKey(len);
+        if (key !== null) {
+          const map = transitionMaps[len];
+          if (!map[key]) map[key] = makeCounter();
+          map[key][cur]++;
+        }
+      });
+    }
+
+    // Update the used level's miss-streak based on whether it was right.
+    if (usedLevel !== null && curIsValid) {
+      if (betPrediction === cur) {
+        missStreak[usedLevel] = 0;
+      } else {
+        missStreak[usedLevel]++;
+        if (missStreak[usedLevel] >= 2) {
+          banned[usedLevel] = true;  // skip this level for the very next round
+          missStreak[usedLevel] = 0; // fresh start once it's eligible again
+        }
+      }
+    }
+
+    if (curIsValid) valid.push(cur);
   }
-  nextCalculatedBet = getPredictionFromHistory(trackedResults);
+
+  // ----- Predict the upcoming (not-yet-seen) result using the final state -----
+  if (valid.length < 10) {
+    nextCalculatedBet = "Waiting";
+  } else {
+    nextCalculatedBet = runPredictionRound().pick;
+  }
+
   saveData();
 }
 
