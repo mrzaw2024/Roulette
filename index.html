@@ -326,42 +326,63 @@ const CATEGORIES = ["0", "1", "2", "3"];
 
 function getPredictionFromHistory(historyArray) {
   const valid = historyArray.filter(r => CATEGORIES.includes(r.appResult));
-  if (valid.length < 8) return "Waiting";
+  if (valid.length < 9) return "Waiting";
 
-  // Build a transition table from ALL collected history: for every category,
-  // count what category tended to come right after it (e.g. "after a 0,
-  // what usually showed up next?"). This is a first-order Markov analysis.
-  const transitions = {
-    "0": { "0": 0, "1": 0, "2": 0, "3": 0 },
-    "1": { "0": 0, "1": 0, "2": 0, "3": 0 },
-    "2": { "0": 0, "1": 0, "2": 0, "3": 0 },
-    "3": { "0": 0, "1": 0, "2": 0, "3": 0 }
+  // Build three levels of historical statistics from ALL collected data:
+  // 1) pairTransitions: after seeing 2 specific categories in a row (e.g. "0,2"),
+  //    what category tended to come right after that exact pair?
+  // 2) singleTransitions: after seeing 1 specific category, what came next?
+  // 3) overallCounts: overall frequency of each category, as a last-resort fallback.
+  const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
+  const pairTransitions = {};
+  const singleTransitions = {
+    "0": makeCounter(), "1": makeCounter(), "2": makeCounter(), "3": makeCounter()
   };
-  const overallCounts = { "0": 0, "1": 0, "2": 0, "3": 0 };
+  const overallCounts = makeCounter();
 
   for (let i = 0; i < valid.length; i++) {
-    overallCounts[valid[i].appResult]++;
+    const cur = valid[i].appResult;
+    overallCounts[cur]++;
     if (i > 0) {
       const prev = valid[i - 1].appResult;
-      const cur = valid[i].appResult;
-      transitions[prev][cur]++;
+      singleTransitions[prev][cur]++;
+    }
+    if (i > 1) {
+      const prev2 = valid[i - 2].appResult;
+      const prev1 = valid[i - 1].appResult;
+      const pairKey = prev2 + "," + prev1;
+      if (!pairTransitions[pairKey]) pairTransitions[pairKey] = makeCounter();
+      pairTransitions[pairKey][cur]++;
     }
   }
 
   const lastCategory = valid[valid.length - 1].appResult;
-  const followUps = transitions[lastCategory];
-  const followUpTotal = CATEGORIES.reduce((sum, c) => sum + followUps[c], 0);
+  const secondLastCategory = valid[valid.length - 2].appResult;
+  const currentPairKey = secondLastCategory + "," + lastCategory;
 
-  // Rank categories by how often they followed the last category historically.
-  // If the last category hasn't occurred often enough to have follow-up data,
-  // fall back to overall frequency across all history.
-  const source = followUpTotal >= 3 ? followUps : overallCounts;
+  const pairStats = pairTransitions[currentPairKey];
+  const pairTotal = pairStats ? CATEGORIES.reduce((sum, c) => sum + pairStats[c], 0) : 0;
+
+  const singleStats = singleTransitions[lastCategory];
+  const singleTotal = CATEGORIES.reduce((sum, c) => sum + singleStats[c], 0);
+
+  // Prefer the most specific statistic that has enough samples to be meaningful,
+  // falling back to a broader one when the exact pair hasn't repeated enough yet.
+  let source;
+  if (pairTotal >= 3) {
+    source = pairStats;
+  } else if (singleTotal >= 3) {
+    source = singleStats;
+  } else {
+    source = overallCounts;
+  }
+
   const rankedCategories = CATEGORIES.slice().sort((a, b) => source[b] - source[a]);
   let pick = rankedCategories[0];
 
   // Anti-repeat safety net: if the same category was predicted for the last
-  // 2 rounds already, don't pick it a 3rd time in a row even if it's still
-  // technically the top transition — move to the next-best one instead.
+  // 2 rounds already, don't pick it a 3rd time in a row — move to the
+  // next-best one instead.
   const lastTwoPredictions = valid.slice(-2)
     .map(r => r.betPrediction)
     .filter(p => p && p !== "Waiting");
@@ -394,10 +415,10 @@ function updatePredictionDisplay() {
   const waitingMsg = document.getElementById("waitingMessage");
   const retryEl = document.getElementById("retryCount");
   
-  if (nextCalculatedBet === "Waiting" || trackedResults.length < 8) {
+  if (nextCalculatedBet === "Waiting" || trackedResults.length < 9) {
     predBox.className = "pred-badge waiting";
     predBox.innerText = "⏳ Internet ပြန်လည်ချိတ်ဆက်နေပါသည်...";
-    detailEl.innerText = `ဒေတာ ${trackedResults.length}/8 ရှိပါသည်`;
+    detailEl.innerText = `ဒေတာ ${trackedResults.length}/9 ရှိပါသည်`;
     waitingMsg.style.display = "block";
     retryEl.style.display = "block";
   } else {
