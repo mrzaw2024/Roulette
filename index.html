@@ -140,7 +140,7 @@
         <table class="road-map-table" id="roadMapTable"></table>
       </div>
       
-      <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (အကန့်အသတ်မရှိ)</h3>
+      <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး 300)</h3>
       <div class="table-wrapper" id="tableWrapper">
         <div id="output"></div>
       </div>
@@ -234,6 +234,10 @@ function loadData() {
       }
       
       if (trackedResults.length > 0) {
+        // Re-run every row through the CURRENT formula right away — otherwise
+        // the table would keep showing whatever predictions were saved from
+        // an older formula until the stream was started again.
+        recalculateAllPredictions();
         updateTrendBoard();
         updateTableDisplay();
         updatePredictionDisplay();
@@ -247,11 +251,11 @@ function loadData() {
       }
     }
     
-    const storedPred = localStorage.getItem("savedPrediction");
-    if (storedPred) {
-      nextCalculatedBet = storedPred;
-      updatePredictionDisplay();
-    }
+    // NOTE: we intentionally do NOT restore nextCalculatedBet from
+    // localStorage here — recalculateAllPredictions() above already
+    // computed it fresh from the current formula, and overwriting it with
+    // an old saved value would bring back stale predictions from whatever
+    // formula was active last time the data was saved.
     
     const storedLastBlock = localStorage.getItem("savedLastBlock");
     if (storedLastBlock && !inputBlock) {
@@ -688,11 +692,13 @@ function updateTableDisplay() {
     return;
   }
   
-  // Show ALL results without limit
+  // Show only the most recent 300 results
+  const HISTORY_DISPLAY_LIMIT = 300;
+  const displayResults = trackedResults.slice(-HISTORY_DISPLAY_LIMIT);
   let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   // Display from newest to oldest (reverse order)
-  for (let i = trackedResults.length - 1; i >= 0; i--) {
-    let row = trackedResults[i];
+  for (let i = displayResults.length - 1; i >= 0; i--) {
+    let row = displayResults[i];
     if (!row) continue;
     let win = row.betPrediction === row.appResult;
     let cls = (row.betPrediction === "Waiting" || row.betPrediction === NO_MATCH) ? "" : (win ? "win-match" : "win-miss");
