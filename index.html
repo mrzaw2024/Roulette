@@ -342,31 +342,25 @@ function analyzeHashData(blockHash) {
 const CATEGORIES = ["0", "1", "2", "3"];
 const NO_MATCH = "❓"; // shown when no formula can find a confident pick
 
-// Three separate prediction "formulas". Only one is active at a time.
-// Formula 0: Sequence cascade (5-in-a-row → 4-in-a-row → 3-in-a-row transition stats)
-// Formula 1: Recent frequency (most common category in the last 20 results)
-// Formula 2: Cold streak (category that has gone longest without appearing)
-const FORMULA_NAMES = ["Sequence Cascade", "Recent Frequency", "Cold Streak"];
-let currentFormulaIndex = 0; // which formula is currently active (persists across recalcs)
+// Single prediction method: Sequence Cascade only.
+// It always tries the 5-digit pattern first, falls back to 4-digit, then
+// 3-digit, if the longer pattern was never seen before. This is the ONLY
+// method used — there is no switching to any other approach, even during
+// a losing streak.
+const FORMULA_NAMES = ["Sequence Cascade"];
+let currentFormulaIndex = 0; // always 0 — kept only for display compatibility
+let nextUsedLength = null;   // which pattern length (5/4/3) produced the upcoming prediction
 
 function recalculateAllPredictions() {
   // The whole history is replayed from scratch every time so the engine
-  // (and which formula is "active") always ends up in a state consistent
-  // with the full trackedResults array — including after a row is deleted.
-  //
-  // Formula-switching rule: whichever formula is currently active keeps
-  // making predictions. Each time its prediction is WRONG, a miss counter
-  // for that round increments. As soon as it has been wrong on 5
-  // predictions IN A ROW, the engine switches to the next formula (cycling
-  // 0 → 1 → 2 → 0 → ...) and that new formula starts fresh with its own
-  // 5-strikes counter. A correct prediction resets the current miss count
-  // back to 0 without switching anything.
+  // always ends up in a state consistent with the full trackedResults
+  // array — including after a row is deleted. No formula-switching:
+  // the 5→4→3 cascade keeps being used no matter how long the losing
+  // streak runs.
   const SEQ_LENGTHS = [5, 4, 3];
-  const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
   const valid = []; // chronological category strings seen so far
-  const FREQ_WINDOW = 20; // how many recent results "Recent Frequency" looks at
 
-  // --- Raw-digit pattern matching (used by Formula 0) ---
+  // --- Raw-digit pattern matching ---
   // This works on the actual last-digit-of-hash (0-9), NOT the 0-3 bucket,
   // exactly like: data = 0,1,8,3,6,2,5,1,8,3,5,1,7
   //   last 3 digits (newest→oldest): 7,1,5  → look this 3-length pattern up
@@ -404,10 +398,10 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  let formulaIndex = 0; // local replay copy of the active formula
-  let missStreak = 0;   // consecutive misses of the CURRENTLY active formula
-
-  // --- Formula 0: Sequence Cascade (raw-digit pattern match, 5 → 4 → 3) ---
+  // --- Sequence Cascade (raw-digit pattern match, 5 → 4 → 3) ---
+  // Returns { category, length } where length tells you which pattern size
+  // (5, 4, or 3) actually produced the pick, or { category: NO_MATCH, length: null }
+  // if none of the three lengths found a decisive pattern.
   function predictSequenceCascade() {
     for (const len of SEQ_LENGTHS) {
       const key = buildDigitKey(len);
@@ -416,71 +410,37 @@ function recalculateAllPredictions() {
       const total = stats ? DIGITS.reduce((s, d) => s + stats[d], 0) : 0;
       if (total === 0) continue; // this exact pattern never occurred before — try a shorter one
       const ranked = DIGITS.slice().sort((a, b) => stats[b] - stats[a]);
-      if (stats[ranked[0]] > stats[ranked[1]]) return digitToCategory(ranked[0]);
+      if (stats[ranked[0]] > stats[ranked[1]]) return { category: digitToCategory(ranked[0]), length: len };
       // Tied at this level — not decisive, try a shorter sequence.
     }
     // Not found (or always tied) at length 5, 4, AND 3 — no basis to guess.
-    return NO_MATCH;
-  }
-
-  // --- Formula 1: Recent Frequency ---
-  function predictRecentFrequency() {
-    if (valid.length === 0) return NO_MATCH;
-    const window = valid.slice(-FREQ_WINDOW);
-    const counts = makeCounter();
-    window.forEach(c => counts[c]++);
-    const ranked = CATEGORIES.slice().sort((a, b) => counts[b] - counts[a]);
-    if (counts[ranked[0]] > counts[ranked[1]]) return ranked[0];
-    return NO_MATCH; // tied, no clear frequency leader
-  }
-
-  // --- Formula 2: Cold Streak (category absent the longest) ---
-  function predictColdStreak() {
-    if (valid.length === 0) return NO_MATCH;
-    const lastSeenAgo = {};
-    CATEGORIES.forEach(c => lastSeenAgo[c] = null);
-    for (let k = valid.length - 1; k >= 0; k--) {
-      const c = valid[k];
-      if (lastSeenAgo[c] === null) lastSeenAgo[c] = (valid.length - 1 - k);
-    }
-    // Any category never seen at all is treated as "infinitely cold".
-    const ranked = CATEGORIES.slice().sort((a, b) => {
-      const av = lastSeenAgo[a] === null ? Infinity : lastSeenAgo[a];
-      const bv = lastSeenAgo[b] === null ? Infinity : lastSeenAgo[b];
-      return bv - av;
-    });
-    const topVal = lastSeenAgo[ranked[0]] === null ? Infinity : lastSeenAgo[ranked[0]];
-    const secondVal = lastSeenAgo[ranked[1]] === null ? Infinity : lastSeenAgo[ranked[1]];
-    if (topVal > secondVal) return ranked[0];
-    return NO_MATCH; // tied, no single coldest category
-  }
-
-  function predictWithFormula(idx) {
-    if (idx === 0) return predictSequenceCascade();
-    if (idx === 1) return predictRecentFrequency();
-    return predictColdStreak();
+    return { category: NO_MATCH, length: null };
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
     const row = trackedResults[i];
     let betPrediction;
+    let usedLength = null;
 
     if (valid.length < 10) {
       betPrediction = "Waiting";
     } else {
-      betPrediction = predictWithFormula(formulaIndex);
+      const pred = predictSequenceCascade();
+      betPrediction = pred.category;
+      usedLength = pred.length;
     }
 
     row.betPrediction = betPrediction;
-    row.formulaUsed = valid.length < 10 ? null : formulaIndex;
+    row.formulaUsed = valid.length < 10 ? null : 0; // always Sequence Cascade
+    row.formulaLength = usedLength; // 5, 4, 3, or null
 
     // ----- Feed this row's ACTUAL result into the running state -----
     const cur = row.appResult;
     const curIsValid = CATEGORIES.includes(cur);
     const curDigit = (typeof row.digit === "number") ? String(row.digit) : null;
 
-    // Record digit-pattern followers (for Formula 0) BEFORE pushing the
-    // current digit, so a pattern can never "match itself".
+    // Record digit-pattern followers BEFORE pushing the current digit, so a
+    // pattern can never "match itself".
     if (curDigit !== null) {
       SEQ_LENGTHS.forEach(len => {
         const key = buildDigitKey(len);
@@ -493,29 +453,18 @@ function recalculateAllPredictions() {
       validDigits.push(curDigit);
     }
 
-    // Only a real prediction (not "Waiting") counts toward the 5-strikes rule.
-    if (betPrediction !== "Waiting" && curIsValid) {
-      if (betPrediction === cur) {
-        missStreak = 0; // correct — stay on this formula, reset the streak
-      } else {
-        missStreak++;
-        if (missStreak >= 5) {
-          // 5 wrong predictions in a row on this formula: switch to the next one.
-          formulaIndex = (formulaIndex + 1) % FORMULA_NAMES.length;
-          missStreak = 0; // the new formula starts with a clean slate
-        }
-      }
-    }
-
     if (curIsValid) valid.push(cur);
   }
 
   // ----- Predict the upcoming (not-yet-seen) result using the final state -----
-  currentFormulaIndex = formulaIndex;
+  currentFormulaIndex = 0;
   if (valid.length < 10) {
     nextCalculatedBet = "Waiting";
+    nextUsedLength = null;
   } else {
-    nextCalculatedBet = predictWithFormula(formulaIndex);
+    const pred = predictSequenceCascade();
+    nextCalculatedBet = pred.category;
+    nextUsedLength = pred.length;
   }
 
   saveData();
@@ -553,7 +502,8 @@ function updatePredictionDisplay() {
     };
     predBox.style.background = catColors[nextCalculatedBet] || catColors["0"];
     predBox.innerText = `🔮 ${nextCalculatedBet}`;
-    detailEl.innerText = `"${nextCalculatedBet}" ထွက်ရန် ခန့်မှန်းထားသည် (${FORMULA_NAMES[currentFormulaIndex]})`;
+    const lenLabel = nextUsedLength ? `${nextUsedLength} လုံး Pattern` : FORMULA_NAMES[0];
+    detailEl.innerText = `"${nextCalculatedBet}" ထွက်ရန် ခန့်မှန်းထားသည် (${lenLabel})`;
   }
 }
 
@@ -737,7 +687,7 @@ function updateTableDisplay() {
   }
   
   // Show ALL results without limit
-  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
+  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Formula</th><th>Result</th><th>Category</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   // Display from newest to oldest (reverse order)
   for (let i = trackedResults.length - 1; i >= 0; i--) {
     let row = trackedResults[i];
@@ -745,12 +695,13 @@ function updateTableDisplay() {
     let win = row.betPrediction === row.appResult;
     let cls = (row.betPrediction === "Waiting" || row.betPrediction === NO_MATCH) ? "" : (win ? "win-match" : "win-miss");
     let betDisplay = row.betPrediction || "-";
+    let formulaDisplay = row.formulaLength ? `${row.formulaLength} လုံး` : "-";
     let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
     let blockDisplay = row.manual ? `📝 Manual #${Math.abs(row.blockNum)}` : row.blockNum;
     let catDisplay = CATEGORIES.includes(row.appResult)
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
-    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
+    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td>${formulaDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
   }
   document.getElementById("output").innerHTML = table + "</tbody></table>";
   
