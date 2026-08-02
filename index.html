@@ -129,7 +129,6 @@
 
       <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
       <div class="stats-counter">
-        <div>0: <span id="count0" class="stat-0">0</span></div>
         <div>1: <span id="count1" class="stat-1">0</span></div>
         <div>2: <span id="count2" class="stat-2">0</span></div>
         <div>3: <span id="count3" class="stat-3">0</span></div>
@@ -318,6 +317,13 @@ function switchTab(tabId) {
   document.getElementById(tabId).classList.add('active');
 }
 
+// ===== DIGIT → CATEGORY MAPPING =====
+// 1,2,4 -> "1" | 6,7,8 -> "2" | 0,3,5,9 -> "3"  (category "0" no longer exists)
+const DIGIT_CATEGORY_MAP = { "0":"3", "1":"1", "2":"1", "3":"3", "4":"1", "5":"3", "6":"2", "7":"2", "8":"2", "9":"3" };
+function digitToCategory(d) {
+  return DIGIT_CATEGORY_MAP[String(d)];
+}
+
 // ===== HASH ANALYSIS =====
 function analyzeHashData(blockHash) {
   if (!blockHash) return { result: "Skip", colorClass: "color-skip", digit: "-" };
@@ -327,19 +333,15 @@ function analyzeHashData(blockHash) {
     if (char >= '0' && char <= '9') { targetDigit = parseInt(char); break; }
   }
   if (targetDigit === null) return { result: "Skip", colorClass: "color-skip", digit: "-" };
-  // 0 -> 0, 1&2&3 -> 1, 4&5&6 -> 2, 7&8&9 -> 3
-  let category;
-  if (targetDigit === 0) category = 0;
-  else if (targetDigit <= 3) category = 1;
-  else if (targetDigit <= 6) category = 2;
-  else category = 3;
-  const resText = String(category);
+  // 1,2,4 -> 1 | 6,7,8 -> 2 | 0,3,5,9 -> 3
+  const category = digitToCategory(targetDigit);
+  const resText = category;
   const color = "color-" + category;
   return { result: resText, colorClass: color, digit: targetDigit };
 }
 
 // ===== PREDICTION ENGINE =====
-const CATEGORIES = ["0", "1", "2", "3"];
+const CATEGORIES = ["1", "2", "3"];
 const NO_MATCH = "❓"; // shown when no formula can find a confident pick
 
 // Single prediction method: Sequence Cascade only.
@@ -378,14 +380,6 @@ function recalculateAllPredictions() {
   const makeDigitCounter = () => { const o = {}; DIGITS.forEach(d => o[d] = 0); return o; };
   const digitTransitionMaps = { 5: {}, 4: {}, 3: {}, 2: {} };
   const validDigits = []; // chronological raw-digit strings ("0".."9") seen so far
-
-  function digitToCategory(d) {
-    const n = parseInt(d, 10);
-    if (n === 0) return "0";
-    if (n <= 3) return "1";
-    if (n <= 6) return "2";
-    return "3";
-  }
 
   function buildKey(len) {
     if (valid.length < len) return null;
@@ -498,12 +492,11 @@ function updatePredictionDisplay() {
     retryEl.style.display = "none";
     predBox.className = "pred-badge";
     const catColors = {
-      "0": "linear-gradient(135deg, #ef4444, #dc2626)",
       "1": "linear-gradient(135deg, #f97316, #ea580c)",
       "2": "linear-gradient(135deg, #22c55e, #16a34a)",
       "3": "linear-gradient(135deg, #3b82f6, #1d4ed8)"
     };
-    predBox.style.background = catColors[nextCalculatedBet] || catColors["0"];
+    predBox.style.background = catColors[nextCalculatedBet] || catColors["1"];
     predBox.innerText = `🔮 ${nextCalculatedBet}`;
     const lenLabel = nextUsedLength ? `${nextUsedLength} လုံး Pattern` : FORMULA_NAMES[0];
     detailEl.innerText = `"${nextCalculatedBet}" ထွက်ရန် ခန့်မှန်းထားသည် (${lenLabel})`;
@@ -511,11 +504,10 @@ function updatePredictionDisplay() {
 }
 
 function updateStats() {
-  let counts = { "0": 0, "1": 0, "2": 0, "3": 0 };
+  let counts = { "1": 0, "2": 0, "3": 0 };
   trackedResults.forEach(r => {
     if (counts.hasOwnProperty(r.appResult)) counts[r.appResult]++;
   });
-  document.getElementById("count0").innerText = counts["0"];
   document.getElementById("count1").innerText = counts["1"];
   document.getElementById("count2").innerText = counts["2"];
   document.getElementById("count3").innerText = counts["3"];
@@ -1037,7 +1029,6 @@ function clearStoredData() {
     hasCachedData = false;
     document.getElementById("startBlock").value = startBlock;
     document.getElementById("blockInfo").innerText = `Started from: ${startBlock} | Current: ${startBlock}`;
-    document.getElementById("count0").innerText = "0";
     document.getElementById("count1").innerText = "0";
     document.getElementById("count2").innerText = "0";
     document.getElementById("count3").innerText = "0";
@@ -1073,7 +1064,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log("✅ Premium Lottery Analysis Tool v55 Loaded Successfully");
-console.log("📊 0→0, 1/2/3→1, 4/5/6→2, 7/8/9→3");
+console.log("📊 1/2/4→1, 6/7/8→2, 0/3/5/9→3 (category 0 removed)");
 console.log(`🔄 Auto-retry every ${retryInterval/1000} seconds`);
 console.log(`📈 Tracked Results: ${trackedResults.length}`);
 console.log("📋 Showing ALL records without limit");
