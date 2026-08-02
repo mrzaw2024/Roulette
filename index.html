@@ -119,21 +119,6 @@
         <span id="cacheInfo" class="cache-info">📦 Cache: <span id="cacheStatus">Empty</span></span>
       </div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
-
-      <label>📤 လက်ရှိ Data (ကူးယူနိုင်သည် — ဘယ်ဘက်က အဟောင်း၊ ညာဘက်က အသစ်):</label>
-      <textarea id="digitDataPreview" readonly placeholder="Data မရှိသေးပါ" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
-      <div class="btn-container">
-        <button onclick="copyDigitData()" style="background:#3b82f6;">📤 Copy All Digits</button>
-      </div>
-
-      <label style="margin-top:15px; display:block;">📥 ကိုယ်တိုင် Data ထည့်ရန် (Block hash မလို — ရလဒ်ဂဏန်း 0-9 ကို ကော်မာ ခံပြီးထည့်ပါ):</label>
-      <textarea id="manualDataInput" placeholder="ဥပမာ - 6,1,4,6,2,0,5,2,5" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
-      <div class="input-hint">💡 ဒီနေရာမှာ ထည့်တဲ့ ဂဏန်းတွေက ရှေ့ဆုံး history အဖြစ် ထည့်ပေးမှာဖြစ်ပြီး၊ Start Stream နှိပ်လိုက်ရင် ဒီ data ရဲ့ အဆုံးကနေ ဆက်ပြီး auto ဖြည့်ပေးသွားပါလိမ့်မယ်။</div>
-      <div class="btn-container">
-        <button onclick="importManualData()" style="background:#22c55e;">➕ Import Data</button>
-      </div>
-
       <div class="prediction-panel">
         <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
         <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
@@ -159,6 +144,21 @@
       <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (အကန့်အသတ်မရှိ)</h3>
       <div class="table-wrapper" id="tableWrapper">
         <div id="output"></div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
+
+      <label>📤 လက်ရှိ Data (ကူးယူနိုင်သည် — ဘယ်ဘက်က အဟောင်း၊ ညာဘက်က အသစ်):</label>
+      <textarea id="digitDataPreview" readonly placeholder="Data မရှိသေးပါ" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
+      <div class="btn-container">
+        <button onclick="copyDigitData()" style="background:#3b82f6;">📤 Copy All Digits</button>
+      </div>
+
+      <label style="margin-top:15px; display:block;">📥 ကိုယ်တိုင် Data ထည့်ရန် (Block hash မလို — ရလဒ်ဂဏန်း 0-9 ကို ကော်မာ ခံပြီးထည့်ပါ):</label>
+      <textarea id="manualDataInput" placeholder="ဥပမာ - 6,1,4,6,2,0,5,2,5" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
+      <div class="input-hint">💡 ဒီနေရာမှာ ထည့်တဲ့ ဂဏန်းတွေက ရှေ့ဆုံး history အဖြစ် ထည့်ပေးမှာဖြစ်ပြီး၊ Start Stream နှိပ်လိုက်ရင် ဒီ data ရဲ့ အဆုံးကနေ ဆက်ပြီး auto ဖြည့်ပေးသွားပါလိမ့်မယ်။</div>
+      <div class="btn-container">
+        <button onclick="importManualData()" style="background:#22c55e;">➕ Import Data</button>
       </div>
     </div>
   </div>
@@ -683,9 +683,10 @@ function importManualData() {
 
 function updateTrendBoard() {
   const rows = 6, cols = 50;
+  const RECENT_WINDOW = 20; // Big Road always rebuilt from just the latest 20 results
   let grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
   let colIndex = 0, rowIndex = 0, lastResultText = null;
-  const valid = trackedResults.filter(r => CATEGORIES.includes(r.appResult));
+  const valid = trackedResults.filter(r => CATEGORIES.includes(r.appResult)).slice(-RECENT_WINDOW);
 
   valid.forEach((item, idx) => {
     if (lastResultText === null) {
