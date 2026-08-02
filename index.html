@@ -349,8 +349,8 @@ const CATEGORIES = ["1", "2", "3"];
 const NO_MATCH = "❓"; // shown when no formula can find a confident pick
 
 // Single prediction method: Sequence Cascade only.
-// It always tries the 5-digit pattern first, falls back to 4-digit, then
-// 3-digit, if the longer pattern was never seen before. This is the ONLY
+// It always tries the 5-category pattern first, falls back to 4, then 3,
+// then 2, if the longer pattern was never seen before. This is the ONLY
 // method used — there is no switching to any other approach, even during
 // a losing streak.
 const FORMULA_NAMES = ["Sequence Cascade"];
@@ -363,27 +363,27 @@ function recalculateAllPredictions() {
   // array — including after a row is deleted. No formula-switching:
   // the 5→4→3→2 cascade keeps being used no matter how long the losing
   // streak runs.
+  //
+  // --- Category pattern matching (1, 2, 3) ---
+  // Every raw digit (0-9) is first bucketed into Category 1, 2, or 3
+  // (DIGIT_CATEGORY_MAP). The cascade then works ONLY on that Category
+  // sequence, e.g.: data = 2,1,3,2,1,3,1,2,3,1
+  //   last 2 categories (newest→oldest): 1,3   → look this 2-length pattern up
+  //   last 3 categories: 1,3,2
+  //   last 4 categories: 1,3,2,1
+  //   last 5 categories: 1,3,2,1,3
+  // At each length we check whether that exact Category-pattern occurred
+  // earlier in the data. If it did, we look at which Category came right
+  // after it (aggregated across every earlier time it occurred) and predict
+  // the Category that followed the LEAST often (not the most). We try
+  // length 5 first (the most specific pattern); if the least-frequent result
+  // is tied between two categories (not decisive), or the pattern was never
+  // seen, we drop down to length 4, then 3, then 2 — hoping a shorter, more
+  // common pattern has enough data to break the tie.
   const SEQ_LENGTHS = [5, 4, 3, 2];
-  const valid = []; // chronological category strings seen so far
-
-  // --- Raw-digit pattern matching ---
-  // This works on the actual last-digit-of-hash (0-9), NOT the 0-3 bucket,
-  // exactly like: data = 0,1,8,3,6,2,5,1,8,3,5,1,7
-  //   last 3 digits (newest→oldest): 7,1,5  → look this 3-length pattern up
-  //   last 4 digits: 7,1,5,3
-  //   last 5 digits: 7,1,5,3,8
-  // At each length we check whether that exact digit-pattern occurred
-  // earlier in the data. If it did, we look at what digit came right after
-  // it (aggregated across every earlier time it occurred) and predict the
-  // digit that followed the LEAST often (not the most). We try length 5
-  // first (the most specific pattern); if that result is tied between two
-  // digits (not decisive), or the pattern was never seen, we drop down to
-  // length 4, then 3, then 2 — hoping a shorter, more common pattern has
-  // enough data to break the tie.
-  const DIGITS = ["0","1","2","3","4","5","6","7","8","9"];
-  const makeDigitCounter = () => { const o = {}; DIGITS.forEach(d => o[d] = 0); return o; };
-  const digitTransitionMaps = { 5: {}, 4: {}, 3: {}, 2: {} };
-  const validDigits = []; // chronological raw-digit strings ("0".."9") seen so far
+  const makeCounter = () => ({ "1": 0, "2": 0, "3": 0 });
+  const transitionMaps = { 5: {}, 4: {}, 3: {}, 2: {} };
+  const valid = []; // chronological Category strings ("1"/"2"/"3") seen so far
 
   function buildKey(len) {
     if (valid.length < len) return null;
@@ -392,32 +392,27 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  function buildDigitKey(len) {
-    if (validDigits.length < len) return null;
-    const parts = [];
-    for (let k = len; k >= 1; k--) parts.push(validDigits[validDigits.length - k]);
-    return parts.join(",");
-  }
-
-  // --- Sequence Cascade (raw-digit pattern match, 5 → 4 → 3 → 2) ---
+  // --- Sequence Cascade (Category pattern match, 5 → 4 → 3 → 2) ---
   // Returns { category, length } where length tells you which pattern size
   // (5, 4, 3, or 2) actually produced the pick, or { category: NO_MATCH, length: null }
   // if none of the four lengths found a decisive pattern.
   //
-  // Prediction rule: among the digits that actually followed this pattern
-  // before, pick the LEAST-frequent one (the digit that followed the
+  // Prediction rule: among the Categories that actually followed this
+  // pattern before, pick the LEAST-frequent one (the one that followed the
   // fewest times) — not the most-frequent one. If the two least-frequent
-  // digits are tied, that's not decisive, so drop down to a shorter pattern.
+  // Categories are tied, that's not decisive, so drop down to a shorter
+  // pattern. If NONE of 5, 4, 3, or 2 ever occurred before, there is no
+  // basis to guess, so we return NO_MATCH ("?").
   function predictSequenceCascade() {
     for (const len of SEQ_LENGTHS) {
-      const key = buildDigitKey(len);
+      const key = buildKey(len);
       if (key === null) continue; // not enough history yet for this length
-      const stats = digitTransitionMaps[len][key];
-      const seen = DIGITS.filter(d => stats && stats[d] > 0); // digits that actually followed this pattern at least once
+      const stats = transitionMaps[len][key];
+      const seen = CATEGORIES.filter(c => stats && stats[c] > 0); // categories that actually followed this pattern at least once
       if (seen.length === 0) continue; // this exact pattern never occurred before — try a shorter one
-      const rankedAsc = seen.sort((a, b) => stats[a] - stats[b]); // ascending: least-frequent first
+      const rankedAsc = seen.slice().sort((a, b) => stats[a] - stats[b]); // ascending: least-frequent first
       if (rankedAsc.length === 1 || stats[rankedAsc[0]] < stats[rankedAsc[1]]) {
-        return { category: digitToCategory(rankedAsc[0]), length: len };
+        return { category: rankedAsc[0], length: len };
       }
       // Tied for least-frequent at this level — not decisive, try a shorter sequence.
     }
@@ -440,28 +435,25 @@ function recalculateAllPredictions() {
 
     row.betPrediction = betPrediction;
     row.formulaUsed = valid.length < 10 ? null : 0; // always Sequence Cascade
-    row.formulaLength = usedLength; // 5, 4, 3, or null
+    row.formulaLength = usedLength; // 5, 4, 3, 2, or null
 
     // ----- Feed this row's ACTUAL result into the running state -----
+    // (recorded BEFORE pushing the current category, so a pattern can never
+    // "match itself")
     const cur = row.appResult;
     const curIsValid = CATEGORIES.includes(cur);
-    const curDigit = (typeof row.digit === "number") ? String(row.digit) : null;
 
-    // Record digit-pattern followers BEFORE pushing the current digit, so a
-    // pattern can never "match itself".
-    if (curDigit !== null) {
+    if (curIsValid) {
       SEQ_LENGTHS.forEach(len => {
-        const key = buildDigitKey(len);
+        const key = buildKey(len);
         if (key !== null) {
-          const map = digitTransitionMaps[len];
-          if (!map[key]) map[key] = makeDigitCounter();
-          map[key][curDigit]++;
+          const map = transitionMaps[len];
+          if (!map[key]) map[key] = makeCounter();
+          map[key][cur]++;
         }
       });
-      validDigits.push(curDigit);
+      valid.push(cur);
     }
-
-    if (curIsValid) valid.push(cur);
   }
 
   // ----- Predict the upcoming (not-yet-seen) result using the final state -----
@@ -770,7 +762,27 @@ function hideWaitingMessage() {
 }
 
 // ===== FETCH BLOCK DATA WITH CACHE CHECK =====
+let isFetchingBlock = false; // prevents two overlapping fetches from processing the same block twice
+
 async function fetchNextLiveBlock() {
+  // If a fetch for the current block is still in flight when the 3-second
+  // timer fires again, skip this call entirely — otherwise both calls read
+  // the same currentTrackingBlock (it only advances AFTER a successful
+  // fetch) and both push a row for it, producing an exact duplicate block
+  // like the "84999618" appearing twice.
+  if (isFetchingBlock) {
+    console.log("⏭️ Previous fetch still in progress, skipping this tick");
+    return;
+  }
+  isFetchingBlock = true;
+  try {
+    await fetchNextLiveBlockInner();
+  } finally {
+    isFetchingBlock = false;
+  }
+}
+
+async function fetchNextLiveBlockInner() {
   const maxHistory = parseInt(document.getElementById("count").value) || 300;
   const currentBlock = currentTrackingBlock;
   
