@@ -119,6 +119,21 @@
         <span id="cacheInfo" class="cache-info">📦 Cache: <span id="cacheStatus">Empty</span></span>
       </div>
 
+      <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
+
+      <label>📤 လက်ရှိ Data (ကူးယူနိုင်သည် — ဘယ်ဘက်က အဟောင်း၊ ညာဘက်က အသစ်):</label>
+      <textarea id="digitDataPreview" readonly placeholder="Data မရှိသေးပါ" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
+      <div class="btn-container">
+        <button onclick="copyDigitData()" style="background:#3b82f6;">📤 Copy All Digits</button>
+      </div>
+
+      <label style="margin-top:15px; display:block;">📥 ကိုယ်တိုင် Data ထည့်ရန် (Block hash မလို — ရလဒ်ဂဏန်း 0-9 ကို ကော်မာ ခံပြီးထည့်ပါ):</label>
+      <textarea id="manualDataInput" placeholder="ဥပမာ - 6,1,4,6,2,0,5,2,5" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
+      <div class="input-hint">💡 ဒီနေရာမှာ ထည့်တဲ့ ဂဏန်းတွေက ရှေ့ဆုံး history အဖြစ် ထည့်ပေးမှာဖြစ်ပြီး၊ Start Stream နှိပ်လိုက်ရင် ဒီ data ရဲ့ အဆုံးကနေ ဆက်ပြီး auto ဖြည့်ပေးသွားပါလိမ့်မယ်။</div>
+      <div class="btn-container">
+        <button onclick="importManualData()" style="background:#22c55e;">➕ Import Data</button>
+      </div>
+
       <div class="prediction-panel">
         <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
         <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
@@ -341,10 +356,10 @@ function recalculateAllPredictions() {
   //
   // Formula-switching rule: whichever formula is currently active keeps
   // making predictions. Each time its prediction is WRONG, a miss counter
-  // for that round increments. As soon as it has been wrong on 3
+  // for that round increments. As soon as it has been wrong on 5
   // predictions IN A ROW, the engine switches to the next formula (cycling
   // 0 → 1 → 2 → 0 → ...) and that new formula starts fresh with its own
-  // 3-strikes counter. A correct prediction resets the current miss count
+  // 5-strikes counter. A correct prediction resets the current miss count
   // back to 0 without switching anything.
   const SEQ_LENGTHS = [5, 4, 3];
   const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
@@ -478,14 +493,14 @@ function recalculateAllPredictions() {
       validDigits.push(curDigit);
     }
 
-    // Only a real prediction (not "Waiting") counts toward the 3-strikes rule.
+    // Only a real prediction (not "Waiting") counts toward the 5-strikes rule.
     if (betPrediction !== "Waiting" && curIsValid) {
       if (betPrediction === cur) {
         missStreak = 0; // correct — stay on this formula, reset the streak
       } else {
         missStreak++;
-        if (missStreak >= 3) {
-          // 3 wrong predictions in a row on this formula: switch to the next one.
+        if (missStreak >= 5) {
+          // 5 wrong predictions in a row on this formula: switch to the next one.
           formulaIndex = (formulaIndex + 1) % FORMULA_NAMES.length;
           missStreak = 0; // the new formula starts with a clean slate
         }
@@ -554,11 +569,116 @@ function updateStats() {
   document.getElementById("totalCount").innerText = trackedResults.length;
   document.getElementById("totalRecordsDisplay").innerText = `Total: ${trackedResults.length}`;
   updateCacheInfo();
+  updateDigitDataPreview();
   
   if (trackedResults.length > 0) {
     const last = trackedResults[trackedResults.length - 1];
     document.getElementById("lastResult").innerText = CATEGORIES.includes(last.appResult) ? last.appResult : "--";
   }
+}
+
+// ===== DIGIT DATA — COPY & MANUAL IMPORT =====
+let manualIdCounter = -1; // negative unique ids for manually-entered rows, never collide with real block numbers
+
+function getDigitDataString() {
+  return trackedResults
+    .filter(r => typeof r.digit === "number")
+    .map(r => r.digit)
+    .join(",");
+}
+
+function updateDigitDataPreview() {
+  const el = document.getElementById("digitDataPreview");
+  if (el) el.value = getDigitDataString();
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand("copy");
+    alert("✅ ကူးယူပြီးပါပြီ!");
+  } catch (e) {
+    alert("⚠️ Auto-copy မရပါ — Data box ကို ကိုယ်တိုင် Select ပြီး Copy လုပ်ပါ။");
+  }
+  document.body.removeChild(ta);
+}
+
+function copyDigitData() {
+  const text = getDigitDataString();
+  if (!text) {
+    alert("ကူးစရာ Data မရှိသေးပါ။");
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => alert(`✅ ကူးယူပြီးပါပြီ! (${text.split(",").length} ဂဏန်း)`))
+      .catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function importManualData() {
+  const inputEl = document.getElementById("manualDataInput");
+  const raw = inputEl.value.trim();
+  if (!raw) {
+    alert("Data ထည့်ပါဦး (ဥပမာ - 6,1,4,6,2,0,5,2,5)");
+    return;
+  }
+
+  // Accept digits separated by comma, space, and/or newline.
+  const parts = raw.split(/[,\s]+/).filter(p => p.length > 0);
+  const digits = [];
+  for (const p of parts) {
+    if (!/^[0-9]$/.test(p)) {
+      alert(`"${p}" သည် ဂဏန်း 0-9 တစ်လုံးတည်း မဟုတ်ပါ။ ဂဏန်းများကို ကော်မာ (,) ခံပြီး ထည့်ပါ (ဥပမာ - 6,1,4,6,2,0,5,2,5) — Block hash မလိုအပ်ပါ။`);
+      return;
+    }
+    digits.push(parseInt(p, 10));
+  }
+  if (digits.length === 0) {
+    alert("မှန်ကန်သော ဂဏန်းများ မတွေ့ပါ။");
+    return;
+  }
+
+  // Appended onto the end of the existing chronological history, so a
+  // subsequent "Start Stream" continues auto-adding live blocks right after
+  // this manually-typed data — exactly like the manual entries were the
+  // most recent results seen so far.
+  digits.forEach(d => {
+    const analysis = analyzeHashData(String(d)); // reuse the same 0/1-3/4-6/7-9 bucket rule
+    trackedResults.push({
+      blockNum: manualIdCounter--,
+      blockHash: null,
+      appResult: analysis.result,
+      colorClass: analysis.colorClass,
+      digit: d,
+      betPrediction: "Waiting",
+      manual: true
+    });
+  });
+
+  const maxHistory = parseInt(document.getElementById("count").value) || 300;
+  while (trackedResults.length > maxHistory) {
+    trackedResults.shift();
+  }
+
+  inputEl.value = "";
+
+  recalculateAllPredictions();
+  updateTrendBoard();
+  updateTableDisplay();
+  updatePredictionDisplay();
+  updateStats();
+  saveData();
+
+  alert(`✅ ဂဏန်း ${digits.length} လုံး ထည့်သွင်းပြီးပါပြီ။`);
 }
 
 function updateTrendBoard() {
@@ -625,10 +745,11 @@ function updateTableDisplay() {
     let cls = (row.betPrediction === "Waiting" || row.betPrediction === NO_MATCH) ? "" : (win ? "win-match" : "win-miss");
     let betDisplay = row.betPrediction || "-";
     let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
+    let blockDisplay = row.manual ? `📝 Manual #${Math.abs(row.blockNum)}` : row.blockNum;
     let catDisplay = CATEGORIES.includes(row.appResult)
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
-    table += `<tr><td>${row.blockNum}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
+    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
   }
   document.getElementById("output").innerHTML = table + "</tbody></table>";
   
