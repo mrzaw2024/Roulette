@@ -331,60 +331,56 @@ function getPredictionFromHistory(historyArray) {
   const valid = historyArray.filter(r => CATEGORIES.includes(r.appResult));
   if (valid.length < 10) return "Waiting";
 
-  // Only two levels of historical statistics are used now:
-  // 1) tripleTransitions: after seeing 3 specific categories in a row
-  //    (e.g. "0,2,1"), what category came right after that exact triplet?
-  // 2) pairTransitions: after seeing 2 specific categories in a row, what
-  //    came next?
-  // If the current triple AND the current pair have never occurred before
-  // in the collected history, there is nothing to base a guess on, so we
-  // return NO_MATCH instead of guessing blindly.
+  // Four levels of historical statistics are used, from most specific to
+  // most general:
+  //   5-in-a-row (quintuple) → 4-in-a-row (quadruple) → 3-in-a-row (triple)
+  //   → 2-in-a-row (pair)
+  // For each level, we ask: "has this EXACT sequence of the last N results
+  // ever happened before in the collected history, and if so, what came
+  // right after it?" We check the longest sequence (5) first. If that exact
+  // 5-sequence never occurred before, we drop down to 4, then 3, then 2.
+  // If NONE of the four ever occurred before, there is nothing real to base
+  // a guess on, so we return NO_MATCH instead of guessing blindly.
+  const SEQ_LENGTHS = [5, 4, 3, 2];
   const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
-  const tripleTransitions = {};
-  const pairTransitions = {};
+
+  // transitionMaps[len] = { "cat,cat,...(len items)": {"0":n,"1":n,"2":n,"3":n} }
+  const transitionMaps = {};
+  SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
 
   for (let i = 0; i < valid.length; i++) {
     const cur = valid[i].appResult;
-    if (i > 1) {
-      const prev2 = valid[i - 2].appResult;
-      const prev1 = valid[i - 1].appResult;
-      const pairKey = prev2 + "," + prev1;
-      if (!pairTransitions[pairKey]) pairTransitions[pairKey] = makeCounter();
-      pairTransitions[pairKey][cur]++;
-    }
-    if (i > 2) {
-      const prev3 = valid[i - 3].appResult;
-      const prev2 = valid[i - 2].appResult;
-      const prev1 = valid[i - 1].appResult;
-      const tripleKey = prev3 + "," + prev2 + "," + prev1;
-      if (!tripleTransitions[tripleKey]) tripleTransitions[tripleKey] = makeCounter();
-      tripleTransitions[tripleKey][cur]++;
+    SEQ_LENGTHS.forEach(len => {
+      if (i >= len) {
+        const keyParts = [];
+        for (let k = len; k >= 1; k--) keyParts.push(valid[i - k].appResult);
+        const key = keyParts.join(",");
+        const map = transitionMaps[len];
+        if (!map[key]) map[key] = makeCounter();
+        map[key][cur]++;
+      }
+    });
+  }
+
+  // Try each sequence length, longest first, and use the first one whose
+  // exact current sequence has actually been seen before (total > 0).
+  let source = null;
+  for (const len of SEQ_LENGTHS) {
+    if (valid.length < len) continue;
+    const keyParts = [];
+    for (let k = len; k >= 1; k--) keyParts.push(valid[valid.length - k].appResult);
+    const currentKey = keyParts.join(",");
+    const stats = transitionMaps[len][currentKey];
+    const total = stats ? CATEGORIES.reduce((sum, c) => sum + stats[c], 0) : 0;
+    if (total > 0) {
+      source = stats;
+      break;
     }
   }
 
-  const lastCategory = valid[valid.length - 1].appResult;
-  const secondLastCategory = valid[valid.length - 2].appResult;
-  const thirdLastCategory = valid[valid.length - 3].appResult;
-
-  const currentTripleKey = thirdLastCategory + "," + secondLastCategory + "," + lastCategory;
-  const currentPairKey = secondLastCategory + "," + lastCategory;
-
-  const tripleStats = tripleTransitions[currentTripleKey];
-  const tripleTotal = tripleStats ? CATEGORIES.reduce((sum, c) => sum + tripleStats[c], 0) : 0;
-
-  const pairStats = pairTransitions[currentPairKey];
-  const pairTotal = pairStats ? CATEGORIES.reduce((sum, c) => sum + pairStats[c], 0) : 0;
-
-  // Prefer the triple match if it has ever occurred before; otherwise fall
-  // back to the pair match if that has occurred; otherwise, no prediction.
-  let source;
-  if (tripleTotal > 0) {
-    source = tripleStats;
-  } else if (pairTotal > 0) {
-    source = pairStats;
-  } else {
-    return NO_MATCH;
-  }
+  // Neither the last 5, 4, 3, nor 2 results ever occurred before as an
+  // exact sequence in the history — no real basis for a prediction.
+  if (!source) return NO_MATCH;
 
   const rankedCategories = CATEGORIES.slice().sort((a, b) => source[b] - source[a]);
   let pick = rankedCategories[0];
