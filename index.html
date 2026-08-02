@@ -328,30 +328,36 @@ function getPredictionFromHistory(historyArray) {
   const valid = historyArray.filter(r => CATEGORIES.includes(r.appResult));
   if (valid.length < 7) return "Waiting";
 
-  // Trend-weighted prediction: look at the recent sequence and give more
-  // weight to results that happened more recently, so a category that has
-  // been trending in the last few draws counts for more than one further back.
+  // Trend-weighted prediction: exponential decay so only the last several
+  // draws really matter, rather than 30 draws all adding up linearly (which
+  // made one category "stick" as the pick for many rounds in a row).
   const windowSize = 30;
   const recent = valid.slice(-windowSize);
+  const decay = 0.85;
   const scores = { "0": 0, "1": 0, "2": 0, "3": 0 };
 
-  recent.forEach((item, idx) => {
-    // idx=0 is the oldest in this window, idx=recent.length-1 is the newest.
-    // Weight grows linearly toward the most recent result.
-    const weight = idx + 1;
-    scores[item.appResult] += weight;
-  });
+  for (let i = 0; i < recent.length; i++) {
+    const distFromNewest = recent.length - 1 - i; // 0 = most recent draw
+    const weight = Math.pow(decay, distFromNewest);
+    scores[recent[i].appResult] += weight;
+  }
 
-  let bestCategory = "0";
-  let bestScore = -1;
-  CATEGORIES.forEach(cat => {
-    if (scores[cat] > bestScore) {
-      bestScore = scores[cat];
-      bestCategory = cat;
-    }
-  });
+  const rankedCategories = CATEGORIES.slice().sort((a, b) => scores[b] - scores[a]);
+  let pick = rankedCategories[0];
 
-  return bestCategory;
+  // Anti-repeat: if the same category was already predicted for the last 2
+  // rounds, switch to the next-best scoring category instead of picking the
+  // same one a 3rd time in a row.
+  const lastTwoPredictions = valid.slice(-2)
+    .map(r => r.betPrediction)
+    .filter(p => p && p !== "Waiting");
+  if (lastTwoPredictions.length === 2 &&
+      lastTwoPredictions[0] === lastTwoPredictions[1] &&
+      lastTwoPredictions[0] === pick) {
+    pick = rankedCategories[1];
+  }
+
+  return pick;
 }
 
 function recalculateAllPredictions() {
