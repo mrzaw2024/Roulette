@@ -331,17 +331,16 @@ function getPredictionFromHistory(historyArray) {
   const valid = historyArray.filter(r => CATEGORIES.includes(r.appResult));
   if (valid.length < 10) return "Waiting";
 
-  // Four levels of historical statistics are used, from most specific to
+  // Three levels of historical statistics are used, from most specific to
   // most general:
   //   5-in-a-row (quintuple) → 4-in-a-row (quadruple) → 3-in-a-row (triple)
-  //   → 2-in-a-row (pair)
   // For each level, we ask: "has this EXACT sequence of the last N results
   // ever happened before in the collected history, and if so, what came
   // right after it?" We check the longest sequence (5) first. If that exact
-  // 5-sequence never occurred before, we drop down to 4, then 3, then 2.
-  // If NONE of the four ever occurred before, there is nothing real to base
+  // 5-sequence never occurred before, we drop down to 4, then 3.
+  // If NONE of the three ever occurred before, there is nothing real to base
   // a guess on, so we return NO_MATCH instead of guessing blindly.
-  const SEQ_LENGTHS = [5, 4, 3, 2];
+  const SEQ_LENGTHS = [5, 4, 3];
   const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
 
   // transitionMaps[len] = { "cat,cat,...(len items)": {"0":n,"1":n,"2":n,"3":n} }
@@ -390,7 +389,7 @@ function getPredictionFromHistory(historyArray) {
     // Tied at this level — don't guess here, try a shorter sequence.
   }
 
-  // Neither the last 5, 4, 3, nor 2 results ever occurred before as an
+  // Neither the last 5, 4, nor 3 results ever occurred before as an
   // exact sequence with a clear leading outcome — no real basis for a
   // confident prediction.
   if (!source) return NO_MATCH;
