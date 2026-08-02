@@ -776,45 +776,47 @@ async function fetchNextLiveBlock() {
 // ===== CONTROL FUNCTIONS =====
 function startLiveTracking() {
   const inputBlock = document.getElementById("startBlock").value.trim();
+  let newBlock;
   if (inputBlock && !isNaN(inputBlock) && parseInt(inputBlock) > 0) {
-    const newBlock = parseInt(inputBlock);
-    currentTrackingBlock = newBlock;
-    userRequestedBlock = newBlock;
-    document.getElementById("blockInfo").innerText = `Started from: ${newBlock} | Current: ${newBlock}`;
-    
-    // Don't clear data on restart, keep cached data
-    // Only clear if user explicitly wants fresh start via Clear Cache
+    newBlock = parseInt(inputBlock);
   } else {
-    currentTrackingBlock = 84424346;
-    document.getElementById("startBlock").value = currentTrackingBlock;
-    document.getElementById("blockInfo").innerText = `Started from: ${currentTrackingBlock} (default) | Current: ${currentTrackingBlock}`;
+    newBlock = 84424346;
+    document.getElementById("startBlock").value = newBlock;
   }
-  
+
+  // Always jump straight to whichever block number is currently typed in the
+  // box — even if a stream was already running, or this number was searched
+  // before — so it never silently keeps following the old sequence instead.
+  currentTrackingBlock = newBlock;
+  userRequestedBlock = newBlock;
+  processedBlocks.delete(newBlock); // don't let it be skipped as "already processed"
+  document.getElementById("blockInfo").innerText = `Started from: ${newBlock} | Current: ${newBlock}`;
+
   document.getElementById("warningBox").classList.remove("show");
-  
-  if (isRunning) {
-    console.log("Already running");
-    return;
+
+  // Stop any existing interval first, then restart clean with the new block,
+  // so the new number takes effect immediately instead of being ignored.
+  if (liveIntervalId) {
+    clearInterval(liveIntervalId);
+    liveIntervalId = null;
   }
-  
+
   isRunning = true;
   errorCount = 0;
   fetchAttempts = 0;
-  
+
   // Show waiting message immediately
   showWaitingMessage();
-  
+
   saveData();
-  
-  if (!liveIntervalId) {
-    liveIntervalId = setInterval(fetchNextLiveBlock, retryInterval);
-    fetchNextLiveBlock();
-  }
-  
+
+  liveIntervalId = setInterval(fetchNextLiveBlock, retryInterval);
+  fetchNextLiveBlock();
+
   const statusEl = document.getElementById("liveStatus");
   statusEl.className = "status-waiting";
   statusEl.innerText = "⏳ Status: ပြန်လည်ချိတ်ဆက်နေပါသည်...";
-  
+
   document.getElementById("btnStart").style.background = "#15803d";
   document.getElementById("btnStart").innerText = "⏳ Running...";
 }
