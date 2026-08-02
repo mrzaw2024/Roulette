@@ -536,7 +536,7 @@ function updateTableDisplay() {
   }
   
   // Show ALL results without limit
-  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
+  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   // Display from newest to oldest (reverse order)
   for (let i = trackedResults.length - 1; i >= 0; i--) {
     let row = trackedResults[i];
@@ -545,7 +545,10 @@ function updateTableDisplay() {
     let cls = (row.betPrediction === "Waiting" || row.betPrediction === NO_MATCH) ? "" : (win ? "win-match" : "win-miss");
     let betDisplay = row.betPrediction || "-";
     let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
-    table += `<tr><td>${row.blockNum}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
+    let catDisplay = CATEGORIES.includes(row.appResult)
+      ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
+      : "-";
+    table += `<tr><td>${row.blockNum}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
   }
   document.getElementById("output").innerHTML = table + "</tbody></table>";
   
