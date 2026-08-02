@@ -348,12 +348,32 @@ function recalculateAllPredictions() {
   // back to 0 without switching anything.
   const SEQ_LENGTHS = [5, 4, 3];
   const makeCounter = () => ({ "0": 0, "1": 0, "2": 0, "3": 0 });
-  const transitionMaps = { 5: {}, 4: {}, 3: {} };
   const valid = []; // chronological category strings seen so far
   const FREQ_WINDOW = 20; // how many recent results "Recent Frequency" looks at
 
-  let formulaIndex = 0; // local replay copy of the active formula
-  let missStreak = 0;   // consecutive misses of the CURRENTLY active formula
+  // --- Raw-digit pattern matching (used by Formula 0) ---
+  // This works on the actual last-digit-of-hash (0-9), NOT the 0-3 bucket,
+  // exactly like: data = 0,1,8,3,6,2,5,1,8,3,5,1,7
+  //   last 3 digits (newest→oldest): 7,1,5  → look this 3-length pattern up
+  //   last 4 digits: 7,1,5,3
+  //   last 5 digits: 7,1,5,3,8
+  // At each length we check whether that exact digit-pattern occurred
+  // earlier in the data. If it did, we look at what digit came right after
+  // it (aggregated across every earlier time it occurred) and predict the
+  // digit that followed most often. We try length 5 first; if that pattern
+  // was never seen before (or is tied), drop to length 4, then length 3.
+  const DIGITS = ["0","1","2","3","4","5","6","7","8","9"];
+  const makeDigitCounter = () => { const o = {}; DIGITS.forEach(d => o[d] = 0); return o; };
+  const digitTransitionMaps = { 5: {}, 4: {}, 3: {} };
+  const validDigits = []; // chronological raw-digit strings ("0".."9") seen so far
+
+  function digitToCategory(d) {
+    const n = parseInt(d, 10);
+    if (n === 0) return "0";
+    if (n <= 3) return "1";
+    if (n <= 6) return "2";
+    return "3";
+  }
 
   function buildKey(len) {
     if (valid.length < len) return null;
@@ -362,18 +382,29 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  // --- Formula 0: Sequence Cascade ---
+  function buildDigitKey(len) {
+    if (validDigits.length < len) return null;
+    const parts = [];
+    for (let k = len; k >= 1; k--) parts.push(validDigits[validDigits.length - k]);
+    return parts.join(",");
+  }
+
+  let formulaIndex = 0; // local replay copy of the active formula
+  let missStreak = 0;   // consecutive misses of the CURRENTLY active formula
+
+  // --- Formula 0: Sequence Cascade (raw-digit pattern match, 5 → 4 → 3) ---
   function predictSequenceCascade() {
     for (const len of SEQ_LENGTHS) {
-      const key = buildKey(len);
-      if (key === null) continue;
-      const stats = transitionMaps[len][key];
-      const total = stats ? CATEGORIES.reduce((s, c) => s + stats[c], 0) : 0;
-      if (total === 0) continue;
-      const ranked = CATEGORIES.slice().sort((a, b) => stats[b] - stats[a]);
-      if (stats[ranked[0]] > stats[ranked[1]]) return ranked[0];
+      const key = buildDigitKey(len);
+      if (key === null) continue; // not enough history yet for this length
+      const stats = digitTransitionMaps[len][key];
+      const total = stats ? DIGITS.reduce((s, d) => s + stats[d], 0) : 0;
+      if (total === 0) continue; // this exact pattern never occurred before — try a shorter one
+      const ranked = DIGITS.slice().sort((a, b) => stats[b] - stats[a]);
+      if (stats[ranked[0]] > stats[ranked[1]]) return digitToCategory(ranked[0]);
       // Tied at this level — not decisive, try a shorter sequence.
     }
+    // Not found (or always tied) at length 5, 4, AND 3 — no basis to guess.
     return NO_MATCH;
   }
 
@@ -431,16 +462,20 @@ function recalculateAllPredictions() {
     // ----- Feed this row's ACTUAL result into the running state -----
     const cur = row.appResult;
     const curIsValid = CATEGORIES.includes(cur);
+    const curDigit = (typeof row.digit === "number") ? String(row.digit) : null;
 
-    if (curIsValid) {
+    // Record digit-pattern followers (for Formula 0) BEFORE pushing the
+    // current digit, so a pattern can never "match itself".
+    if (curDigit !== null) {
       SEQ_LENGTHS.forEach(len => {
-        const key = buildKey(len);
+        const key = buildDigitKey(len);
         if (key !== null) {
-          const map = transitionMaps[len];
-          if (!map[key]) map[key] = makeCounter();
-          map[key][cur]++;
+          const map = digitTransitionMaps[len];
+          if (!map[key]) map[key] = makeDigitCounter();
+          map[key][curDigit]++;
         }
       });
+      validDigits.push(curDigit);
     }
 
     // Only a real prediction (not "Waiting") counts toward the 3-strikes rule.
