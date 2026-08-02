@@ -355,9 +355,9 @@ function recalculateAllPredictions() {
   // The whole history is replayed from scratch every time so the engine
   // always ends up in a state consistent with the full trackedResults
   // array — including after a row is deleted. No formula-switching:
-  // the 5→4→3 cascade keeps being used no matter how long the losing
+  // the 5→4→3→2 cascade keeps being used no matter how long the losing
   // streak runs.
-  const SEQ_LENGTHS = [5, 4, 3];
+  const SEQ_LENGTHS = [5, 4, 3, 2];
   const valid = []; // chronological category strings seen so far
 
   // --- Raw-digit pattern matching ---
@@ -373,7 +373,7 @@ function recalculateAllPredictions() {
   // was never seen before (or is tied), drop to length 4, then length 3.
   const DIGITS = ["0","1","2","3","4","5","6","7","8","9"];
   const makeDigitCounter = () => { const o = {}; DIGITS.forEach(d => o[d] = 0); return o; };
-  const digitTransitionMaps = { 5: {}, 4: {}, 3: {} };
+  const digitTransitionMaps = { 5: {}, 4: {}, 3: {}, 2: {} };
   const validDigits = []; // chronological raw-digit strings ("0".."9") seen so far
 
   function digitToCategory(d) {
@@ -398,10 +398,10 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  // --- Sequence Cascade (raw-digit pattern match, 5 → 4 → 3) ---
+  // --- Sequence Cascade (raw-digit pattern match, 5 → 4 → 3 → 2) ---
   // Returns { category, length } where length tells you which pattern size
-  // (5, 4, or 3) actually produced the pick, or { category: NO_MATCH, length: null }
-  // if none of the three lengths found a decisive pattern.
+  // (5, 4, 3, or 2) actually produced the pick, or { category: NO_MATCH, length: null }
+  // if none of the four lengths found a decisive pattern.
   function predictSequenceCascade() {
     for (const len of SEQ_LENGTHS) {
       const key = buildDigitKey(len);
@@ -413,7 +413,7 @@ function recalculateAllPredictions() {
       if (stats[ranked[0]] > stats[ranked[1]]) return { category: digitToCategory(ranked[0]), length: len };
       // Tied at this level — not decisive, try a shorter sequence.
     }
-    // Not found (or always tied) at length 5, 4, AND 3 — no basis to guess.
+    // Not found (or always tied) at length 5, 4, 3, AND 2 — no basis to guess.
     return { category: NO_MATCH, length: null };
   }
 
@@ -687,7 +687,7 @@ function updateTableDisplay() {
   }
   
   // Show ALL results without limit
-  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Formula</th><th>Result</th><th>Category</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
+  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   // Display from newest to oldest (reverse order)
   for (let i = trackedResults.length - 1; i >= 0; i--) {
     let row = trackedResults[i];
@@ -701,7 +701,7 @@ function updateTableDisplay() {
     let catDisplay = CATEGORIES.includes(row.appResult)
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
-    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td>${formulaDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
+    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td><td>${formulaDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
   }
   document.getElementById("output").innerHTML = table + "</tbody></table>";
   
