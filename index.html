@@ -326,28 +326,42 @@ const CATEGORIES = ["0", "1", "2", "3"];
 
 function getPredictionFromHistory(historyArray) {
   const valid = historyArray.filter(r => CATEGORIES.includes(r.appResult));
-  if (valid.length < 7) return "Waiting";
+  if (valid.length < 8) return "Waiting";
 
-  // Trend-weighted prediction: exponential decay so only the last several
-  // draws really matter, rather than 30 draws all adding up linearly (which
-  // made one category "stick" as the pick for many rounds in a row).
-  const windowSize = 30;
-  const recent = valid.slice(-windowSize);
-  const decay = 0.85;
-  const scores = { "0": 0, "1": 0, "2": 0, "3": 0 };
+  // Build a transition table from ALL collected history: for every category,
+  // count what category tended to come right after it (e.g. "after a 0,
+  // what usually showed up next?"). This is a first-order Markov analysis.
+  const transitions = {
+    "0": { "0": 0, "1": 0, "2": 0, "3": 0 },
+    "1": { "0": 0, "1": 0, "2": 0, "3": 0 },
+    "2": { "0": 0, "1": 0, "2": 0, "3": 0 },
+    "3": { "0": 0, "1": 0, "2": 0, "3": 0 }
+  };
+  const overallCounts = { "0": 0, "1": 0, "2": 0, "3": 0 };
 
-  for (let i = 0; i < recent.length; i++) {
-    const distFromNewest = recent.length - 1 - i; // 0 = most recent draw
-    const weight = Math.pow(decay, distFromNewest);
-    scores[recent[i].appResult] += weight;
+  for (let i = 0; i < valid.length; i++) {
+    overallCounts[valid[i].appResult]++;
+    if (i > 0) {
+      const prev = valid[i - 1].appResult;
+      const cur = valid[i].appResult;
+      transitions[prev][cur]++;
+    }
   }
 
-  const rankedCategories = CATEGORIES.slice().sort((a, b) => scores[b] - scores[a]);
+  const lastCategory = valid[valid.length - 1].appResult;
+  const followUps = transitions[lastCategory];
+  const followUpTotal = CATEGORIES.reduce((sum, c) => sum + followUps[c], 0);
+
+  // Rank categories by how often they followed the last category historically.
+  // If the last category hasn't occurred often enough to have follow-up data,
+  // fall back to overall frequency across all history.
+  const source = followUpTotal >= 3 ? followUps : overallCounts;
+  const rankedCategories = CATEGORIES.slice().sort((a, b) => source[b] - source[a]);
   let pick = rankedCategories[0];
 
-  // Anti-repeat: if the same category was already predicted for the last 2
-  // rounds, switch to the next-best scoring category instead of picking the
-  // same one a 3rd time in a row.
+  // Anti-repeat safety net: if the same category was predicted for the last
+  // 2 rounds already, don't pick it a 3rd time in a row even if it's still
+  // technically the top transition — move to the next-best one instead.
   const lastTwoPredictions = valid.slice(-2)
     .map(r => r.betPrediction)
     .filter(p => p && p !== "Waiting");
@@ -380,10 +394,10 @@ function updatePredictionDisplay() {
   const waitingMsg = document.getElementById("waitingMessage");
   const retryEl = document.getElementById("retryCount");
   
-  if (nextCalculatedBet === "Waiting" || trackedResults.length < 7) {
+  if (nextCalculatedBet === "Waiting" || trackedResults.length < 8) {
     predBox.className = "pred-badge waiting";
     predBox.innerText = "⏳ Internet ပြန်လည်ချိတ်ဆက်နေပါသည်...";
-    detailEl.innerText = `ဒေတာ ${trackedResults.length}/7 ရှိပါသည်`;
+    detailEl.innerText = `ဒေတာ ${trackedResults.length}/8 ရှိပါသည်`;
     waitingMsg.style.display = "block";
     retryEl.style.display = "block";
   } else {
