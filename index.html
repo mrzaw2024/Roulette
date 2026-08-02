@@ -331,7 +331,7 @@ function getPredictionFromHistory(historyArray) {
   // Trend-weighted prediction: look at the recent sequence and give more
   // weight to results that happened more recently, so a category that has
   // been trending in the last few draws counts for more than one further back.
-  const windowSize = 15;
+  const windowSize = 30;
   const recent = valid.slice(-windowSize);
   const scores = { "0": 0, "1": 0, "2": 0, "3": 0 };
 
