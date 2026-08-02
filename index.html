@@ -363,7 +363,12 @@ function getPredictionFromHistory(historyArray) {
   }
 
   // Try each sequence length, longest first, and use the first one whose
-  // exact current sequence has actually been seen before (total > 0).
+  // exact current sequence has actually been seen before (total > 0) AND
+  // whose top category has a CLEAR lead (not tied with the runner-up).
+  // A tie (e.g. "0" and "3" both happened once after the same sequence)
+  // means the data doesn't actually favor one category over another, so we
+  // must NOT just default to picking one — we cascade down to a shorter,
+  // possibly more decisive sequence instead.
   let source = null;
   for (const len of SEQ_LENGTHS) {
     if (valid.length < len) continue;
@@ -372,14 +377,22 @@ function getPredictionFromHistory(historyArray) {
     const currentKey = keyParts.join(",");
     const stats = transitionMaps[len][currentKey];
     const total = stats ? CATEGORIES.reduce((sum, c) => sum + stats[c], 0) : 0;
-    if (total > 0) {
+    if (total === 0) continue;
+
+    const ranked = CATEGORIES.slice().sort((a, b) => stats[b] - stats[a]);
+    const topCount = stats[ranked[0]];
+    const secondCount = stats[ranked[1]];
+    if (topCount > secondCount) {
+      // Clear leader at this level — use it.
       source = stats;
       break;
     }
+    // Tied at this level — don't guess here, try a shorter sequence.
   }
 
   // Neither the last 5, 4, 3, nor 2 results ever occurred before as an
-  // exact sequence in the history — no real basis for a prediction.
+  // exact sequence with a clear leading outcome — no real basis for a
+  // confident prediction.
   if (!source) return NO_MATCH;
 
   const rankedCategories = CATEGORIES.slice().sort((a, b) => source[b] - source[a]);
