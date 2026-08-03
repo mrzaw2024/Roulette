@@ -91,6 +91,10 @@
     .cached-badge { background: #1e293b; color: #60a5fa; padding: 2px 10px; border-radius: 12px; font-size: 11px; margin-left: 8px; }
     .delete-row-btn { background: var(--accent-red); color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 14px; cursor: pointer; min-width: unset; flex: unset; }
     .delete-row-btn:hover { background: #dc2626; }
+    .digit-selector-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 6px; max-width: 400px; }
+    .digit-selector-grid select { padding: 6px 4px; background: #0f172a; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 14px; width: 100%; }
+    .digit-selector-grid label { font-size: 14px; color: #94a3b8; display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+    .digit-selector-grid label span { min-width: 18px; }
   </style>
 </head>
 <body>
@@ -184,20 +188,21 @@
         <div class="win-rate-by-level" id="winRateByLevel"></div>
       </div>
 
-      <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group 1/2/3/4 ထဲ ကိုယ်တိုင်ရွေးပါ):</label>
-      <div id="digitGroupSelector" class="level-selector">
-        <label class="level-chip">0 <select data-digit="0" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">1 <select data-digit="1" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">2 <select data-digit="2" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">3 <select data-digit="3" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">4 <select data-digit="4" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">5 <select data-digit="5" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">6 <select data-digit="6" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">7 <select data-digit="7" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">8 <select data-digit="8" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label class="level-chip">9 <select data-digit="9" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+      <!-- UPDATED: Digit to Group mapping with "?" option -->
+      <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group 1/2/3/4 ထဲ ကိုယ်တိုင်ရွေးပါ၊ ? ဆိုရင် မထည့်ပါ):</label>
+      <div id="digitGroupSelector" class="digit-selector-grid">
+        <label><span>0</span> <select data-digit="0" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>1</span> <select data-digit="1" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>2</span> <select data-digit="2" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>3</span> <select data-digit="3" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>4</span> <select data-digit="4" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>5</span> <select data-digit="5" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>6</span> <select data-digit="6" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>7</span> <select data-digit="7" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>8</span> <select data-digit="8" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
+        <label><span>9</span> <select data-digit="9" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="?">?</option></select></label>
       </div>
-      <div class="input-hint">💡 ဂဏန်း တစ်ခုစီအတွက် ဘယ် Group (1/2/3/4) ထဲထည့်မလဲ ကိုယ်တိုင်ရွေးနိုင်ပါတယ် — Group တစ်ခုစီမှာ ဂဏန်း အနည်းဆုံး တစ်ခုတော့ ပါဝင်ရပါမည်။ ပြောင်းလိုက်ရင် ရှေ့က ဒေတာအားလုံးကိုပါ Group အသစ်နဲ့ ပြန်တွက်ပေးပါလိမ့်မယ်</div>
+      <div class="input-hint">💡 "?" ရွေးထားရင် အဲဒီဂဏန်းကို ဘယ် Group မှ မထည့်ပါ — ရှာဖွေတဲ့အခါ ဂရုမစိုက်ပါ။ အနည်းဆုံး Group 2 ခုတော့ ရှိရပါမည်။</div>
 
       <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
       <div id="levelSelector" class="level-selector">
@@ -224,7 +229,7 @@
       </label>
       <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
 
-      <!-- START: new custom ranking selection for 2-pick mode -->
+      <!-- NEW: custom 2-pick selection with AB, AC, AD, BC, BD, CD -->
       <div style="background:#0f172a; border-radius:8px; padding:12px; margin-top:12px;">
         <label class="level-chip" style="width:fit-content; margin-top:6px;">
           <input type="checkbox" id="predictTwoToggle" onchange="applyFormulaSettings()">
@@ -239,21 +244,21 @@
             </select>
           </div>
           <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
-            <span style="color:#94a3b8; font-size:13px;">ထိုစီစဉ်မှုထဲက ဘယ်နေရာက ယူမလဲ:</span>
+            <span style="color:#94a3b8; font-size:13px;">ထိုစီစဉ်မှုထဲက ဘယ်အတွဲကို ယူမလဲ:</span>
             <select id="pickRuleSelect" onchange="applyFormulaSettings()" style="background:#1e293b; color:white; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px;">
-              <option value="top2">ထိပ်ဆုံး 2 ခု (Top 2)</option>
-              <option value="top1_bottom1">ထိပ်ဆုံး 1 ခု + အောက်ဆုံး 1 ခု</option>
-              <option value="bottom2">အောက်ဆုံး 2 ခု (Bottom 2)</option>
-              <option value="top1_mid1">ထိပ်ဆုံး 1 ခု + အလယ် 1 ခု</option>
-              <option value="mid2">အလယ် 2 ခု</option>
+              <option value="AB">AB (ထိပ်ဆုံး 1 + ဒုတိယ)</option>
+              <option value="AC">AC (ထိပ်ဆုံး 1 + တတိယ)</option>
+              <option value="AD">AD (ထိပ်ဆုံး 1 + အောက်ဆုံး)</option>
+              <option value="BC">BC (ဒုတိယ + တတိယ)</option>
+              <option value="BD">BD (ဒုတိယ + အောက်ဆုံး)</option>
+              <option value="CD">CD (တတိယ + အောက်ဆုံး)</option>
             </select>
           </div>
           <div style="font-size:12px; color:#64748b; margin-top:4px;">
-            💡 ဥပမာ — "အကြိမ်ရေ အများဆုံး" နဲ့ "ထိပ်ဆုံး 2 ခု" ဆိုရင် အကြိမ်ရေ အများဆုံး 2 ခုကို ခန့်မှန်းမည်။ "အကြိမ်ရေ အနည်းဆုံး" + "အောက်ဆုံး 2 ခု" ဆိုရင် အကြိမ်ရေ အနည်းဆုံး 2 ခုကို ခန့်မှန်းမည်။
+            💡 ဥပမာ — "အကြိမ်ရေ အများဆုံး" နဲ့ "AB" ဆိုရင် အများဆုံးနှင့် ဒုတိယအများဆုံး 2 ခုကို ခန့်မှန်းမည်။ "အကြိမ်ရေ အနည်းဆုံး" + "CD" ဆိုရင် အနည်းဆုံးနှင့် ဒုတိယအနည်းဆုံး 2 ခုကို ခန့်မှန်းမည်။
           </div>
         </div>
       </div>
-      <!-- END: new custom ranking selection for 2-pick mode -->
 
       <h3 style="color:#60a5fa; margin-top:20px;">📉 ဆက်တိုက်ရှုံးမှု စာရင်း (Losing Streaks)</h3>
       <div class="win-rate-box">
@@ -302,10 +307,10 @@ let isRunning = false;
 let fetchAttempts = 0;
 let errorCount = 0;
 let userRequestedBlock = 84424346;
-let retryInterval = 3000; // 3 seconds retry interval
+let retryInterval = 3000;
 let hasCachedData = false;
 let isFirstLoad = true;
-let processedBlocks = new Set(); // Track already processed blocks
+let processedBlocks = new Set();
 
 // ===== DATA STORAGE FUNCTIONS =====
 function saveData() {
@@ -337,7 +342,7 @@ function loadData() {
       try {
         const parsedMap = JSON.parse(storedDigitMap);
         const validKeys = ["0","1","2","3","4","5","6","7","8","9"];
-        const validValues = ["1","2","3","4"];
+        const validValues = ["1","2","3","4","?"];
         const isValid = validKeys.every(k => validValues.includes(parsedMap[k]));
         if (isValid) {
           DIGIT_CATEGORY_MAP = parsedMap;
@@ -377,7 +382,6 @@ function loadData() {
       if (toggle) toggle.checked = predictTwoMode;
     }
 
-    // load new rank/pick rules
     const storedRankRule = localStorage.getItem("savedRankRule");
     if (storedRankRule) {
       rankRule = storedRankRule;
@@ -424,16 +428,12 @@ function loadData() {
       trackedResults = JSON.parse(storedResults);
       hasCachedData = trackedResults.length > 0;
       
-      // Load processed blocks
       const storedProcessed = localStorage.getItem("savedProcessedBlocks");
       if (storedProcessed) {
         processedBlocks = new Set(JSON.parse(storedProcessed));
       }
       
       if (trackedResults.length > 0) {
-        // Re-run every row through the CURRENT formula right away — otherwise
-        // the table would keep showing whatever predictions were saved from
-        // an older formula until the stream was started again.
         recalculateAllPredictions();
         updateTrendBoard();
         updateTableDisplay();
@@ -454,8 +454,6 @@ function loadData() {
       document.getElementById("startBlock").value = currentTrackingBlock;
     }
 
-    // First-ever visit: nothing typed and nothing saved yet — fall back to
-    // the original hardcoded starting block so the field isn't left blank.
     if (!document.getElementById("startBlock").value.trim()) {
       currentTrackingBlock = 84424346;
       document.getElementById("startBlock").value = 84424346;
@@ -489,9 +487,6 @@ window.addEventListener('DOMContentLoaded', () => {
   if (activeKey) {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("appBox").classList.remove("hidden");
-    // Don't force the input back to the hardcoded default here — leave it
-    // blank so loadData() below can tell there's no explicit user input and
-    // correctly restore the last block that was left off from localStorage.
     document.getElementById("startBlock").value = "";
     loadData();
     isFirstLoad = false;
@@ -521,30 +516,32 @@ function switchTab(tabId) {
 }
 
 // ===== DIGIT → CATEGORY MAPPING =====
-// Default: 0,1,2 -> "1" | 3,4 -> "2" | 5,6 -> "3" | 7,8,9 -> "4"
-// This is now customizable by the user via the "ဂဏန်း → Group သတ်မှတ်ခြင်း" selectors.
+// Now supports "?" which means "ignore this digit"
 let DIGIT_CATEGORY_MAP = { "0":"1", "1":"1", "2":"1", "3":"2", "4":"2", "5":"3", "6":"3", "7":"4", "8":"4", "9":"4" };
-let historyDisplayLimit = 300; // user-configurable, used by both the record table and the Win Rate window
+let historyDisplayLimit = 300;
+
 function digitToCategory(d) {
-  return DIGIT_CATEGORY_MAP[String(d)];
+  const val = DIGIT_CATEGORY_MAP[String(d)];
+  if (val === "?") return null; // ignore this digit
+  return val;
 }
 
 function updateGroupSummary() {
   const el = document.getElementById("groupSummary");
   if (!el) return;
-  const groups = { "1": [], "2": [], "3": [], "4": [] };
+  const groups = { "1": [], "2": [], "3": [], "4": [], "?": [] };
   for (let d = 0; d <= 9; d++) {
-    const g = DIGIT_CATEGORY_MAP[String(d)];
+    const g = DIGIT_CATEGORY_MAP[String(d)] || "?";
     if (groups[g]) groups[g].push(d);
   }
-  el.innerText = `1(${groups["1"].join("")}) 2(${groups["2"].join("")}) 3(${groups["3"].join("")}) 4(${groups["4"].join("")})`;
+  el.innerText = `1(${groups["1"].join("")}) 2(${groups["2"].join("")}) 3(${groups["3"].join("")}) 4(${groups["4"].join("")}) ${groups["?"].length ? "?("+groups["?"].join("")+")" : ""}`;
 }
 
 function applyHistoryLimit() {
   const input = document.getElementById("historyLimitInput");
   const value = parseInt(input.value);
   if (!value || value < 1) {
-    input.value = historyDisplayLimit; // revert to last valid value
+    input.value = historyDisplayLimit;
     return;
   }
   historyDisplayLimit = value;
@@ -563,13 +560,12 @@ function applyDigitMapping() {
     newMap[sel.getAttribute('data-digit')] = sel.value;
   });
 
-  // Every group (1, 2, 3, 4) must be used at least once, otherwise a whole
-  // category would vanish and predictions/roadmap for it would break.
-  const usedGroups = new Set(Object.values(newMap));
-  if (usedGroups.size < 4) {
-    alert("Group 1, 2, 3, 4 အားလုံးမှာ ဂဏန်း အနည်းဆုံး တစ်ခုစီ ပါဝင်ရပါမည်။");
+  // At least 2 groups must be used (excluding "?")
+  const usedGroups = new Set(Object.values(newMap).filter(v => v !== "?"));
+  if (usedGroups.size < 2) {
+    alert("အနည်းဆုံး Group 2 ခုတော့ သုံးရပါမည်။");
     selects.forEach(sel => {
-      sel.value = DIGIT_CATEGORY_MAP[sel.getAttribute('data-digit')];
+      sel.value = DIGIT_CATEGORY_MAP[sel.getAttribute('data-digit')] || "1";
     });
     return;
   }
@@ -578,14 +574,14 @@ function applyDigitMapping() {
   localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
   updateGroupSummary();
 
-  // Every already-recorded row was categorized under the OLD mapping — since
-  // we still have the raw digit for each row, re-derive appResult/colorClass
-  // for all of them under the NEW mapping so history stays consistent.
   trackedResults.forEach(row => {
     if (row.digit !== undefined && row.digit !== "-" && row.digit !== null) {
       const cat = digitToCategory(row.digit);
       row.appResult = cat;
-      row.colorClass = "color-" + cat;
+      row.colorClass = cat ? "color-" + cat : "color-skip";
+    } else {
+      row.appResult = null;
+      row.colorClass = "color-skip";
     }
   });
 
@@ -599,58 +595,34 @@ function applyDigitMapping() {
 
 // ===== HASH ANALYSIS =====
 function analyzeHashData(blockHash) {
-  if (!blockHash) return { result: "Skip", colorClass: "color-skip", digit: "-" };
+  if (!blockHash) return { result: null, colorClass: "color-skip", digit: "-" };
   let targetDigit = null;
   for (let i = blockHash.length - 1; i >= 0; i--) {
     const char = blockHash[i];
     if (char >= '0' && char <= '9') { targetDigit = parseInt(char); break; }
   }
-  if (targetDigit === null) return { result: "Skip", colorClass: "color-skip", digit: "-" };
-  // Category is looked up from the (possibly user-customized) DIGIT_CATEGORY_MAP
+  if (targetDigit === null) return { result: null, colorClass: "color-skip", digit: "-" };
   const category = digitToCategory(targetDigit);
-  const resText = category;
-  const color = "color-" + category;
-  return { result: resText, colorClass: color, digit: targetDigit };
+  if (category === null) return { result: null, colorClass: "color-skip", digit: targetDigit };
+  return { result: category, colorClass: "color-" + category, digit: targetDigit };
 }
 
 // ===== PREDICTION ENGINE =====
 const CATEGORIES = ["1", "2", "3", "4"];
-const NO_MATCH = "❓"; // shown when no formula can find a confident pick
+const NO_MATCH = "❓";
 
-// Single prediction method: Sequence Cascade only.
-// It always tries the 5-category pattern first, falls back to 4, then 3,
-// then 2, if the longer pattern was never seen before. This is the ONLY
-// method used — there is no switching to any other approach, even during
-// a losing streak.
 const FORMULA_NAMES = ["Sequence Cascade"];
-let currentFormulaIndex = 0; // always 0 — kept only for display compatibility
-let nextUsedLength = null;   // which pattern length produced the upcoming prediction
+let currentFormulaIndex = 0;
+let nextUsedLength = null;
 
-// Which pattern lengths are active in the cascade, longest → shortest.
-// Customizable via the "Pattern Level ရွေးရန်" checkboxes — e.g. leaving
-// only 5 and 4 checked makes the cascade try ONLY those two, skipping
-// everything else entirely.
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3];
-
-// How to pick among the Categories that actually followed a matched
-// pattern before: "least" = the one that followed the fewest times,
-// "most" = the one that followed the most times. Customizable via the
-// radio buttons.
 let selectionMode = "least";
-
-// If true, the Category that JUST occurred (the very last result) is never
-// offered as a candidate for the next prediction, even if it would
-// otherwise be the least/most-frequent follower. Customizable via checkbox.
 let excludeLastCategory = false;
-
-// If true, predict 2 Categories at once instead of just 1 (out of the 4
-// available groups) — a hit on EITHER of the two counts as correct.
-// Customizable via the "Group 2 ခု ခန့်မှန်းမည်" checkbox.
 let predictTwoMode = false;
 
-// NEW: ranking rule and pick rule for 2-pick mode
-let rankRule = "most";        // "most" or "least"
-let pickRule = "top2";        // "top2", "top1_bottom1", "bottom2", "top1_mid1", "mid2"
+// NEW: rankRule: "most" or "least", pickRule: "AB", "AC", "AD", "BC", "BD", "CD"
+let rankRule = "most";
+let pickRule = "AB";
 
 function applyFormulaSettings() {
   const modeInput = document.querySelector('input[name="selectionMode"]:checked');
@@ -658,7 +630,6 @@ function applyFormulaSettings() {
   excludeLastCategory = document.getElementById("excludeLastCategoryToggle").checked;
   predictTwoMode = document.getElementById("predictTwoToggle").checked;
 
-  // read new rank/pick rules
   const rankSel = document.getElementById("rankRuleSelect");
   if (rankSel) rankRule = rankSel.value;
   const pickSel = document.getElementById("pickRuleSelect");
@@ -682,11 +653,9 @@ function applyLevelSelection() {
   const checked = Array.from(boxes)
     .filter(b => b.checked)
     .map(b => parseInt(b.value))
-    .sort((a, b) => b - a); // longest first
+    .sort((a, b) => b - a);
 
   if (checked.length === 0) {
-    // Never allow zero levels — nothing could ever be predicted. Re-check
-    // whichever box the user just unchecked and warn instead.
     boxes.forEach(b => { if (!b.checked) b.checked = true; });
     alert("Level တစ်ခုမှ မရွေးထားလို့ မရပါ — အနည်းဆုံး တစ်ခုတော့ ရွေးထားပါ။");
     return;
@@ -695,8 +664,6 @@ function applyLevelSelection() {
   enabledLevels = checked;
   localStorage.setItem("savedEnabledLevels", JSON.stringify(enabledLevels));
 
-  // Every existing prediction was made using the OLD level set, so replay
-  // the whole history with the new one and refresh everything on screen.
   recalculateAllPredictions();
   updateTrendBoard();
   updateTableDisplay();
@@ -705,33 +672,11 @@ function applyLevelSelection() {
 }
 
 function recalculateAllPredictions() {
-  // The whole history is replayed from scratch every time so the engine
-  // always ends up in a state consistent with the full trackedResults
-  // array — including after a row is deleted. No formula-switching:
-  // the cascade (using only the currently-enabled levels, longest first)
-  // keeps being used no matter how long the losing streak runs.
-  //
-  // --- Category pattern matching (1, 2, 3) ---
-  // Every raw digit (0-9) is first bucketed into Category 1, 2, or 3
-  // (DIGIT_CATEGORY_MAP). The cascade then works ONLY on that Category
-  // sequence, e.g.: data = 2,1,3,2,1,3,1,2,3,1
-  //   last 2 categories (newest→oldest): 1,3   → look this 2-length pattern up
-  //   last 3 categories: 1,3,2
-  //   last 4 categories: 1,3,2,1
-  //   last 5 categories: 1,3,2,1,3
-  // At each length we check whether that exact Category-pattern occurred
-  // earlier in the data. If it did, we look at which Category came right
-  // after it (aggregated across every earlier time it occurred) and predict
-  // the Category that followed the LEAST often. We try the longest ENABLED
-  // length first; if the least-frequent result is tied between two
-  // categories (not decisive), or the pattern was never seen, we drop down
-  // to the next-shorter ENABLED length. Levels the user has unchecked are
-  // skipped entirely — they're never even looked at.
   const SEQ_LENGTHS = enabledLevels;
   const makeCounter = () => ({ "1": 0, "2": 0, "3": 0, "4": 0 });
   const transitionMaps = {};
   SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
-  const valid = []; // chronological Category strings ("1"/"2"/"3") seen so far
+  const valid = [];
 
   function buildKey(len) {
     if (valid.length < len) return null;
@@ -740,77 +685,64 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  // --- Sequence Cascade (Category pattern match) ---
-  // Returns { categories: [...], length } where `categories` is an array of
-  // 1 category (normal mode) or 2 categories (predictTwoMode), and `length`
-  // tells you which pattern size actually produced the pick — or
-  // { categories: null, length: null } if no pattern was decisive.
   function predictSequenceCascade() {
     const lastCategory = valid.length > 0 ? valid[valid.length - 1] : null;
     const pickCount = predictTwoMode ? 2 : 1;
 
     for (const len of SEQ_LENGTHS) {
       const key = buildKey(len);
-      if (key === null) continue; // not enough history yet for this length
+      if (key === null) continue;
       const stats = transitionMaps[len][key];
-      let seen = CATEGORIES.filter(c => stats && stats[c] > 0); // categories that actually followed this pattern at least once
+      let seen = CATEGORIES.filter(c => stats && stats[c] > 0);
 
       if (excludeLastCategory && lastCategory !== null) {
-        seen = seen.filter(c => c !== lastCategory); // never re-offer the category that just occurred
+        seen = seen.filter(c => c !== lastCategory);
       }
 
-      // Need strictly MORE candidates than we're picking, otherwise we'd
-      // just be taking "everything available" rather than making a real
-      // choice — not decisive, try a shorter pattern instead.
       if (seen.length <= pickCount) continue;
 
-      // sort by rank rule
       const sorted = seen.slice().sort((a, b) => {
         if (rankRule === "most") {
           return stats[b] - stats[a];
-        } else { // "least"
+        } else {
           return stats[a] - stats[b];
         }
       });
 
-      // now pick based on pickRule
+      // Map pickRule to indices
       let picked = [];
-      if (pickRule === "top2") {
-        picked = sorted.slice(0, 2);
-      } else if (pickRule === "top1_bottom1") {
-        if (sorted.length >= 2) {
-          picked = [sorted[0], sorted[sorted.length - 1]];
-        } else {
-          picked = sorted.slice(0, 2);
-        }
-      } else if (pickRule === "bottom2") {
-        picked = sorted.slice(-2);
-      } else if (pickRule === "top1_mid1") {
-        if (sorted.length >= 3) {
-          const midIdx = Math.floor(sorted.length / 2);
-          picked = [sorted[0], sorted[midIdx]];
-        } else {
-          picked = sorted.slice(0, 2);
-        }
-      } else if (pickRule === "mid2") {
-        if (sorted.length >= 4) {
-          const midStart = Math.floor((sorted.length - 2) / 2);
-          picked = sorted.slice(midStart, midStart + 2);
-        } else {
-          picked = sorted.slice(0, 2);
-        }
+      if (pickRule === "AB") {
+        if (sorted.length >= 2) picked = [sorted[0], sorted[1]];
+        else picked = sorted.slice(0, 2);
+      } else if (pickRule === "AC") {
+        if (sorted.length >= 3) picked = [sorted[0], sorted[2]];
+        else if (sorted.length === 2) picked = [sorted[0], sorted[1]];
+        else picked = sorted.slice(0, 2);
+      } else if (pickRule === "AD") {
+        if (sorted.length >= 2) picked = [sorted[0], sorted[sorted.length - 1]];
+        else picked = sorted.slice(0, 2);
+      } else if (pickRule === "BC") {
+        if (sorted.length >= 3) picked = [sorted[1], sorted[2]];
+        else if (sorted.length === 2) picked = [sorted[0], sorted[1]];
+        else picked = sorted.slice(0, 2);
+      } else if (pickRule === "BD") {
+        if (sorted.length >= 3) picked = [sorted[1], sorted[sorted.length - 1]];
+        else if (sorted.length === 2) picked = [sorted[0], sorted[1]];
+        else picked = sorted.slice(0, 2);
+      } else if (pickRule === "CD") {
+        if (sorted.length >= 4) picked = [sorted[2], sorted[sorted.length - 1]];
+        else if (sorted.length === 3) picked = [sorted[1], sorted[2]];
+        else if (sorted.length === 2) picked = [sorted[0], sorted[1]];
+        else picked = sorted.slice(0, 2);
       } else {
-        // fallback to top2
         picked = sorted.slice(0, 2);
       }
 
-      // ensure we have exactly pickCount items, if not fallback to top2
       if (picked.length < pickCount) {
         picked = sorted.slice(0, pickCount);
       }
 
-      // check decisiveness: the last picked and first excluded must not tie
-      // but only if we have more items than pickCount
+      // Check decisiveness: only if we have more items than pickCount
       if (sorted.length > pickCount) {
         const lastPickedCount = stats[picked[pickCount - 1]];
         const firstExcludedCount = stats[sorted[pickCount]];
@@ -819,7 +751,6 @@ function recalculateAllPredictions() {
 
       return { categories: picked, length: len };
     }
-    // Not found (or never decisive) at any enabled length — no basis to guess.
     return { categories: null, length: null };
   }
 
@@ -837,12 +768,9 @@ function recalculateAllPredictions() {
     }
 
     row.betPrediction = betPrediction;
-    row.formulaUsed = valid.length < 10 ? null : 0; // always Sequence Cascade
-    row.formulaLength = usedLength; // 10 down to 3, or null
+    row.formulaUsed = valid.length < 10 ? null : 0;
+    row.formulaLength = usedLength;
 
-    // ----- Feed this row's ACTUAL result into the running state -----
-    // (recorded BEFORE pushing the current category, so a pattern can never
-    // "match itself")
     const cur = row.appResult;
     const curIsValid = CATEGORIES.includes(cur);
 
@@ -859,7 +787,6 @@ function recalculateAllPredictions() {
     }
   }
 
-  // ----- Predict the upcoming (not-yet-seen) result using the final state -----
   currentFormulaIndex = 0;
   if (valid.length < 10) {
     nextCalculatedBet = "Waiting";
@@ -935,34 +862,23 @@ function updateStats() {
   }
 }
 
-// ===== WIN RATE TRACKER =====
-// Only rows where a REAL prediction was made (betPrediction is an array of
-// 1 or 2 categories, not "Waiting" or the NO_MATCH "?") count toward
-// accuracy — a row that was never predicted can't be scored as a win or a
-// loss. In predictTwoMode, a hit on EITHER predicted category counts as
-// correct. Also breaks the accuracy down per pattern-length so you can see
-// whether any particular level is actually beating pure chance (~25% with
-// 4 groups, single-pick mode) or not.
 function updateWinRateStats() {
   const pctEl = document.getElementById("winRatePercent");
-  if (!pctEl) return; // markup not present in this build
+  if (!pctEl) return;
 
-  // Only the most recent N records count toward the Win Rate (N is
-  // user-configurable) — matches the record table below, so the percentage
-  // the user sees always reflects the same window of data as the visible rows.
   const recentResults = trackedResults.slice(-historyDisplayLimit);
 
   let total = 0, correct = 0, wrong = 0, noMatchCount = 0;
-  const byLevel = {}; // level -> { total, correct }
+  const byLevel = {};
 
   recentResults.forEach(r => {
-    if (!CATEGORIES.includes(r.appResult)) return; // skip rows with no real result yet
+    if (!CATEGORIES.includes(r.appResult)) return;
 
     if (r.betPrediction === NO_MATCH) {
       noMatchCount++;
-      return; // not counted toward the win-rate percentage
+      return;
     }
-    if (!Array.isArray(r.betPrediction)) return; // skip "Waiting" — nothing was predicted yet
+    if (!Array.isArray(r.betPrediction)) return;
 
     total++;
     const isCorrect = r.betPrediction.includes(r.appResult);
@@ -997,23 +913,17 @@ function updateWinRateStats() {
   updateLosingStreakSummary(recentResults);
 }
 
-// ===== LOSING STREAK ANALYSIS =====
-// Walks the same window of rows the Win Rate Tracker uses, and counts how
-// many times each consecutive-loss streak length occurred. Rows with no
-// real prediction (Waiting / NO_MATCH) are skipped — they neither continue
-// nor break a streak, since no bet was actually made on them. A streak
-// still in progress at the very end of the window is counted too.
 function updateLosingStreakSummary(recentResults) {
   const el = document.getElementById("losingStreakSummary");
   if (!el) return;
 
-  const streakCounts = {}; // length -> how many times a streak of exactly this length occurred
+  const streakCounts = {};
   let currentStreak = 0;
 
   recentResults.forEach(r => {
-    if (!CATEGORIES.includes(r.appResult)) return;      // no real result yet
-    if (r.betPrediction === NO_MATCH) return;             // no bet was made — doesn't affect streak
-    if (!Array.isArray(r.betPrediction)) return;          // "Waiting" — no bet was made yet
+    if (!CATEGORIES.includes(r.appResult)) return;
+    if (r.betPrediction === NO_MATCH) return;
+    if (!Array.isArray(r.betPrediction)) return;
 
     const isCorrect = r.betPrediction.includes(r.appResult);
     if (isCorrect) {
@@ -1025,7 +935,6 @@ function updateLosingStreakSummary(recentResults) {
       currentStreak++;
     }
   });
-  // An ongoing losing streak still in progress right now also counts.
   if (currentStreak > 0) {
     streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
   }
@@ -1034,7 +943,7 @@ function updateLosingStreakSummary(recentResults) {
   const lengths = Object.keys(streakCounts)
     .map(Number)
     .filter(len => len >= MIN_STREAK_TO_SHOW)
-    .sort((a, b) => b - a); // longest streak first
+    .sort((a, b) => b - a);
 
   if (lengths.length === 0) {
     el.innerHTML = `<div class="level-row"><span>${MIN_STREAK_TO_SHOW} ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
@@ -1047,7 +956,7 @@ function updateLosingStreakSummary(recentResults) {
 }
 
 // ===== DIGIT DATA — COPY & MANUAL IMPORT =====
-let manualIdCounter = -1; // negative unique ids for manually-entered rows, never collide with real block numbers
+let manualIdCounter = -1;
 
 function getDigitDataString() {
   return trackedResults
@@ -1101,7 +1010,6 @@ function importManualData() {
     return;
   }
 
-  // Accept digits separated by comma, space, and/or newline.
   const parts = raw.split(/[,\s]+/).filter(p => p.length > 0);
   const digits = [];
   for (const p of parts) {
@@ -1116,12 +1024,8 @@ function importManualData() {
     return;
   }
 
-  // Appended onto the end of the existing chronological history, so a
-  // subsequent "Start Stream" continues auto-adding live blocks right after
-  // this manually-typed data — exactly like the manual entries were the
-  // most recent results seen so far.
   digits.forEach(d => {
-    const analysis = analyzeHashData(String(d)); // reuse the same 0/1-3/4-6/7-9 bucket rule
+    const analysis = analyzeHashData(String(d));
     trackedResults.push({
       blockNum: manualIdCounter--,
       blockHash: null,
@@ -1152,7 +1056,7 @@ function importManualData() {
 
 function updateTrendBoard() {
   const rows = 6, cols = 50;
-  const RECENT_WINDOW = 20; // Big Road always rebuilt from just the latest 20 results
+  const RECENT_WINDOW = 20;
   let grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
   let colIndex = 0, rowIndex = 0, lastResultText = null;
   const valid = trackedResults.filter(r => CATEGORIES.includes(r.appResult)).slice(-RECENT_WINDOW);
@@ -1205,10 +1109,8 @@ function updateTableDisplay() {
     return;
   }
   
-  // Show only the most recent N results (N is user-configurable)
   const displayResults = trackedResults.slice(-historyDisplayLimit);
   let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
-  // Display from newest to oldest (reverse order)
   for (let i = displayResults.length - 1; i >= 0; i--) {
     let row = displayResults[i];
     if (!row) continue;
@@ -1226,14 +1128,12 @@ function updateTableDisplay() {
   }
   document.getElementById("output").innerHTML = table + "</tbody></table>";
   
-  // Auto scroll to top to see newest results
   const wrapper = document.getElementById("tableWrapper");
   if (wrapper) {
     wrapper.scrollTop = 0;
   }
 }
 
-// ===== DELETE A SINGLE RECORD =====
 function deleteRecord(blockNum) {
   if (!confirm(`Block ${blockNum} ကို ဖျက်မှာ သေချာပါသလား?`)) return;
 
@@ -1243,10 +1143,7 @@ function deleteRecord(blockNum) {
   trackedResults.splice(idx, 1);
   processedBlocks.delete(blockNum);
 
-  // Recalculate predictions since the sequence changed
   recalculateAllPredictions();
-
-  // Refresh every part of the UI that depends on trackedResults
   updateTrendBoard();
   updateTableDisplay();
   updatePredictionDisplay();
@@ -1283,14 +1180,9 @@ function hideWaitingMessage() {
 }
 
 // ===== FETCH BLOCK DATA WITH CACHE CHECK =====
-let isFetchingBlock = false; // prevents two overlapping fetches from processing the same block twice
+let isFetchingBlock = false;
 
 async function fetchNextLiveBlock() {
-  // If a fetch for the current block is still in flight when the 3-second
-  // timer fires again, skip this call entirely — otherwise both calls read
-  // the same currentTrackingBlock (it only advances AFTER a successful
-  // fetch) and both push a row for it, producing an exact duplicate block
-  // like the "84999618" appearing twice.
   if (isFetchingBlock) {
     console.log("⏭️ Previous fetch still in progress, skipping this tick");
     return;
@@ -1307,7 +1199,6 @@ async function fetchNextLiveBlockInner() {
   const maxHistory = parseInt(document.getElementById("count").value) || 300;
   const currentBlock = currentTrackingBlock;
   
-  // Check if this block was already processed
   if (processedBlocks.has(currentBlock)) {
     console.log(`⏭️ Block ${currentBlock} already processed, skipping...`);
     currentTrackingBlock += 20;
@@ -1316,7 +1207,6 @@ async function fetchNextLiveBlockInner() {
     return;
   }
   
-  // Show waiting message
   showWaitingMessage();
   
   try {
@@ -1338,7 +1228,6 @@ async function fetchNextLiveBlockInner() {
     if (data.blockID) {
       const analysis = analyzeHashData(data.blockID);
       
-      // Add to processed blocks
       processedBlocks.add(currentBlock);
       
       trackedResults.push({
@@ -1352,15 +1241,11 @@ async function fetchNextLiveBlockInner() {
 
       if (trackedResults.length > maxHistory) {
         const removed = trackedResults.shift();
-        // Remove from processed set if needed
         if (removed) {
           processedBlocks.delete(removed.blockNum);
         }
       }
 
-      // Record the result data FIRST (this must never be lost even if a
-      // display function below has a bug), then update the UI separately
-      // so a UI error can't get misreported as a "network/fetch error".
       try {
         recalculateAllPredictions();
         updateTrendBoard();
@@ -1383,7 +1268,6 @@ async function fetchNextLiveBlockInner() {
       errorCount = 0;
       fetchAttempts = 0;
       
-      // Hide waiting message on success
       hideWaitingMessage();
       
       const statusEl = document.getElementById("liveStatus");
@@ -1401,8 +1285,6 @@ async function fetchNextLiveBlockInner() {
     errorCount++;
     fetchAttempts++;
     
-    // Show waiting message with retry info AND the real error, so it's
-    // obvious whether this is a network issue or a code/CORS issue.
     const waitingMsg = document.getElementById("waitingMessage");
     waitingMsg.style.display = "block";
     waitingMsg.innerHTML = `⏳ Waiting... (${fetchAttempts}) <span class='loading-dots'></span><br><span style="color:#f87171; font-size:12px;">Error: ${error.message || error}</span>`;
@@ -1411,7 +1293,6 @@ async function fetchNextLiveBlockInner() {
     retryEl.style.display = "block";
     retryEl.innerText = `ပြန်လည်ကြိုးစားမှု: ${fetchAttempts} (၃ စက္ကန့်တစ်ခါ)`;
     
-    // Try alternative API with retry
     if (fetchAttempts < 10) {
       try {
         const altResponse = await fetch("https://api.trongrid.io/wallet/getblockbynum?nocache=" + Date.now(), {
@@ -1424,7 +1305,6 @@ async function fetchNextLiveBlockInner() {
           if (altData.blockID) {
             const analysis = analyzeHashData(altData.blockID);
             
-            // Add to processed blocks
             processedBlocks.add(currentBlock);
             
             trackedResults.push({
@@ -1482,18 +1362,13 @@ function startLiveTracking() {
     document.getElementById("startBlock").value = newBlock;
   }
 
-  // Always jump straight to whichever block number is currently typed in the
-  // box — even if a stream was already running, or this number was searched
-  // before — so it never silently keeps following the old sequence instead.
   currentTrackingBlock = newBlock;
   userRequestedBlock = newBlock;
-  processedBlocks.delete(newBlock); // don't let it be skipped as "already processed"
+  processedBlocks.delete(newBlock);
   document.getElementById("blockInfo").innerText = `Started from: ${newBlock} | Current: ${newBlock}`;
 
   document.getElementById("warningBox").classList.remove("show");
 
-  // Stop any existing interval first, then restart clean with the new block,
-  // so the new number takes effect immediately instead of being ignored.
   if (liveIntervalId) {
     clearInterval(liveIntervalId);
     liveIntervalId = null;
@@ -1503,7 +1378,6 @@ function startLiveTracking() {
   errorCount = 0;
   fetchAttempts = 0;
 
-  // Show waiting message immediately
   showWaitingMessage();
 
   saveData();
@@ -1542,16 +1416,13 @@ function stopLiveTracking() {
 }
 
 function forceRefresh() {
-  // Refresh without clearing data - just fetch next block
   if (isRunning) {
     fetchAttempts = 0;
     errorCount = 0;
-    // Don't reload all data, just fetch next
     fetchNextLiveBlock();
     document.getElementById("lastUpdateTime").innerText = `Manual refresh: ${new Date().toLocaleTimeString()}`;
     console.log("🔄 Refresh clicked - keeping cached data");
   } else {
-    // If not running, just reload from cache
     loadData();
     document.getElementById("lastUpdateTime").innerText = `Loaded from cache: ${new Date().toLocaleTimeString()}`;
     console.log("🔄 Refresh clicked - loaded from cache");
@@ -1606,7 +1477,6 @@ function clearStoredData() {
   }
 }
 
-// ===== KEYBOARD SHORTCUTS =====
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && document.getElementById('accessKeyInput') === document.activeElement) {
     verifyKey();
@@ -1619,10 +1489,9 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log("✅ Premium Lottery Analysis Tool v55 Loaded Successfully");
-console.log("📊 Digit→Group mapping is now user-customizable (default: 1/6/8→1, 2/7/4→2, 0/3/5/9→3)");
+console.log("📊 Digit→Group mapping now supports '?' to ignore digits");
 console.log(`🔄 Auto-retry every ${retryInterval/1000} seconds`);
 console.log(`📈 Tracked Results: ${trackedResults.length}`);
-console.log("📋 Showing ALL records without limit");
 console.log("💾 Data is cached - Refresh won't clear data");
 console.log("📦 Processed blocks:", processedBlocks.size);
 console.log("⌨️ Press 'R' key to force refresh (keeps cache)");
