@@ -121,6 +121,21 @@
       <label>🔢 Max Stream Frame Count:</label>
       <input type="number" id="count" value="300">
 
+      <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group 1/2/3 ထဲ ကိုယ်တိုင်ရွေးပါ):</label>
+      <div id="digitGroupSelector" class="level-selector">
+        <label class="level-chip">0 <select data-digit="0" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">1 <select data-digit="1" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">2 <select data-digit="2" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">3 <select data-digit="3" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">4 <select data-digit="4" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">5 <select data-digit="5" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">6 <select data-digit="6" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">7 <select data-digit="7" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">8 <select data-digit="8" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">9 <select data-digit="9" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+      </div>
+      <div class="input-hint">💡 ဂဏန်း တစ်ခုစီအတွက် ဘယ် Group (1/2/3) ထဲထည့်မလဲ ကိုယ်တိုင်ရွေးနိုင်ပါတယ် — Group တစ်ခုစီမှာ ဂဏန်း အနည်းဆုံး တစ်ခုတော့ ပါဝင်ရပါမည်။ ပြောင်းလိုက်ရင် ရှေ့က ဒေတာအားလုံးကိုပါ Group အသစ်နဲ့ ပြန်တွက်ပေးပါလိမ့်မယ်</div>
+
       <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
       <div id="levelSelector" class="level-selector">
         <label class="level-chip"><input type="checkbox" value="10" checked onchange="applyLevelSelection()"> 10</label>
@@ -258,6 +273,7 @@ function saveData() {
     localStorage.setItem("savedEnabledLevels", JSON.stringify(enabledLevels));
     localStorage.setItem("savedSelectionMode", selectionMode);
     localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
+    localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -266,6 +282,23 @@ function saveData() {
 
 function loadData() {
   try {
+    const storedDigitMap = localStorage.getItem("savedDigitCategoryMap");
+    if (storedDigitMap) {
+      try {
+        const parsedMap = JSON.parse(storedDigitMap);
+        const validKeys = ["0","1","2","3","4","5","6","7","8","9"];
+        const validValues = ["1","2","3"];
+        const isValid = validKeys.every(k => validValues.includes(parsedMap[k]));
+        if (isValid) {
+          DIGIT_CATEGORY_MAP = parsedMap;
+        }
+      } catch (e) { /* ignore malformed storage, keep default */ }
+    }
+    document.querySelectorAll('#digitGroupSelector select').forEach(sel => {
+      const digit = sel.getAttribute('data-digit');
+      if (DIGIT_CATEGORY_MAP[digit]) sel.value = DIGIT_CATEGORY_MAP[digit];
+    });
+
     const storedMode = localStorage.getItem("savedSelectionMode");
     if (storedMode === "most" || storedMode === "least") {
       selectionMode = storedMode;
@@ -407,10 +440,51 @@ function switchTab(tabId) {
 }
 
 // ===== DIGIT → CATEGORY MAPPING =====
-// 1,6,8 -> "1" | 2,7,4 -> "2" | 0,3,5,9 -> "3"  (category "0" no longer exists)
-const DIGIT_CATEGORY_MAP = { "0":"3", "1":"1", "2":"2", "3":"3", "4":"2", "5":"3", "6":"1", "7":"2", "8":"1", "9":"3" };
+// Default: 1,6,8 -> "1" | 2,7,4 -> "2" | 0,3,5,9 -> "3"
+// This is now customizable by the user via the "ဂဏန်း → Group သတ်မှတ်ခြင်း" selectors.
+let DIGIT_CATEGORY_MAP = { "0":"3", "1":"1", "2":"2", "3":"3", "4":"2", "5":"3", "6":"1", "7":"2", "8":"1", "9":"3" };
 function digitToCategory(d) {
   return DIGIT_CATEGORY_MAP[String(d)];
+}
+
+function applyDigitMapping() {
+  const selects = document.querySelectorAll('#digitGroupSelector select');
+  const newMap = {};
+  selects.forEach(sel => {
+    newMap[sel.getAttribute('data-digit')] = sel.value;
+  });
+
+  // Every group (1, 2, 3) must be used at least once, otherwise a whole
+  // category would vanish and predictions/roadmap for it would break.
+  const usedGroups = new Set(Object.values(newMap));
+  if (usedGroups.size < 3) {
+    alert("Group 1, 2, 3 အားလုံးမှာ ဂဏန်း အနည်းဆုံး တစ်ခုစီ ပါဝင်ရပါမည်။");
+    selects.forEach(sel => {
+      sel.value = DIGIT_CATEGORY_MAP[sel.getAttribute('data-digit')];
+    });
+    return;
+  }
+
+  DIGIT_CATEGORY_MAP = newMap;
+  localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
+
+  // Every already-recorded row was categorized under the OLD mapping — since
+  // we still have the raw digit for each row, re-derive appResult/colorClass
+  // for all of them under the NEW mapping so history stays consistent.
+  trackedResults.forEach(row => {
+    if (row.digit !== undefined && row.digit !== "-" && row.digit !== null) {
+      const cat = digitToCategory(row.digit);
+      row.appResult = cat;
+      row.colorClass = "color-" + cat;
+    }
+  });
+
+  recalculateAllPredictions();
+  updateTrendBoard();
+  updateTableDisplay();
+  updatePredictionDisplay();
+  updateStats();
+  saveData();
 }
 
 // ===== HASH ANALYSIS =====
@@ -422,7 +496,7 @@ function analyzeHashData(blockHash) {
     if (char >= '0' && char <= '9') { targetDigit = parseInt(char); break; }
   }
   if (targetDigit === null) return { result: "Skip", colorClass: "color-skip", digit: "-" };
-  // 1,2,4 -> 1 | 6,7,8 -> 2 | 0,3,5,9 -> 3
+  // Category is looked up from the (possibly user-customized) DIGIT_CATEGORY_MAP
   const category = digitToCategory(targetDigit);
   const resText = category;
   const color = "color-" + category;
@@ -1311,7 +1385,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log("✅ Premium Lottery Analysis Tool v55 Loaded Successfully");
-console.log("📊 1/6/8→1, 2/7/4→2, 0/3/5/9→3 (category 0 removed)");
+console.log("📊 Digit→Group mapping is now user-customizable (default: 1/6/8→1, 2/7/4→2, 0/3/5/9→3)");
 console.log(`🔄 Auto-retry every ${retryInterval/1000} seconds`);
 console.log(`📈 Tracked Results: ${trackedResults.length}`);
 console.log("📋 Showing ALL records without limit");
