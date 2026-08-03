@@ -142,6 +142,7 @@
         <div style="font-size:12px; color:#64748b;" id="blockInfo">Started from: -- | Current: --</div>
         <div id="waitingMessage" class="waiting-message" style="display:none;">⏳ Waiting... <span class="loading-dots"></span></div>
         <div id="retryCount" class="retry-count" style="display:none;">ပြန်လည်ကြိုးစားမှု: 0 (၃ စက္ကန့်တစ်ခါ)</div>
+        <div id="groupSummary" style="font-size:12px; color:#94a3b8;"></div>
       </div>
 
       <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
@@ -164,6 +165,20 @@
       <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး <span id="historyLimitLabel1">300</span>)</h3>
       <div class="table-wrapper" id="tableWrapper">
         <div id="output"></div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker (နောက်ဆုံး <span id="historyLimitLabel2">300</span>)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-main">
+          <span id="winRatePercent" class="win-rate-percent">--%</span>
+          <span id="winRateDetail" class="win-rate-detail">0 / 0 မှန်ခဲ့သည်</span>
+        </div>
+        <div class="win-rate-breakdown">
+          <div class="breakdown-chip correct"><span id="winCorrectCount">0</span><label>မှန်</label></div>
+          <div class="breakdown-chip wrong"><span id="winWrongCount">0</span><label>မှား</label></div>
+          <div class="breakdown-chip nomatch"><span id="winNoMatchCount">0</span><label>❓ မခန့်မှန်း</label></div>
+        </div>
+        <div class="win-rate-by-level" id="winRateByLevel"></div>
       </div>
 
       <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group 1/2/3 ထဲ ကိုယ်တိုင်ရွေးပါ):</label>
@@ -205,20 +220,6 @@
         🚫 နောက်ဆုံးထွက်ခဲ့တဲ့ Category ကို ခန့်မှန်းချက်ထဲ ထည့်မသုံးပါနဲ့
       </label>
       <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
-
-      <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker (နောက်ဆုံး <span id="historyLimitLabel2">300</span>)</h3>
-      <div class="win-rate-box">
-        <div class="win-rate-main">
-          <span id="winRatePercent" class="win-rate-percent">--%</span>
-          <span id="winRateDetail" class="win-rate-detail">0 / 0 မှန်ခဲ့သည်</span>
-        </div>
-        <div class="win-rate-breakdown">
-          <div class="breakdown-chip correct"><span id="winCorrectCount">0</span><label>မှန်</label></div>
-          <div class="breakdown-chip wrong"><span id="winWrongCount">0</span><label>မှား</label></div>
-          <div class="breakdown-chip nomatch"><span id="winNoMatchCount">0</span><label>❓ မခန့်မှန်း</label></div>
-        </div>
-        <div class="win-rate-by-level" id="winRateByLevel"></div>
-      </div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
 
@@ -303,6 +304,7 @@ function loadData() {
       const digit = sel.getAttribute('data-digit');
       if (DIGIT_CATEGORY_MAP[digit]) sel.value = DIGIT_CATEGORY_MAP[digit];
     });
+    updateGroupSummary();
 
     const storedHistoryLimit = localStorage.getItem("savedHistoryLimit");
     if (storedHistoryLimit && !isNaN(storedHistoryLimit) && parseInt(storedHistoryLimit) > 0) {
@@ -469,6 +471,17 @@ function digitToCategory(d) {
   return DIGIT_CATEGORY_MAP[String(d)];
 }
 
+function updateGroupSummary() {
+  const el = document.getElementById("groupSummary");
+  if (!el) return;
+  const groups = { "1": [], "2": [], "3": [] };
+  for (let d = 0; d <= 9; d++) {
+    const g = DIGIT_CATEGORY_MAP[String(d)];
+    if (groups[g]) groups[g].push(d);
+  }
+  el.innerText = `1(${groups["1"].join("")}) 2(${groups["2"].join("")}) 3(${groups["3"].join("")})`;
+}
+
 function applyHistoryLimit() {
   const input = document.getElementById("historyLimitInput");
   const value = parseInt(input.value);
@@ -505,6 +518,7 @@ function applyDigitMapping() {
 
   DIGIT_CATEGORY_MAP = newMap;
   localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
+  updateGroupSummary();
 
   // Every already-recorded row was categorized under the OLD mapping — since
   // we still have the raw digit for each row, re-derive appResult/colorClass
