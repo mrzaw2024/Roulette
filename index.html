@@ -374,18 +374,11 @@ function recalculateAllPredictions() {
   //   last 5 categories: 1,3,2,1,3
   // At each length we check whether that exact Category-pattern occurred
   // earlier in the data. If it did, we look at which Category came right
-  // after it (aggregated across every earlier time it occurred), then
-  // decide HOW to pick based on how spread out those follower-counts are:
-  //   - If the counts are close together (no one category clearly stands
-  //     out), we go with the MOST-frequent one — the ordinary, safer bet.
-  //   - If the counts are clearly spread apart (one/two categories clearly
-  //     dominate), we go with the LEAST-frequent one instead — the "rare/
-  //     due" category, on the idea that it's overdue to appear.
-  // "Close together" is defined as: the highest count is less than double
-  // the lowest count among the categories that appeared at all (max < 1.5×min).
-  // We try length 5 first (the most specific pattern); if the chosen target
-  // is tied with another category (not decisive), or the pattern was never
-  // seen, we drop down through 9, 8, 7, 6, 5, 4, and finally 3.
+  // after it (aggregated across every earlier time it occurred) and predict
+  // the Category that followed the LEAST often. We try length 10 first (the
+  // most specific pattern); if the least-frequent result is tied between two
+  // categories (not decisive), or the pattern was never seen, we drop down
+  // through 9, 8, 7, 6, 5, 4, and finally 3.
   const SEQ_LENGTHS = [10, 9, 8, 7, 6, 5, 4, 3];
   const makeCounter = () => ({ "1": 0, "2": 0, "3": 0 });
   const transitionMaps = { 10: {}, 9: {}, 8: {}, 7: {}, 6: {}, 5: {}, 4: {}, 3: {} };
@@ -411,28 +404,19 @@ function recalculateAllPredictions() {
       if (seen.length === 0) continue; // this exact pattern never occurred before — try a shorter one
 
       if (seen.length === 1) {
-        // Only one category has ever followed this pattern — unambiguous.
-        return { category: seen[0], length: len };
+        // Only one category has ever followed this pattern — with nothing
+        // to differentiate against, this isn't a real "choice", so don't
+        // treat it as decisive either. Try a shorter pattern instead.
+        continue;
       }
 
-      const counts = seen.map(c => stats[c]);
-      const maxCount = Math.max(...counts);
-      const minCount = Math.min(...counts);
-      const countsAreClose = maxCount < 1.5 * minCount; // "not too different"
+      const minCount = Math.min(...seen.map(c => stats[c]));
+      const bottomCats = seen.filter(c => stats[c] === minCount);
+      if (bottomCats.length > 1) continue; // tied for least-frequent — not decisive, try a shorter sequence
 
-      let target;
-      if (countsAreClose) {
-        const topCats = seen.filter(c => stats[c] === maxCount);
-        if (topCats.length > 1) continue; // tied for most-frequent — not decisive, try a shorter sequence
-        target = topCats[0];
-      } else {
-        const bottomCats = seen.filter(c => stats[c] === minCount);
-        if (bottomCats.length > 1) continue; // tied for least-frequent — not decisive, try a shorter sequence
-        target = bottomCats[0];
-      }
-      return { category: target, length: len };
+      return { category: bottomCats[0], length: len };
     }
-    // Not found (or never decisive) at length 5, 4, 3, AND 2 — no basis to guess.
+    // Not found (or never decisive) at length 10 down to 3 — no basis to guess.
     return { category: NO_MATCH, length: null };
   }
 
