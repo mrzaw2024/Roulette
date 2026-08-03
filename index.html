@@ -164,7 +164,7 @@
         <table class="road-map-table" id="roadMapTable"></table>
       </div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker</h3>
+      <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker (နောက်ဆုံး 300)</h3>
       <div class="win-rate-box">
         <div class="win-rate-main">
           <span id="winRatePercent" class="win-rate-percent">--%</span>
@@ -619,10 +619,16 @@ function updateWinRateStats() {
   const pctEl = document.getElementById("winRatePercent");
   if (!pctEl) return; // markup not present in this build
 
+  // Only the most recent 300 records count toward the Win Rate — matches
+  // the "အောက်မှတ်တမ်း (နောက်ဆုံး 300)" table below, so the percentage the
+  // user sees always reflects the same window of data as the visible rows.
+  const WIN_RATE_WINDOW = 300;
+  const recentResults = trackedResults.slice(-WIN_RATE_WINDOW);
+
   let total = 0, correct = 0;
   const byLevel = {}; // level -> { total, correct }
 
-  trackedResults.forEach(r => {
+  recentResults.forEach(r => {
     if (!CATEGORIES.includes(r.appResult)) return;   // skip rows with no real result yet
     if (!CATEGORIES.includes(r.betPrediction)) return; // skip "Waiting" / "?" — nothing was actually predicted
 
