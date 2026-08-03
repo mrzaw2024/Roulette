@@ -380,6 +380,13 @@ function loadData() {
       currentTrackingBlock = parseInt(storedLastBlock);
       document.getElementById("startBlock").value = currentTrackingBlock;
     }
+
+    // First-ever visit: nothing typed and nothing saved yet — fall back to
+    // the original hardcoded starting block so the field isn't left blank.
+    if (!document.getElementById("startBlock").value.trim()) {
+      currentTrackingBlock = 84424346;
+      document.getElementById("startBlock").value = 84424346;
+    }
     
     document.getElementById("blockInfo").innerText = `Started from: ${document.getElementById("startBlock").value} | Current: ${currentTrackingBlock}`;
     updateCacheInfo();
@@ -409,8 +416,10 @@ window.addEventListener('DOMContentLoaded', () => {
   if (activeKey) {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("appBox").classList.remove("hidden");
-    document.getElementById("startBlock").value = 84424346;
-    currentTrackingBlock = 84424346;
+    // Don't force the input back to the hardcoded default here — leave it
+    // blank so loadData() below can tell there's no explicit user input and
+    // correctly restore the last block that was left off from localStorage.
+    document.getElementById("startBlock").value = "";
     loadData();
     isFirstLoad = false;
   }
@@ -422,8 +431,7 @@ function verifyKey() {
     localStorage.setItem("activeKey", key);
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("appBox").classList.remove("hidden");
-    document.getElementById("startBlock").value = 84424346;
-    currentTrackingBlock = 84424346;
+    document.getElementById("startBlock").value = "";
     loadData();
     isFirstLoad = false;
   } else {
