@@ -361,7 +361,7 @@ function recalculateAllPredictions() {
   // The whole history is replayed from scratch every time so the engine
   // always ends up in a state consistent with the full trackedResults
   // array — including after a row is deleted. No formula-switching:
-  // the 5→4→3→2 cascade keeps being used no matter how long the losing
+  // the 10→9→8→7→6→5→4→3 cascade keeps being used no matter how long the losing
   // streak runs.
   //
   // --- Category pattern matching (1, 2, 3) ---
@@ -385,10 +385,10 @@ function recalculateAllPredictions() {
   // the lowest count among the categories that appeared at all (max < 1.5×min).
   // We try length 5 first (the most specific pattern); if the chosen target
   // is tied with another category (not decisive), or the pattern was never
-  // seen, we drop down to length 4, then 3, then 2.
-  const SEQ_LENGTHS = [5, 4, 3, 2];
+  // seen, we drop down through 9, 8, 7, 6, 5, 4, and finally 3.
+  const SEQ_LENGTHS = [10, 9, 8, 7, 6, 5, 4, 3];
   const makeCounter = () => ({ "1": 0, "2": 0, "3": 0 });
-  const transitionMaps = { 5: {}, 4: {}, 3: {}, 2: {} };
+  const transitionMaps = { 10: {}, 9: {}, 8: {}, 7: {}, 6: {}, 5: {}, 4: {}, 3: {} };
   const valid = []; // chronological Category strings ("1"/"2"/"3") seen so far
 
   function buildKey(len) {
@@ -398,9 +398,9 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  // --- Sequence Cascade (Category pattern match, 5 → 4 → 3 → 2) ---
+  // --- Sequence Cascade (Category pattern match, 10 → 9 → 8 → 7 → 6 → 5 → 4 → 3) ---
   // Returns { category, length } where length tells you which pattern size
-  // (5, 4, 3, or 2) actually produced the pick, or { category: NO_MATCH, length: null }
+  // (10 down to 3) actually produced the pick, or { category: NO_MATCH, length: null }
   // if none of the four lengths found a decisive pattern.
   function predictSequenceCascade() {
     for (const len of SEQ_LENGTHS) {
@@ -451,7 +451,7 @@ function recalculateAllPredictions() {
 
     row.betPrediction = betPrediction;
     row.formulaUsed = valid.length < 10 ? null : 0; // always Sequence Cascade
-    row.formulaLength = usedLength; // 5, 4, 3, 2, or null
+    row.formulaLength = usedLength; // 10 down to 3, or null
 
     // ----- Feed this row's ACTUAL result into the running state -----
     // (recorded BEFORE pushing the current category, so a pattern can never
