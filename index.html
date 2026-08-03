@@ -695,6 +695,9 @@ function recalculateAllPredictions() {
   function predictSequenceCascade() {
     const lastCategory = valid.length > 0 ? valid[valid.length - 1] : null;
     const pickCount = predictTwoMode ? 2 : 1;
+    // In single-pick mode, sort order follows the "least/most" radio (selectionMode).
+    // In two-pick mode, sort order follows the rank rule dropdown (rankRule).
+    const sortRule = predictTwoMode ? rankRule : selectionMode;
 
     for (const len of SEQ_LENGTHS) {
       const key = buildKey(len);
@@ -709,32 +712,37 @@ function recalculateAllPredictions() {
       if (seen.length <= pickCount) continue;
 
       const sorted = seen.slice().sort((a, b) => {
-        if (rankRule === "most") {
+        if (sortRule === "most") {
           return stats[b] - stats[a];
         } else {
           return stats[a] - stats[b];
         }
       });
 
-      // Map pickRule to indices. Ranks are A=0,B=1,C=2,D=3,E=4 (0-indexed into `sorted`,
-      // where the last rank always falls back to the lowest-ranked available item).
       let picked = [];
-      const RANK_INDEX = { A: 0, B: 1, C: 2, D: 3, E: 4 };
-      if (pickRule && pickRule.length === 2 && RANK_INDEX.hasOwnProperty(pickRule[0]) && RANK_INDEX.hasOwnProperty(pickRule[1])) {
-        const r1 = pickRule[0], r2 = pickRule[1];
-        const i1 = RANK_INDEX[r1];
-        const i2 = RANK_INDEX[r2];
-        if (sorted.length > Math.max(i1, i2)) {
-          picked = [sorted[i1], sorted[i2]];
-        } else if (sorted.length >= 2) {
-          // Not enough distinct items for the requested ranks — fall back to
-          // the closest available pair (top item + lowest-ranked available item).
-          picked = [sorted[0], sorted[sorted.length - 1]];
+      if (predictTwoMode) {
+        // Map pickRule to indices. Ranks are A=0,B=1,C=2,D=3,E=4 (0-indexed into `sorted`,
+        // where the last rank always falls back to the lowest-ranked available item).
+        const RANK_INDEX = { A: 0, B: 1, C: 2, D: 3, E: 4 };
+        if (pickRule && pickRule.length === 2 && RANK_INDEX.hasOwnProperty(pickRule[0]) && RANK_INDEX.hasOwnProperty(pickRule[1])) {
+          const r1 = pickRule[0], r2 = pickRule[1];
+          const i1 = RANK_INDEX[r1];
+          const i2 = RANK_INDEX[r2];
+          if (sorted.length > Math.max(i1, i2)) {
+            picked = [sorted[i1], sorted[i2]];
+          } else if (sorted.length >= 2) {
+            // Not enough distinct items for the requested ranks — fall back to
+            // the closest available pair (top item + lowest-ranked available item).
+            picked = [sorted[0], sorted[sorted.length - 1]];
+          } else {
+            picked = sorted.slice(0, 2);
+          }
         } else {
           picked = sorted.slice(0, 2);
         }
       } else {
-        picked = sorted.slice(0, 2);
+        // Checkbox is OFF: bet a single category only.
+        picked = sorted.slice(0, 1);
       }
 
       if (picked.length < pickCount) {
