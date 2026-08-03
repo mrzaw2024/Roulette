@@ -224,11 +224,36 @@
       </label>
       <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
 
-      <label class="level-chip" style="width:fit-content; margin-top:6px;">
-        <input type="checkbox" id="predictTwoToggle" onchange="applyFormulaSettings()">
-        🎯 တစ်ကြိမ်ကို Group 2 ခု ခန့်မှန်းမည် (Group 4 ခုထဲက)
-      </label>
-      <div class="input-hint">💡 OFF ဆိုရင် Group တစ်ခုတည်း ခန့်မှန်းမည်၊ ON ဆိုရင် Group 2 ခု တွဲပြီး ခန့်မှန်းမည် (ဘယ်တစ်ခုမဆို ထွက်ရင် မှန်ကြောင်း သတ်မှတ်မည်)</div>
+      <!-- START: new custom ranking selection for 2-pick mode -->
+      <div style="background:#0f172a; border-radius:8px; padding:12px; margin-top:12px;">
+        <label class="level-chip" style="width:fit-content; margin-top:6px;">
+          <input type="checkbox" id="predictTwoToggle" onchange="applyFormulaSettings()">
+          🎯 တစ်ကြိမ်ကို Group 2 ခု ခန့်မှန်းမည် (Group 4 ခုထဲက)
+        </label>
+        <div id="rankSelectionPanel" style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+            <span style="color:#94a3b8; font-size:13px;">ခန့်မှန်းမည့် အုပ်စုများကို စီခြင်း (စီစဉ်ပုံ):</span>
+            <select id="rankRuleSelect" onchange="applyFormulaSettings()" style="background:#1e293b; color:white; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px;">
+              <option value="most">အကြိမ်ရေ အများဆုံး (most)</option>
+              <option value="least">အကြိမ်ရေ အနည်းဆုံး (least)</option>
+            </select>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+            <span style="color:#94a3b8; font-size:13px;">ထိုစီစဉ်မှုထဲက ဘယ်နေရာက ယူမလဲ:</span>
+            <select id="pickRuleSelect" onchange="applyFormulaSettings()" style="background:#1e293b; color:white; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px;">
+              <option value="top2">ထိပ်ဆုံး 2 ခု (Top 2)</option>
+              <option value="top1_bottom1">ထိပ်ဆုံး 1 ခု + အောက်ဆုံး 1 ခု</option>
+              <option value="bottom2">အောက်ဆုံး 2 ခု (Bottom 2)</option>
+              <option value="top1_mid1">ထိပ်ဆုံး 1 ခု + အလယ် 1 ခု</option>
+              <option value="mid2">အလယ် 2 ခု</option>
+            </select>
+          </div>
+          <div style="font-size:12px; color:#64748b; margin-top:4px;">
+            💡 ဥပမာ — "အကြိမ်ရေ အများဆုံး" နဲ့ "ထိပ်ဆုံး 2 ခု" ဆိုရင် အကြိမ်ရေ အများဆုံး 2 ခုကို ခန့်မှန်းမည်။ "အကြိမ်ရေ အနည်းဆုံး" + "အောက်ဆုံး 2 ခု" ဆိုရင် အကြိမ်ရေ အနည်းဆုံး 2 ခုကို ခန့်မှန်းမည်။
+          </div>
+        </div>
+      </div>
+      <!-- END: new custom ranking selection for 2-pick mode -->
 
       <h3 style="color:#60a5fa; margin-top:20px;">📉 ဆက်တိုက်ရှုံးမှု စာရင်း (Losing Streaks)</h3>
       <div class="win-rate-box">
@@ -295,6 +320,8 @@ function saveData() {
     localStorage.setItem("savedSelectionMode", selectionMode);
     localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
     localStorage.setItem("savedPredictTwoMode", predictTwoMode ? "1" : "0");
+    localStorage.setItem("savedRankRule", rankRule);
+    localStorage.setItem("savedPickRule", pickRule);
     localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
     localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
     localStorage.setItem("savedTimestamp", Date.now());
@@ -348,6 +375,20 @@ function loadData() {
       predictTwoMode = storedPredictTwo === "1";
       const toggle = document.getElementById("predictTwoToggle");
       if (toggle) toggle.checked = predictTwoMode;
+    }
+
+    // load new rank/pick rules
+    const storedRankRule = localStorage.getItem("savedRankRule");
+    if (storedRankRule) {
+      rankRule = storedRankRule;
+      const sel = document.getElementById("rankRuleSelect");
+      if (sel) sel.value = rankRule;
+    }
+    const storedPickRule = localStorage.getItem("savedPickRule");
+    if (storedPickRule) {
+      pickRule = storedPickRule;
+      const sel = document.getElementById("pickRuleSelect");
+      if (sel) sel.value = pickRule;
     }
 
     const storedLevels = localStorage.getItem("savedEnabledLevels");
@@ -406,12 +447,6 @@ function loadData() {
         document.getElementById("cacheBadge").style.display = "inline";
       }
     }
-    
-    // NOTE: we intentionally do NOT restore nextCalculatedBet from
-    // localStorage here — recalculateAllPredictions() above already
-    // computed it fresh from the current formula, and overwriting it with
-    // an old saved value would bring back stale predictions from whatever
-    // formula was active last time the data was saved.
     
     const storedLastBlock = localStorage.getItem("savedLastBlock");
     if (storedLastBlock && !inputBlock) {
@@ -613,15 +648,27 @@ let excludeLastCategory = false;
 // Customizable via the "Group 2 ခု ခန့်မှန်းမည်" checkbox.
 let predictTwoMode = false;
 
+// NEW: ranking rule and pick rule for 2-pick mode
+let rankRule = "most";        // "most" or "least"
+let pickRule = "top2";        // "top2", "top1_bottom1", "bottom2", "top1_mid1", "mid2"
+
 function applyFormulaSettings() {
   const modeInput = document.querySelector('input[name="selectionMode"]:checked');
   selectionMode = modeInput ? modeInput.value : "least";
   excludeLastCategory = document.getElementById("excludeLastCategoryToggle").checked;
   predictTwoMode = document.getElementById("predictTwoToggle").checked;
 
+  // read new rank/pick rules
+  const rankSel = document.getElementById("rankRuleSelect");
+  if (rankSel) rankRule = rankSel.value;
+  const pickSel = document.getElementById("pickRuleSelect");
+  if (pickSel) pickRule = pickSel.value;
+
   localStorage.setItem("savedSelectionMode", selectionMode);
   localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
   localStorage.setItem("savedPredictTwoMode", predictTwoMode ? "1" : "0");
+  localStorage.setItem("savedRankRule", rankRule);
+  localStorage.setItem("savedPickRule", pickRule);
 
   recalculateAllPredictions();
   updateTrendBoard();
@@ -717,19 +764,60 @@ function recalculateAllPredictions() {
       // choice — not decisive, try a shorter pattern instead.
       if (seen.length <= pickCount) continue;
 
-      const sorted = seen.slice().sort((a, b) =>
-        selectionMode === "most" ? stats[b] - stats[a] : stats[a] - stats[b]
-      );
+      // sort by rank rule
+      const sorted = seen.slice().sort((a, b) => {
+        if (rankRule === "most") {
+          return stats[b] - stats[a];
+        } else { // "least"
+          return stats[a] - stats[b];
+        }
+      });
 
-      // The boundary between "picked" and "not picked" must be a clear cut
-      // — if the last picked category and the first excluded one are tied
-      // on count, it's ambiguous which one really belongs in the set, so
-      // this level isn't decisive either.
-      const lastPickedCount = stats[sorted[pickCount - 1]];
-      const firstExcludedCount = stats[sorted[pickCount]];
-      if (lastPickedCount === firstExcludedCount) continue;
+      // now pick based on pickRule
+      let picked = [];
+      if (pickRule === "top2") {
+        picked = sorted.slice(0, 2);
+      } else if (pickRule === "top1_bottom1") {
+        if (sorted.length >= 2) {
+          picked = [sorted[0], sorted[sorted.length - 1]];
+        } else {
+          picked = sorted.slice(0, 2);
+        }
+      } else if (pickRule === "bottom2") {
+        picked = sorted.slice(-2);
+      } else if (pickRule === "top1_mid1") {
+        if (sorted.length >= 3) {
+          const midIdx = Math.floor(sorted.length / 2);
+          picked = [sorted[0], sorted[midIdx]];
+        } else {
+          picked = sorted.slice(0, 2);
+        }
+      } else if (pickRule === "mid2") {
+        if (sorted.length >= 4) {
+          const midStart = Math.floor((sorted.length - 2) / 2);
+          picked = sorted.slice(midStart, midStart + 2);
+        } else {
+          picked = sorted.slice(0, 2);
+        }
+      } else {
+        // fallback to top2
+        picked = sorted.slice(0, 2);
+      }
 
-      return { categories: sorted.slice(0, pickCount), length: len };
+      // ensure we have exactly pickCount items, if not fallback to top2
+      if (picked.length < pickCount) {
+        picked = sorted.slice(0, pickCount);
+      }
+
+      // check decisiveness: the last picked and first excluded must not tie
+      // but only if we have more items than pickCount
+      if (sorted.length > pickCount) {
+        const lastPickedCount = stats[picked[pickCount - 1]];
+        const firstExcludedCount = stats[sorted[pickCount]];
+        if (lastPickedCount === firstExcludedCount) continue;
+      }
+
+      return { categories: picked, length: len };
     }
     // Not found (or never decisive) at any enabled length — no basis to guess.
     return { categories: null, length: null };
