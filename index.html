@@ -913,6 +913,7 @@ function updateWinRateStats() {
   updateLosingStreakSummary(recentResults);
 }
 
+// ===== FIXED: Losing Streak Summary - shows exact streak lengths (3, 4, 5, etc.) =====
 function updateLosingStreakSummary(recentResults) {
   const el = document.getElementById("losingStreakSummary");
   if (!el) return;
@@ -927,7 +928,7 @@ function updateLosingStreakSummary(recentResults) {
 
     const isCorrect = r.betPrediction.includes(r.appResult);
     if (isCorrect) {
-      if (currentStreak > 0) {
+      if (currentStreak >= 3) {
         streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
       }
       currentStreak = 0;
@@ -935,18 +936,18 @@ function updateLosingStreakSummary(recentResults) {
       currentStreak++;
     }
   });
-  if (currentStreak > 0) {
+
+  // Ongoing streak at the end
+  if (currentStreak >= 3) {
     streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
   }
 
-  const MIN_STREAK_TO_SHOW = 3;
   const lengths = Object.keys(streakCounts)
     .map(Number)
-    .filter(len => len >= MIN_STREAK_TO_SHOW)
-    .sort((a, b) => b - a);
+    .sort((a, b) => b - a); // longest first
 
   if (lengths.length === 0) {
-    el.innerHTML = `<div class="level-row"><span>${MIN_STREAK_TO_SHOW} ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
+    el.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
     return;
   }
 
