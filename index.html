@@ -48,7 +48,13 @@
     .win-rate-percent { font-size: 32px; font-weight: bold; color: #4ade80; }
     .win-rate-percent.below-baseline { color: #f87171; }
     .win-rate-detail { font-size: 14px; color: #94a3b8; }
-    .win-rate-baseline { font-size: 12px; color: #64748b; margin-top: 6px; }
+    .win-rate-breakdown { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .breakdown-chip { background: #1e293b; border-radius: 8px; padding: 8px 14px; text-align: center; min-width: 80px; }
+    .breakdown-chip span { display: block; font-size: 20px; font-weight: bold; }
+    .breakdown-chip label { display: block; font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .breakdown-chip.correct span { color: #4ade80; }
+    .breakdown-chip.wrong span { color: #f87171; }
+    .breakdown-chip.nomatch span { color: #94a3b8; }
     .win-rate-by-level { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #cbd5e1; }
     .win-rate-by-level .level-row { display: flex; justify-content: space-between; background: #1e293b; padding: 6px 10px; border-radius: 6px; }
     .prediction-panel { background: #0f172a; border-radius: 12px; padding: 25px 15px; margin-top: 15px; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 10px; }
@@ -182,7 +188,11 @@
           <span id="winRatePercent" class="win-rate-percent">--%</span>
           <span id="winRateDetail" class="win-rate-detail">0 / 0 မှန်ခဲ့သည်</span>
         </div>
-        <div class="win-rate-baseline">ကျပန်း (random) ဖြစ်ရင် <b>~33.3%</b> ဝန်းကျင်သာ ရနိုင်ပါသည်</div>
+        <div class="win-rate-breakdown">
+          <div class="breakdown-chip correct"><span id="winCorrectCount">0</span><label>မှန်</label></div>
+          <div class="breakdown-chip wrong"><span id="winWrongCount">0</span><label>မှား</label></div>
+          <div class="breakdown-chip nomatch"><span id="winNoMatchCount">0</span><label>❓ မခန့်မှန်း</label></div>
+        </div>
         <div class="win-rate-by-level" id="winRateByLevel"></div>
       </div>
       
@@ -687,16 +697,21 @@ function updateWinRateStats() {
   const WIN_RATE_WINDOW = 300;
   const recentResults = trackedResults.slice(-WIN_RATE_WINDOW);
 
-  let total = 0, correct = 0;
+  let total = 0, correct = 0, wrong = 0, noMatchCount = 0;
   const byLevel = {}; // level -> { total, correct }
 
   recentResults.forEach(r => {
-    if (!CATEGORIES.includes(r.appResult)) return;   // skip rows with no real result yet
-    if (!CATEGORIES.includes(r.betPrediction)) return; // skip "Waiting" / "?" — nothing was actually predicted
+    if (!CATEGORIES.includes(r.appResult)) return; // skip rows with no real result yet
+
+    if (r.betPrediction === NO_MATCH) {
+      noMatchCount++;
+      return; // not counted toward the win-rate percentage
+    }
+    if (!CATEGORIES.includes(r.betPrediction)) return; // skip "Waiting" — nothing was predicted yet
 
     total++;
     const isCorrect = r.betPrediction === r.appResult;
-    if (isCorrect) correct++;
+    if (isCorrect) { correct++; } else { wrong++; }
 
     const lvl = r.formulaLength;
     if (lvl) {
@@ -710,6 +725,9 @@ function updateWinRateStats() {
   pctEl.innerText = total > 0 ? `${pct.toFixed(1)}%` : "--%";
   pctEl.className = "win-rate-percent" + (total > 0 && pct < 33.3 ? " below-baseline" : "");
   document.getElementById("winRateDetail").innerText = `${correct} / ${total} မှန်ခဲ့သည်`;
+  document.getElementById("winCorrectCount").innerText = correct;
+  document.getElementById("winWrongCount").innerText = wrong;
+  document.getElementById("winNoMatchCount").innerText = noMatchCount;
 
   const byLevelEl = document.getElementById("winRateByLevel");
   if (byLevelEl) {
@@ -1259,6 +1277,9 @@ function clearStoredData() {
     document.getElementById("winRatePercent").innerText = "--%";
     document.getElementById("winRatePercent").className = "win-rate-percent";
     document.getElementById("winRateDetail").innerText = "0 / 0 မှန်ခဲ့သည်";
+    document.getElementById("winCorrectCount").innerText = "0";
+    document.getElementById("winWrongCount").innerText = "0";
+    document.getElementById("winNoMatchCount").innerText = "0";
     document.getElementById("winRateByLevel").innerHTML = "";
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
