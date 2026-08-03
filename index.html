@@ -375,11 +375,11 @@ function recalculateAllPredictions() {
   // At each length we check whether that exact Category-pattern occurred
   // earlier in the data. If it did, we look at which Category came right
   // after it (aggregated across every earlier time it occurred) and predict
-  // the Category that followed the LEAST often (not the most). We try
-  // length 5 first (the most specific pattern); if the least-frequent result
-  // is tied between two categories (not decisive), or the pattern was never
-  // seen, we drop down to length 4, then 3, then 2 — hoping a shorter, more
-  // common pattern has enough data to break the tie.
+  // the Category that followed the MOST often. We try length 5 first (the
+  // most specific pattern); if the most-frequent result is tied between two
+  // categories (not decisive), or the pattern was never seen, we drop down
+  // to length 4, then 3, then 2 — hoping a shorter, more common pattern has
+  // enough data to break the tie.
   const SEQ_LENGTHS = [5, 4, 3, 2];
   const makeCounter = () => ({ "1": 0, "2": 0, "3": 0 });
   const transitionMaps = { 5: {}, 4: {}, 3: {}, 2: {} };
@@ -398,11 +398,11 @@ function recalculateAllPredictions() {
   // if none of the four lengths found a decisive pattern.
   //
   // Prediction rule: among the Categories that actually followed this
-  // pattern before, pick the LEAST-frequent one (the one that followed the
-  // fewest times) — not the most-frequent one. If the two least-frequent
-  // Categories are tied, that's not decisive, so drop down to a shorter
-  // pattern. If NONE of 5, 4, 3, or 2 ever occurred before, there is no
-  // basis to guess, so we return NO_MATCH ("?").
+  // pattern before, pick the MOST-frequent one (the one that followed the
+  // most times). If the two most-frequent Categories are tied, that's not
+  // decisive, so drop down to a shorter pattern. If NONE of 5, 4, 3, or 2
+  // ever occurred before, there is no basis to guess, so we return
+  // NO_MATCH ("?").
   function predictSequenceCascade() {
     for (const len of SEQ_LENGTHS) {
       const key = buildKey(len);
@@ -410,11 +410,11 @@ function recalculateAllPredictions() {
       const stats = transitionMaps[len][key];
       const seen = CATEGORIES.filter(c => stats && stats[c] > 0); // categories that actually followed this pattern at least once
       if (seen.length === 0) continue; // this exact pattern never occurred before — try a shorter one
-      const rankedAsc = seen.slice().sort((a, b) => stats[a] - stats[b]); // ascending: least-frequent first
-      if (rankedAsc.length === 1 || stats[rankedAsc[0]] < stats[rankedAsc[1]]) {
-        return { category: rankedAsc[0], length: len };
+      const rankedDesc = seen.slice().sort((a, b) => stats[b] - stats[a]); // descending: most-frequent first
+      if (rankedDesc.length === 1 || stats[rankedDesc[0]] > stats[rankedDesc[1]]) {
+        return { category: rankedDesc[0], length: len };
       }
-      // Tied for least-frequent at this level — not decisive, try a shorter sequence.
+      // Tied for most-frequent at this level — not decisive, try a shorter sequence.
     }
     // Not found (or always tied) at length 5, 4, 3, AND 2 — no basis to guess.
     return { category: NO_MATCH, length: null };
