@@ -157,7 +157,11 @@
         <table class="road-map-table" id="roadMapTable"></table>
       </div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး 300)</h3>
+      <label>🔢 မှတ်တမ်းပြမည့် အရေအတွက် (Record History / Win Rate Window):</label>
+      <input type="number" id="historyLimitInput" value="300" min="1" onchange="applyHistoryLimit()">
+      <div class="input-hint">💡 အောက်မှတ်တမ်းနဲ့ Win Rate Tracker နှစ်ခုစလုံး ဒီနံပါတ်ကိုပဲ သုံးပါလိမ့်မယ် — မိမိကြိုက်ရာ ပြောင်းနိုင်ပါတယ်</div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး <span id="historyLimitLabel1">300</span>)</h3>
       <div class="table-wrapper" id="tableWrapper">
         <div id="output"></div>
       </div>
@@ -202,7 +206,7 @@
       </label>
       <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker (နောက်ဆုံး 300)</h3>
+      <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker (နောက်ဆုံး <span id="historyLimitLabel2">300</span>)</h3>
       <div class="win-rate-box">
         <div class="win-rate-main">
           <span id="winRatePercent" class="win-rate-percent">--%</span>
@@ -274,6 +278,7 @@ function saveData() {
     localStorage.setItem("savedSelectionMode", selectionMode);
     localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
     localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
+    localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -298,6 +303,14 @@ function loadData() {
       const digit = sel.getAttribute('data-digit');
       if (DIGIT_CATEGORY_MAP[digit]) sel.value = DIGIT_CATEGORY_MAP[digit];
     });
+
+    const storedHistoryLimit = localStorage.getItem("savedHistoryLimit");
+    if (storedHistoryLimit && !isNaN(storedHistoryLimit) && parseInt(storedHistoryLimit) > 0) {
+      historyDisplayLimit = parseInt(storedHistoryLimit);
+    }
+    document.getElementById("historyLimitInput").value = historyDisplayLimit;
+    document.getElementById("historyLimitLabel1").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
 
     const storedMode = localStorage.getItem("savedSelectionMode");
     if (storedMode === "most" || storedMode === "least") {
@@ -451,8 +464,25 @@ function switchTab(tabId) {
 // Default: 1,6,8 -> "1" | 2,7,4 -> "2" | 0,3,5,9 -> "3"
 // This is now customizable by the user via the "ဂဏန်း → Group သတ်မှတ်ခြင်း" selectors.
 let DIGIT_CATEGORY_MAP = { "0":"3", "1":"1", "2":"2", "3":"3", "4":"2", "5":"3", "6":"1", "7":"2", "8":"1", "9":"3" };
+let historyDisplayLimit = 300; // user-configurable, used by both the record table and the Win Rate window
 function digitToCategory(d) {
   return DIGIT_CATEGORY_MAP[String(d)];
+}
+
+function applyHistoryLimit() {
+  const input = document.getElementById("historyLimitInput");
+  const value = parseInt(input.value);
+  if (!value || value < 1) {
+    input.value = historyDisplayLimit; // revert to last valid value
+    return;
+  }
+  historyDisplayLimit = value;
+  localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
+  document.getElementById("historyLimitLabel1").innerText = historyDisplayLimit;
+  document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
+  updateTableDisplay();
+  updateWinRateStats();
+  saveData();
 }
 
 function applyDigitMapping() {
@@ -773,11 +803,10 @@ function updateWinRateStats() {
   const pctEl = document.getElementById("winRatePercent");
   if (!pctEl) return; // markup not present in this build
 
-  // Only the most recent 300 records count toward the Win Rate — matches
-  // the "အောက်မှတ်တမ်း (နောက်ဆုံး 300)" table below, so the percentage the
-  // user sees always reflects the same window of data as the visible rows.
-  const WIN_RATE_WINDOW = 300;
-  const recentResults = trackedResults.slice(-WIN_RATE_WINDOW);
+  // Only the most recent N records count toward the Win Rate (N is
+  // user-configurable) — matches the record table below, so the percentage
+  // the user sees always reflects the same window of data as the visible rows.
+  const recentResults = trackedResults.slice(-historyDisplayLimit);
 
   let total = 0, correct = 0, wrong = 0, noMatchCount = 0;
   const byLevel = {}; // level -> { total, correct }
@@ -981,9 +1010,8 @@ function updateTableDisplay() {
     return;
   }
   
-  // Show only the most recent 300 results
-  const HISTORY_DISPLAY_LIMIT = 300;
-  const displayResults = trackedResults.slice(-HISTORY_DISPLAY_LIMIT);
+  // Show only the most recent N results (N is user-configurable)
+  const displayResults = trackedResults.slice(-historyDisplayLimit);
   let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   // Display from newest to oldest (reverse order)
   for (let i = displayResults.length - 1; i >= 0; i--) {
