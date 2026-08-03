@@ -127,6 +127,18 @@
         <label class="level-chip"><input type="checkbox" value="3" checked onchange="applyLevelSelection()"> 3</label>
       </div>
       <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည်</div>
+
+      <label>🧮 ခန့်မှန်းနည်း (Follower Category များထဲက ဘယ်ဟာကိုယူမလဲ):</label>
+      <div id="selectionModeSelector" class="level-selector">
+        <label class="level-chip"><input type="radio" name="selectionMode" value="least" checked onchange="applyFormulaSettings()"> အနည်းဆုံးဟာ</label>
+        <label class="level-chip"><input type="radio" name="selectionMode" value="most" onchange="applyFormulaSettings()"> အများဆုံးဟာ</label>
+      </div>
+
+      <label class="level-chip" style="width:fit-content; margin-top:6px;">
+        <input type="checkbox" id="excludeLastCategoryToggle" onchange="applyFormulaSettings()">
+        🚫 နောက်ဆုံးထွက်ခဲ့တဲ့ Category ကို ခန့်မှန်းချက်ထဲ ထည့်မသုံးပါနဲ့
+      </label>
+      <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
       
       <div class="btn-container">
         <button id="btnStart" onclick="startLiveTracking()" style="background: #22c55e;">▶️ Start Stream</button>
@@ -234,6 +246,8 @@ function saveData() {
     localStorage.setItem("savedLastBlock", currentTrackingBlock);
     localStorage.setItem("savedProcessedBlocks", JSON.stringify([...processedBlocks]));
     localStorage.setItem("savedEnabledLevels", JSON.stringify(enabledLevels));
+    localStorage.setItem("savedSelectionMode", selectionMode);
+    localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -242,6 +256,19 @@ function saveData() {
 
 function loadData() {
   try {
+    const storedMode = localStorage.getItem("savedSelectionMode");
+    if (storedMode === "most" || storedMode === "least") {
+      selectionMode = storedMode;
+      const radio = document.querySelector(`input[name="selectionMode"][value="${storedMode}"]`);
+      if (radio) radio.checked = true;
+    }
+    const storedExclude = localStorage.getItem("savedExcludeLastCategory");
+    if (storedExclude !== null) {
+      excludeLastCategory = storedExclude === "1";
+      const toggle = document.getElementById("excludeLastCategoryToggle");
+      if (toggle) toggle.checked = excludeLastCategory;
+    }
+
     const storedLevels = localStorage.getItem("savedEnabledLevels");
     if (storedLevels) {
       try {
@@ -411,6 +438,32 @@ let nextUsedLength = null;   // which pattern length produced the upcoming predi
 // everything else entirely.
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3];
 
+// How to pick among the Categories that actually followed a matched
+// pattern before: "least" = the one that followed the fewest times,
+// "most" = the one that followed the most times. Customizable via the
+// radio buttons.
+let selectionMode = "least";
+
+// If true, the Category that JUST occurred (the very last result) is never
+// offered as a candidate for the next prediction, even if it would
+// otherwise be the least/most-frequent follower. Customizable via checkbox.
+let excludeLastCategory = false;
+
+function applyFormulaSettings() {
+  const modeInput = document.querySelector('input[name="selectionMode"]:checked');
+  selectionMode = modeInput ? modeInput.value : "least";
+  excludeLastCategory = document.getElementById("excludeLastCategoryToggle").checked;
+
+  localStorage.setItem("savedSelectionMode", selectionMode);
+  localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
+
+  recalculateAllPredictions();
+  updateTrendBoard();
+  updateTableDisplay();
+  updatePredictionDisplay();
+  updateStats();
+}
+
 function applyLevelSelection() {
   const boxes = document.querySelectorAll('#levelSelector input[type="checkbox"]');
   const checked = Array.from(boxes)
@@ -479,11 +532,18 @@ function recalculateAllPredictions() {
   // (10 down to 3) actually produced the pick, or { category: NO_MATCH, length: null }
   // if none of the four lengths found a decisive pattern.
   function predictSequenceCascade() {
+    const lastCategory = valid.length > 0 ? valid[valid.length - 1] : null;
+
     for (const len of SEQ_LENGTHS) {
       const key = buildKey(len);
       if (key === null) continue; // not enough history yet for this length
       const stats = transitionMaps[len][key];
-      const seen = CATEGORIES.filter(c => stats && stats[c] > 0); // categories that actually followed this pattern at least once
+      let seen = CATEGORIES.filter(c => stats && stats[c] > 0); // categories that actually followed this pattern at least once
+
+      if (excludeLastCategory && lastCategory !== null) {
+        seen = seen.filter(c => c !== lastCategory); // never re-offer the category that just occurred
+      }
+
       if (seen.length === 0) continue; // this exact pattern never occurred before — try a shorter one
 
       if (seen.length === 1) {
@@ -493,11 +553,13 @@ function recalculateAllPredictions() {
         continue;
       }
 
-      const minCount = Math.min(...seen.map(c => stats[c]));
-      const bottomCats = seen.filter(c => stats[c] === minCount);
-      if (bottomCats.length > 1) continue; // tied for least-frequent — not decisive, try a shorter sequence
+      const targetCount = selectionMode === "most"
+        ? Math.max(...seen.map(c => stats[c]))
+        : Math.min(...seen.map(c => stats[c]));
+      const targetCats = seen.filter(c => stats[c] === targetCount);
+      if (targetCats.length > 1) continue; // tied — not decisive, try a shorter sequence
 
-      return { category: bottomCats[0], length: len };
+      return { category: targetCats[0], length: len };
     }
     // Not found (or never decisive) at length 10 down to 3 — no basis to guess.
     return { category: NO_MATCH, length: null };
