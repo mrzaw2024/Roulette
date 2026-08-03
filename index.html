@@ -230,6 +230,13 @@
       </label>
       <div class="input-hint">💡 OFF ဆိုရင် Group တစ်ခုတည်း ခန့်မှန်းမည်၊ ON ဆိုရင် Group 2 ခု တွဲပြီး ခန့်မှန်းမည် (ဘယ်တစ်ခုမဆို ထွက်ရင် မှန်ကြောင်း သတ်မှတ်မည်)</div>
 
+      <h3 style="color:#60a5fa; margin-top:20px;">📉 ဆက်တိုက်ရှုံးမှု စာရင်း (Losing Streaks)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="losingStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
+
       <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
 
       <label>📤 လက်ရှိ Data (ကူးယူနိုင်သည် — ဘယ်ဘက်က အဟောင်း၊ ညာဘက်က အသစ်):</label>
@@ -898,6 +905,57 @@ function updateWinRateStats() {
       return `<div class="level-row"><span>${lvl} လုံး Pattern</span><span>${c}/${t} (${p}%)</span></div>`;
     }).join("");
   }
+
+  updateLosingStreakSummary(recentResults);
+}
+
+// ===== LOSING STREAK ANALYSIS =====
+// Walks the same window of rows the Win Rate Tracker uses, and counts how
+// many times each consecutive-loss streak length occurred. Rows with no
+// real prediction (Waiting / NO_MATCH) are skipped — they neither continue
+// nor break a streak, since no bet was actually made on them. A streak
+// still in progress at the very end of the window is counted too.
+function updateLosingStreakSummary(recentResults) {
+  const el = document.getElementById("losingStreakSummary");
+  if (!el) return;
+
+  const streakCounts = {}; // length -> how many times a streak of exactly this length occurred
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    if (!CATEGORIES.includes(r.appResult)) return;      // no real result yet
+    if (r.betPrediction === NO_MATCH) return;             // no bet was made — doesn't affect streak
+    if (!Array.isArray(r.betPrediction)) return;          // "Waiting" — no bet was made yet
+
+    const isCorrect = r.betPrediction.includes(r.appResult);
+    if (isCorrect) {
+      if (currentStreak > 0) {
+        streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      }
+      currentStreak = 0;
+    } else {
+      currentStreak++;
+    }
+  });
+  // An ongoing losing streak still in progress right now also counts.
+  if (currentStreak > 0) {
+    streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+  }
+
+  const MIN_STREAK_TO_SHOW = 3;
+  const lengths = Object.keys(streakCounts)
+    .map(Number)
+    .filter(len => len >= MIN_STREAK_TO_SHOW)
+    .sort((a, b) => b - a); // longest streak first
+
+  if (lengths.length === 0) {
+    el.innerHTML = `<div class="level-row"><span>${MIN_STREAK_TO_SHOW} ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
+    return;
+  }
+
+  el.innerHTML = lengths.map(len =>
+    `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+  ).join("");
 }
 
 // ===== DIGIT DATA — COPY & MANUAL IMPORT =====
@@ -1442,6 +1500,7 @@ function clearStoredData() {
     document.getElementById("winWrongCount").innerText = "0";
     document.getElementById("winNoMatchCount").innerText = "0";
     document.getElementById("winRateByLevel").innerHTML = "";
+    document.getElementById("losingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
     document.getElementById("currentBlockDisplay").innerText = `Block: ${startBlock}`;
