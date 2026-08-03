@@ -382,7 +382,7 @@ function recalculateAllPredictions() {
   //     dominate), we go with the LEAST-frequent one instead — the "rare/
   //     due" category, on the idea that it's overdue to appear.
   // "Close together" is defined as: the highest count is less than double
-  // the lowest count among the categories that appeared at all (max < 2×min).
+  // the lowest count among the categories that appeared at all (max < 1.5×min).
   // We try length 5 first (the most specific pattern); if the chosen target
   // is tied with another category (not decisive), or the pattern was never
   // seen, we drop down to length 4, then 3, then 2.
@@ -418,7 +418,7 @@ function recalculateAllPredictions() {
       const counts = seen.map(c => stats[c]);
       const maxCount = Math.max(...counts);
       const minCount = Math.min(...counts);
-      const countsAreClose = maxCount < 2 * minCount; // "not too different"
+      const countsAreClose = maxCount < 1.5 * minCount; // "not too different"
 
       let target;
       if (countsAreClose) {
