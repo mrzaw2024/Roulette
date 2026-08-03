@@ -121,6 +121,47 @@
       <label>🔢 Max Stream Frame Count:</label>
       <input type="number" id="count" value="300">
 
+      <div class="btn-container">
+        <button id="btnStart" onclick="startLiveTracking()" style="background: #22c55e;">▶️ Start Stream</button>
+        <button id="btnStop" onclick="stopLiveTracking()" style="background: var(--accent-red);">⏸️ Terminate</button>
+        <button id="btnClear" onclick="clearStoredData()" style="background: #475569;">🗑️ Clear Cache</button>
+        <button onclick="forceRefresh()" style="background: #3b82f6;">🔄 Refresh <span class="cached-badge" id="cacheBadge">📦 Cached</span></button>
+      </div>
+
+      <div>
+        <span id="liveStatus" class="status-suspended">⏸️ Status: Suspended</span>
+        <span id="currentBlockDisplay" class="block-display">Block: --</span>
+        <span id="lastUpdateTime" class="last-update">Last update: --</span>
+        <span id="totalRecordsDisplay" class="total-records">Total: 0</span>
+        <span id="cacheInfo" class="cache-info">📦 Cache: <span id="cacheStatus">Empty</span></span>
+      </div>
+
+      <div class="prediction-panel">
+        <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
+        <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
+        <div style="font-size:12px; color:#64748b;" id="blockInfo">Started from: -- | Current: --</div>
+        <div id="waitingMessage" class="waiting-message" style="display:none;">⏳ Waiting... <span class="loading-dots"></span></div>
+        <div id="retryCount" class="retry-count" style="display:none;">ပြန်လည်ကြိုးစားမှု: 0 (၃ စက္ကန့်တစ်ခါ)</div>
+      </div>
+
+      <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
+      <div class="stats-counter">
+        <div>1: <span id="count1" class="stat-1">0</span></div>
+        <div>2: <span id="count2" class="stat-2">0</span></div>
+        <div>3: <span id="count3" class="stat-3">0</span></div>
+        <div class="stat-last">Last: <span id="lastResult">--</span></div>
+        <div class="stat-last">Total: <span id="totalCount">0</span></div>
+      </div>
+      
+      <div class="road-map-wrapper">
+        <table class="road-map-table" id="roadMapTable"></table>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး 300)</h3>
+      <div class="table-wrapper" id="tableWrapper">
+        <div id="output"></div>
+      </div>
+
       <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group 1/2/3 ထဲ ကိုယ်တိုင်ရွေးပါ):</label>
       <div id="digitGroupSelector" class="level-selector">
         <label class="level-chip">0 <select data-digit="0" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
@@ -160,42 +201,6 @@
         🚫 နောက်ဆုံးထွက်ခဲ့တဲ့ Category ကို ခန့်မှန်းချက်ထဲ ထည့်မသုံးပါနဲ့
       </label>
       <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
-      
-      <div class="btn-container">
-        <button id="btnStart" onclick="startLiveTracking()" style="background: #22c55e;">▶️ Start Stream</button>
-        <button id="btnStop" onclick="stopLiveTracking()" style="background: var(--accent-red);">⏸️ Terminate</button>
-        <button id="btnClear" onclick="clearStoredData()" style="background: #475569;">🗑️ Clear Cache</button>
-        <button onclick="forceRefresh()" style="background: #3b82f6;">🔄 Refresh <span class="cached-badge" id="cacheBadge">📦 Cached</span></button>
-      </div>
-
-      <div>
-        <span id="liveStatus" class="status-suspended">⏸️ Status: Suspended</span>
-        <span id="currentBlockDisplay" class="block-display">Block: --</span>
-        <span id="lastUpdateTime" class="last-update">Last update: --</span>
-        <span id="totalRecordsDisplay" class="total-records">Total: 0</span>
-        <span id="cacheInfo" class="cache-info">📦 Cache: <span id="cacheStatus">Empty</span></span>
-      </div>
-
-      <div class="prediction-panel">
-        <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
-        <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
-        <div style="font-size:12px; color:#64748b;" id="blockInfo">Started from: -- | Current: --</div>
-        <div id="waitingMessage" class="waiting-message" style="display:none;">⏳ Waiting... <span class="loading-dots"></span></div>
-        <div id="retryCount" class="retry-count" style="display:none;">ပြန်လည်ကြိုးစားမှု: 0 (၃ စက္ကန့်တစ်ခါ)</div>
-      </div>
-
-      <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
-      <div class="stats-counter">
-        <div>1: <span id="count1" class="stat-1">0</span></div>
-        <div>2: <span id="count2" class="stat-2">0</span></div>
-        <div>3: <span id="count3" class="stat-3">0</span></div>
-        <div class="stat-last">Last: <span id="lastResult">--</span></div>
-        <div class="stat-last">Total: <span id="totalCount">0</span></div>
-      </div>
-      
-      <div class="road-map-wrapper">
-        <table class="road-map-table" id="roadMapTable"></table>
-      </div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker (နောက်ဆုံး 300)</h3>
       <div class="win-rate-box">
@@ -209,11 +214,6 @@
           <div class="breakdown-chip nomatch"><span id="winNoMatchCount">0</span><label>❓ မခန့်မှန်း</label></div>
         </div>
         <div class="win-rate-by-level" id="winRateByLevel"></div>
-      </div>
-      
-      <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး 300)</h3>
-      <div class="table-wrapper" id="tableWrapper">
-        <div id="output"></div>
       </div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
