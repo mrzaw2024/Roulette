@@ -40,6 +40,9 @@
     .stat-2 { color: #22c55e; }
     .stat-3 { color: #3b82f6; }
     .stat-last { color: #60a5fa; font-size: 14px; }
+    .level-selector { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+    .level-chip { display: flex; align-items: center; gap: 5px; background: #1e293b; padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; user-select: none; }
+    .level-chip input { width: 16px; height: 16px; cursor: pointer; }
     .win-rate-box { background: #0f172a; padding: 16px; border-radius: 8px; margin-top: 12px; }
     .win-rate-main { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
     .win-rate-percent { font-size: 32px; font-weight: bold; color: #4ade80; }
@@ -111,6 +114,19 @@
       
       <label>🔢 Max Stream Frame Count:</label>
       <input type="number" id="count" value="300">
+
+      <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
+      <div id="levelSelector" class="level-selector">
+        <label class="level-chip"><input type="checkbox" value="10" checked onchange="applyLevelSelection()"> 10</label>
+        <label class="level-chip"><input type="checkbox" value="9" checked onchange="applyLevelSelection()"> 9</label>
+        <label class="level-chip"><input type="checkbox" value="8" checked onchange="applyLevelSelection()"> 8</label>
+        <label class="level-chip"><input type="checkbox" value="7" checked onchange="applyLevelSelection()"> 7</label>
+        <label class="level-chip"><input type="checkbox" value="6" checked onchange="applyLevelSelection()"> 6</label>
+        <label class="level-chip"><input type="checkbox" value="5" checked onchange="applyLevelSelection()"> 5</label>
+        <label class="level-chip"><input type="checkbox" value="4" checked onchange="applyLevelSelection()"> 4</label>
+        <label class="level-chip"><input type="checkbox" value="3" checked onchange="applyLevelSelection()"> 3</label>
+      </div>
+      <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည်</div>
       
       <div class="btn-container">
         <button id="btnStart" onclick="startLiveTracking()" style="background: #22c55e;">▶️ Start Stream</button>
@@ -217,6 +233,7 @@ function saveData() {
     localStorage.setItem("savedPrediction", nextCalculatedBet);
     localStorage.setItem("savedLastBlock", currentTrackingBlock);
     localStorage.setItem("savedProcessedBlocks", JSON.stringify([...processedBlocks]));
+    localStorage.setItem("savedEnabledLevels", JSON.stringify(enabledLevels));
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -225,6 +242,19 @@ function saveData() {
 
 function loadData() {
   try {
+    const storedLevels = localStorage.getItem("savedEnabledLevels");
+    if (storedLevels) {
+      try {
+        const parsed = JSON.parse(storedLevels);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          enabledLevels = parsed.sort((a, b) => b - a);
+          document.querySelectorAll('#levelSelector input[type="checkbox"]').forEach(b => {
+            b.checked = enabledLevels.includes(parseInt(b.value));
+          });
+        }
+      } catch (e) { /* ignore malformed storage, keep default */ }
+    }
+
     const inputBlock = document.getElementById("startBlock").value.trim();
     if (inputBlock && !isNaN(inputBlock) && parseInt(inputBlock) > 0) {
       userRequestedBlock = parseInt(inputBlock);
@@ -373,14 +403,47 @@ const NO_MATCH = "❓"; // shown when no formula can find a confident pick
 // a losing streak.
 const FORMULA_NAMES = ["Sequence Cascade"];
 let currentFormulaIndex = 0; // always 0 — kept only for display compatibility
-let nextUsedLength = null;   // which pattern length (5/4/3/2) produced the upcoming prediction
+let nextUsedLength = null;   // which pattern length produced the upcoming prediction
+
+// Which pattern lengths are active in the cascade, longest → shortest.
+// Customizable via the "Pattern Level ရွေးရန်" checkboxes — e.g. leaving
+// only 5 and 4 checked makes the cascade try ONLY those two, skipping
+// everything else entirely.
+let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3];
+
+function applyLevelSelection() {
+  const boxes = document.querySelectorAll('#levelSelector input[type="checkbox"]');
+  const checked = Array.from(boxes)
+    .filter(b => b.checked)
+    .map(b => parseInt(b.value))
+    .sort((a, b) => b - a); // longest first
+
+  if (checked.length === 0) {
+    // Never allow zero levels — nothing could ever be predicted. Re-check
+    // whichever box the user just unchecked and warn instead.
+    boxes.forEach(b => { if (!b.checked) b.checked = true; });
+    alert("Level တစ်ခုမှ မရွေးထားလို့ မရပါ — အနည်းဆုံး တစ်ခုတော့ ရွေးထားပါ။");
+    return;
+  }
+
+  enabledLevels = checked;
+  localStorage.setItem("savedEnabledLevels", JSON.stringify(enabledLevels));
+
+  // Every existing prediction was made using the OLD level set, so replay
+  // the whole history with the new one and refresh everything on screen.
+  recalculateAllPredictions();
+  updateTrendBoard();
+  updateTableDisplay();
+  updatePredictionDisplay();
+  updateStats();
+}
 
 function recalculateAllPredictions() {
   // The whole history is replayed from scratch every time so the engine
   // always ends up in a state consistent with the full trackedResults
   // array — including after a row is deleted. No formula-switching:
-  // the 10→9→8→7→6→5→4→3 cascade keeps being used no matter how long the losing
-  // streak runs.
+  // the cascade (using only the currently-enabled levels, longest first)
+  // keeps being used no matter how long the losing streak runs.
   //
   // --- Category pattern matching (1, 2, 3) ---
   // Every raw digit (0-9) is first bucketed into Category 1, 2, or 3
@@ -393,13 +456,15 @@ function recalculateAllPredictions() {
   // At each length we check whether that exact Category-pattern occurred
   // earlier in the data. If it did, we look at which Category came right
   // after it (aggregated across every earlier time it occurred) and predict
-  // the Category that followed the LEAST often. We try length 10 first (the
-  // most specific pattern); if the least-frequent result is tied between two
+  // the Category that followed the LEAST often. We try the longest ENABLED
+  // length first; if the least-frequent result is tied between two
   // categories (not decisive), or the pattern was never seen, we drop down
-  // through 9, 8, 7, 6, 5, 4, and finally 3.
-  const SEQ_LENGTHS = [10, 9, 8, 7, 6, 5, 4, 3];
+  // to the next-shorter ENABLED length. Levels the user has unchecked are
+  // skipped entirely — they're never even looked at.
+  const SEQ_LENGTHS = enabledLevels;
   const makeCounter = () => ({ "1": 0, "2": 0, "3": 0 });
-  const transitionMaps = { 10: {}, 9: {}, 8: {}, 7: {}, 6: {}, 5: {}, 4: {}, 3: {} };
+  const transitionMaps = {};
+  SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
   const valid = []; // chronological Category strings ("1"/"2"/"3") seen so far
 
   function buildKey(len) {
