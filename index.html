@@ -40,6 +40,14 @@
     .stat-2 { color: #22c55e; }
     .stat-3 { color: #3b82f6; }
     .stat-last { color: #60a5fa; font-size: 14px; }
+    .win-rate-box { background: #0f172a; padding: 16px; border-radius: 8px; margin-top: 12px; }
+    .win-rate-main { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .win-rate-percent { font-size: 32px; font-weight: bold; color: #4ade80; }
+    .win-rate-percent.below-baseline { color: #f87171; }
+    .win-rate-detail { font-size: 14px; color: #94a3b8; }
+    .win-rate-baseline { font-size: 12px; color: #64748b; margin-top: 6px; }
+    .win-rate-by-level { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #cbd5e1; }
+    .win-rate-by-level .level-row { display: flex; justify-content: space-between; background: #1e293b; padding: 6px 10px; border-radius: 6px; }
     .prediction-panel { background: #0f172a; border-radius: 12px; padding: 25px 15px; margin-top: 15px; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 10px; }
     .pred-badge { font-size: 24px; font-weight: bold; padding: 14px 40px; border-radius: 16px; color: white; min-width: 260px; text-align: center; background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
     .pred-badge.none { background: #334155; }
@@ -138,6 +146,16 @@
       
       <div class="road-map-wrapper">
         <table class="road-map-table" id="roadMapTable"></table>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-main">
+          <span id="winRatePercent" class="win-rate-percent">--%</span>
+          <span id="winRateDetail" class="win-rate-detail">0 / 0 မှန်ခဲ့သည်</span>
+        </div>
+        <div class="win-rate-baseline">ကျပန်း (random) ဖြစ်ရင် <b>~33.3%</b> ဝန်းကျင်သာ ရနိုင်ပါသည်</div>
+        <div class="win-rate-by-level" id="winRateByLevel"></div>
       </div>
       
       <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး 300)</h3>
@@ -518,10 +536,56 @@ function updateStats() {
   document.getElementById("totalRecordsDisplay").innerText = `Total: ${trackedResults.length}`;
   updateCacheInfo();
   updateDigitDataPreview();
+  updateWinRateStats();
   
   if (trackedResults.length > 0) {
     const last = trackedResults[trackedResults.length - 1];
     document.getElementById("lastResult").innerText = CATEGORIES.includes(last.appResult) ? last.appResult : "--";
+  }
+}
+
+// ===== WIN RATE TRACKER =====
+// Only rows where a REAL prediction was made (betPrediction is "1"/"2"/"3",
+// not "Waiting" or the NO_MATCH "?") count toward accuracy — a row that was
+// never predicted can't be scored as a win or a loss. Also breaks the
+// accuracy down per pattern-length (10 down to 3) so you can see whether
+// any particular level is actually beating pure chance (~33.3%) or not.
+function updateWinRateStats() {
+  const pctEl = document.getElementById("winRatePercent");
+  if (!pctEl) return; // markup not present in this build
+
+  let total = 0, correct = 0;
+  const byLevel = {}; // level -> { total, correct }
+
+  trackedResults.forEach(r => {
+    if (!CATEGORIES.includes(r.appResult)) return;   // skip rows with no real result yet
+    if (!CATEGORIES.includes(r.betPrediction)) return; // skip "Waiting" / "?" — nothing was actually predicted
+
+    total++;
+    const isCorrect = r.betPrediction === r.appResult;
+    if (isCorrect) correct++;
+
+    const lvl = r.formulaLength;
+    if (lvl) {
+      if (!byLevel[lvl]) byLevel[lvl] = { total: 0, correct: 0 };
+      byLevel[lvl].total++;
+      if (isCorrect) byLevel[lvl].correct++;
+    }
+  });
+
+  const pct = total > 0 ? (correct / total * 100) : 0;
+  pctEl.innerText = total > 0 ? `${pct.toFixed(1)}%` : "--%";
+  pctEl.className = "win-rate-percent" + (total > 0 && pct < 33.3 ? " below-baseline" : "");
+  document.getElementById("winRateDetail").innerText = `${correct} / ${total} မှန်ခဲ့သည်`;
+
+  const byLevelEl = document.getElementById("winRateByLevel");
+  if (byLevelEl) {
+    const levels = Object.keys(byLevel).map(Number).sort((a, b) => b - a);
+    byLevelEl.innerHTML = levels.map(lvl => {
+      const { total: t, correct: c } = byLevel[lvl];
+      const p = t > 0 ? (c / t * 100).toFixed(1) : "0.0";
+      return `<div class="level-row"><span>${lvl} လုံး Pattern</span><span>${c}/${t} (${p}%)</span></div>`;
+    }).join("");
   }
 }
 
@@ -1059,6 +1123,10 @@ function clearStoredData() {
     document.getElementById("count3").innerText = "0";
     document.getElementById("totalCount").innerText = "0";
     document.getElementById("lastResult").innerText = "--";
+    document.getElementById("winRatePercent").innerText = "--%";
+    document.getElementById("winRatePercent").className = "win-rate-percent";
+    document.getElementById("winRateDetail").innerText = "0 / 0 မှန်ခဲ့သည်";
+    document.getElementById("winRateByLevel").innerHTML = "";
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
     document.getElementById("currentBlockDisplay").innerText = `Block: ${startBlock}`;
