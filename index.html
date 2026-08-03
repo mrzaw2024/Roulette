@@ -922,11 +922,16 @@ function updateLosingStreakSummary(recentResults) {
   let currentStreak = 0;
 
   recentResults.forEach(r => {
-    if (!CATEGORIES.includes(r.appResult)) return;
+    // A row with no digit at all (never resolved) can't be judged - skip entirely.
+    const hasDigit = r.digit !== undefined && r.digit !== "-" && r.digit !== null;
+    if (!hasDigit) return;
+
     if (r.betPrediction === NO_MATCH) return;
     if (!Array.isArray(r.betPrediction)) return;
 
-    const isCorrect = r.betPrediction.includes(r.appResult);
+    // A digit that rolled into an unmapped ("?") group has no valid category,
+    // so a bet (which only ever contains 1-4) could never match it - count as a loss.
+    const isCorrect = CATEGORIES.includes(r.appResult) && r.betPrediction.includes(r.appResult);
     if (isCorrect) {
       if (currentStreak >= 3) {
         streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
