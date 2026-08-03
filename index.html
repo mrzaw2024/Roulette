@@ -30,6 +30,7 @@
     .circle.color-1 { background: linear-gradient(135deg, #f97316, #ea580c); }
     .circle.color-2 { background: linear-gradient(135deg, #22c55e, #16a34a); }
     .circle.color-3 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .circle.color-4 { background: linear-gradient(135deg, #a855f7, #7e22ce); }
     .circle.color-purple { background: linear-gradient(135deg, #c084fc, #a855f7); }
     .circle.color-skip { background: #475569; }
     .stats-counter { display: flex; gap: 20px; margin-top: 15px; font-weight: bold; background: #0f172a; padding: 10px 15px; border-radius: 8px; flex-wrap: wrap; }
@@ -39,6 +40,7 @@
     .stat-1 { color: #f97316; }
     .stat-2 { color: #22c55e; }
     .stat-3 { color: #3b82f6; }
+    .stat-4 { color: #a855f7; }
     .stat-last { color: #60a5fa; font-size: 14px; }
     .level-selector { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
     .level-chip { display: flex; align-items: center; gap: 5px; background: #1e293b; padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; user-select: none; }
@@ -150,6 +152,7 @@
         <div>1: <span id="count1" class="stat-1">0</span></div>
         <div>2: <span id="count2" class="stat-2">0</span></div>
         <div>3: <span id="count3" class="stat-3">0</span></div>
+        <div>4: <span id="count4" class="stat-4">0</span></div>
         <div class="stat-last">Last: <span id="lastResult">--</span></div>
         <div class="stat-last">Total: <span id="totalCount">0</span></div>
       </div>
@@ -181,20 +184,20 @@
         <div class="win-rate-by-level" id="winRateByLevel"></div>
       </div>
 
-      <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group 1/2/3 ထဲ ကိုယ်တိုင်ရွေးပါ):</label>
+      <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group 1/2/3/4 ထဲ ကိုယ်တိုင်ရွေးပါ):</label>
       <div id="digitGroupSelector" class="level-selector">
-        <label class="level-chip">0 <select data-digit="0" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">1 <select data-digit="1" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">2 <select data-digit="2" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">3 <select data-digit="3" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">4 <select data-digit="4" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">5 <select data-digit="5" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">6 <select data-digit="6" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">7 <select data-digit="7" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">8 <select data-digit="8" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
-        <label class="level-chip">9 <select data-digit="9" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+        <label class="level-chip">0 <select data-digit="0" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">1 <select data-digit="1" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">2 <select data-digit="2" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">3 <select data-digit="3" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">4 <select data-digit="4" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">5 <select data-digit="5" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">6 <select data-digit="6" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">7 <select data-digit="7" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">8 <select data-digit="8" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label class="level-chip">9 <select data-digit="9" onchange="applyDigitMapping()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
       </div>
-      <div class="input-hint">💡 ဂဏန်း တစ်ခုစီအတွက် ဘယ် Group (1/2/3) ထဲထည့်မလဲ ကိုယ်တိုင်ရွေးနိုင်ပါတယ် — Group တစ်ခုစီမှာ ဂဏန်း အနည်းဆုံး တစ်ခုတော့ ပါဝင်ရပါမည်။ ပြောင်းလိုက်ရင် ရှေ့က ဒေတာအားလုံးကိုပါ Group အသစ်နဲ့ ပြန်တွက်ပေးပါလိမ့်မယ်</div>
+      <div class="input-hint">💡 ဂဏန်း တစ်ခုစီအတွက် ဘယ် Group (1/2/3/4) ထဲထည့်မလဲ ကိုယ်တိုင်ရွေးနိုင်ပါတယ် — Group တစ်ခုစီမှာ ဂဏန်း အနည်းဆုံး တစ်ခုတော့ ပါဝင်ရပါမည်။ ပြောင်းလိုက်ရင် ရှေ့က ဒေတာအားလုံးကိုပါ Group အသစ်နဲ့ ပြန်တွက်ပေးပါလိမ့်မယ်</div>
 
       <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
       <div id="levelSelector" class="level-selector">
@@ -220,6 +223,12 @@
         🚫 နောက်ဆုံးထွက်ခဲ့တဲ့ Category ကို ခန့်မှန်းချက်ထဲ ထည့်မသုံးပါနဲ့
       </label>
       <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
+
+      <label class="level-chip" style="width:fit-content; margin-top:6px;">
+        <input type="checkbox" id="predictTwoToggle" onchange="applyFormulaSettings()">
+        🎯 တစ်ကြိမ်ကို Group 2 ခု ခန့်မှန်းမည် (Group 4 ခုထဲက)
+      </label>
+      <div class="input-hint">💡 OFF ဆိုရင် Group တစ်ခုတည်း ခန့်မှန်းမည်၊ ON ဆိုရင် Group 2 ခု တွဲပြီး ခန့်မှန်းမည် (ဘယ်တစ်ခုမဆို ထွက်ရင် မှန်ကြောင်း သတ်မှတ်မည်)</div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
 
@@ -272,12 +281,13 @@ function saveData() {
     localStorage.setItem("savedTargetBlock", currentTrackingBlock);
     localStorage.setItem("savedMaxCount", document.getElementById("count").value);
     localStorage.setItem("savedTrackedResults", JSON.stringify(trackedResults));
-    localStorage.setItem("savedPrediction", nextCalculatedBet);
+    localStorage.setItem("savedPrediction", JSON.stringify(nextCalculatedBet));
     localStorage.setItem("savedLastBlock", currentTrackingBlock);
     localStorage.setItem("savedProcessedBlocks", JSON.stringify([...processedBlocks]));
     localStorage.setItem("savedEnabledLevels", JSON.stringify(enabledLevels));
     localStorage.setItem("savedSelectionMode", selectionMode);
     localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
+    localStorage.setItem("savedPredictTwoMode", predictTwoMode ? "1" : "0");
     localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
     localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
     localStorage.setItem("savedTimestamp", Date.now());
@@ -293,7 +303,7 @@ function loadData() {
       try {
         const parsedMap = JSON.parse(storedDigitMap);
         const validKeys = ["0","1","2","3","4","5","6","7","8","9"];
-        const validValues = ["1","2","3"];
+        const validValues = ["1","2","3","4"];
         const isValid = validKeys.every(k => validValues.includes(parsedMap[k]));
         if (isValid) {
           DIGIT_CATEGORY_MAP = parsedMap;
@@ -325,6 +335,12 @@ function loadData() {
       excludeLastCategory = storedExclude === "1";
       const toggle = document.getElementById("excludeLastCategoryToggle");
       if (toggle) toggle.checked = excludeLastCategory;
+    }
+    const storedPredictTwo = localStorage.getItem("savedPredictTwoMode");
+    if (storedPredictTwo !== null) {
+      predictTwoMode = storedPredictTwo === "1";
+      const toggle = document.getElementById("predictTwoToggle");
+      if (toggle) toggle.checked = predictTwoMode;
     }
 
     const storedLevels = localStorage.getItem("savedEnabledLevels");
@@ -463,9 +479,9 @@ function switchTab(tabId) {
 }
 
 // ===== DIGIT → CATEGORY MAPPING =====
-// Default: 1,6,8 -> "1" | 2,7,4 -> "2" | 0,3,5,9 -> "3"
+// Default: 0,1,2 -> "1" | 3,4 -> "2" | 5,6 -> "3" | 7,8,9 -> "4"
 // This is now customizable by the user via the "ဂဏန်း → Group သတ်မှတ်ခြင်း" selectors.
-let DIGIT_CATEGORY_MAP = { "0":"3", "1":"1", "2":"2", "3":"3", "4":"2", "5":"3", "6":"1", "7":"2", "8":"1", "9":"3" };
+let DIGIT_CATEGORY_MAP = { "0":"1", "1":"1", "2":"1", "3":"2", "4":"2", "5":"3", "6":"3", "7":"4", "8":"4", "9":"4" };
 let historyDisplayLimit = 300; // user-configurable, used by both the record table and the Win Rate window
 function digitToCategory(d) {
   return DIGIT_CATEGORY_MAP[String(d)];
@@ -474,12 +490,12 @@ function digitToCategory(d) {
 function updateGroupSummary() {
   const el = document.getElementById("groupSummary");
   if (!el) return;
-  const groups = { "1": [], "2": [], "3": [] };
+  const groups = { "1": [], "2": [], "3": [], "4": [] };
   for (let d = 0; d <= 9; d++) {
     const g = DIGIT_CATEGORY_MAP[String(d)];
     if (groups[g]) groups[g].push(d);
   }
-  el.innerText = `1(${groups["1"].join("")}) 2(${groups["2"].join("")}) 3(${groups["3"].join("")})`;
+  el.innerText = `1(${groups["1"].join("")}) 2(${groups["2"].join("")}) 3(${groups["3"].join("")}) 4(${groups["4"].join("")})`;
 }
 
 function applyHistoryLimit() {
@@ -505,11 +521,11 @@ function applyDigitMapping() {
     newMap[sel.getAttribute('data-digit')] = sel.value;
   });
 
-  // Every group (1, 2, 3) must be used at least once, otherwise a whole
+  // Every group (1, 2, 3, 4) must be used at least once, otherwise a whole
   // category would vanish and predictions/roadmap for it would break.
   const usedGroups = new Set(Object.values(newMap));
-  if (usedGroups.size < 3) {
-    alert("Group 1, 2, 3 အားလုံးမှာ ဂဏန်း အနည်းဆုံး တစ်ခုစီ ပါဝင်ရပါမည်။");
+  if (usedGroups.size < 4) {
+    alert("Group 1, 2, 3, 4 အားလုံးမှာ ဂဏန်း အနည်းဆုံး တစ်ခုစီ ပါဝင်ရပါမည်။");
     selects.forEach(sel => {
       sel.value = DIGIT_CATEGORY_MAP[sel.getAttribute('data-digit')];
     });
@@ -556,7 +572,7 @@ function analyzeHashData(blockHash) {
 }
 
 // ===== PREDICTION ENGINE =====
-const CATEGORIES = ["1", "2", "3"];
+const CATEGORIES = ["1", "2", "3", "4"];
 const NO_MATCH = "❓"; // shown when no formula can find a confident pick
 
 // Single prediction method: Sequence Cascade only.
@@ -585,13 +601,20 @@ let selectionMode = "least";
 // otherwise be the least/most-frequent follower. Customizable via checkbox.
 let excludeLastCategory = false;
 
+// If true, predict 2 Categories at once instead of just 1 (out of the 4
+// available groups) — a hit on EITHER of the two counts as correct.
+// Customizable via the "Group 2 ခု ခန့်မှန်းမည်" checkbox.
+let predictTwoMode = false;
+
 function applyFormulaSettings() {
   const modeInput = document.querySelector('input[name="selectionMode"]:checked');
   selectionMode = modeInput ? modeInput.value : "least";
   excludeLastCategory = document.getElementById("excludeLastCategoryToggle").checked;
+  predictTwoMode = document.getElementById("predictTwoToggle").checked;
 
   localStorage.setItem("savedSelectionMode", selectionMode);
   localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
+  localStorage.setItem("savedPredictTwoMode", predictTwoMode ? "1" : "0");
 
   recalculateAllPredictions();
   updateTrendBoard();
@@ -651,7 +674,7 @@ function recalculateAllPredictions() {
   // to the next-shorter ENABLED length. Levels the user has unchecked are
   // skipped entirely — they're never even looked at.
   const SEQ_LENGTHS = enabledLevels;
-  const makeCounter = () => ({ "1": 0, "2": 0, "3": 0 });
+  const makeCounter = () => ({ "1": 0, "2": 0, "3": 0, "4": 0 });
   const transitionMaps = {};
   SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
   const valid = []; // chronological Category strings ("1"/"2"/"3") seen so far
@@ -663,12 +686,14 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  // --- Sequence Cascade (Category pattern match, 10 → 9 → 8 → 7 → 6 → 5 → 4 → 3) ---
-  // Returns { category, length } where length tells you which pattern size
-  // (10 down to 3) actually produced the pick, or { category: NO_MATCH, length: null }
-  // if none of the four lengths found a decisive pattern.
+  // --- Sequence Cascade (Category pattern match) ---
+  // Returns { categories: [...], length } where `categories` is an array of
+  // 1 category (normal mode) or 2 categories (predictTwoMode), and `length`
+  // tells you which pattern size actually produced the pick — or
+  // { categories: null, length: null } if no pattern was decisive.
   function predictSequenceCascade() {
     const lastCategory = valid.length > 0 ? valid[valid.length - 1] : null;
+    const pickCount = predictTwoMode ? 2 : 1;
 
     for (const len of SEQ_LENGTHS) {
       const key = buildKey(len);
@@ -680,25 +705,27 @@ function recalculateAllPredictions() {
         seen = seen.filter(c => c !== lastCategory); // never re-offer the category that just occurred
       }
 
-      if (seen.length === 0) continue; // this exact pattern never occurred before — try a shorter one
+      // Need strictly MORE candidates than we're picking, otherwise we'd
+      // just be taking "everything available" rather than making a real
+      // choice — not decisive, try a shorter pattern instead.
+      if (seen.length <= pickCount) continue;
 
-      if (seen.length === 1) {
-        // Only one category has ever followed this pattern — with nothing
-        // to differentiate against, this isn't a real "choice", so don't
-        // treat it as decisive either. Try a shorter pattern instead.
-        continue;
-      }
+      const sorted = seen.slice().sort((a, b) =>
+        selectionMode === "most" ? stats[b] - stats[a] : stats[a] - stats[b]
+      );
 
-      const targetCount = selectionMode === "most"
-        ? Math.max(...seen.map(c => stats[c]))
-        : Math.min(...seen.map(c => stats[c]));
-      const targetCats = seen.filter(c => stats[c] === targetCount);
-      if (targetCats.length > 1) continue; // tied — not decisive, try a shorter sequence
+      // The boundary between "picked" and "not picked" must be a clear cut
+      // — if the last picked category and the first excluded one are tied
+      // on count, it's ambiguous which one really belongs in the set, so
+      // this level isn't decisive either.
+      const lastPickedCount = stats[sorted[pickCount - 1]];
+      const firstExcludedCount = stats[sorted[pickCount]];
+      if (lastPickedCount === firstExcludedCount) continue;
 
-      return { category: targetCats[0], length: len };
+      return { categories: sorted.slice(0, pickCount), length: len };
     }
-    // Not found (or never decisive) at length 10 down to 3 — no basis to guess.
-    return { category: NO_MATCH, length: null };
+    // Not found (or never decisive) at any enabled length — no basis to guess.
+    return { categories: null, length: null };
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -710,7 +737,7 @@ function recalculateAllPredictions() {
       betPrediction = "Waiting";
     } else {
       const pred = predictSequenceCascade();
-      betPrediction = pred.category;
+      betPrediction = pred.categories ? pred.categories : NO_MATCH;
       usedLength = pred.length;
     }
 
@@ -744,7 +771,7 @@ function recalculateAllPredictions() {
     nextUsedLength = null;
   } else {
     const pred = predictSequenceCascade();
-    nextCalculatedBet = pred.category;
+    nextCalculatedBet = pred.categories ? pred.categories : NO_MATCH;
     nextUsedLength = pred.length;
   }
 
@@ -778,23 +805,29 @@ function updatePredictionDisplay() {
     const catColors = {
       "1": "linear-gradient(135deg, #f97316, #ea580c)",
       "2": "linear-gradient(135deg, #22c55e, #16a34a)",
-      "3": "linear-gradient(135deg, #3b82f6, #1d4ed8)"
+      "3": "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+      "4": "linear-gradient(135deg, #a855f7, #7e22ce)"
     };
-    predBox.style.background = catColors[nextCalculatedBet] || catColors["1"];
-    predBox.innerText = `🔮 ${nextCalculatedBet}`;
+    const picks = Array.isArray(nextCalculatedBet) ? nextCalculatedBet : [nextCalculatedBet];
+    predBox.style.background = picks.length === 2
+      ? `linear-gradient(135deg, ${catColors[picks[0]]?.match(/#[0-9a-f]{6}/i)?.[0] || "#3b82f6"}, ${catColors[picks[1]]?.match(/#[0-9a-f]{6}/i)?.[0] || "#1d4ed8"})`
+      : (catColors[picks[0]] || catColors["1"]);
+    const picksLabel = picks.join(" / ");
+    predBox.innerText = `🔮 ${picksLabel}`;
     const lenLabel = nextUsedLength ? `${nextUsedLength} လုံး Pattern` : FORMULA_NAMES[0];
-    detailEl.innerText = `"${nextCalculatedBet}" ထွက်ရန် ခန့်မှန်းထားသည် (${lenLabel})`;
+    detailEl.innerText = `"${picksLabel}" ထွက်ရန် ခန့်မှန်းထားသည် (${lenLabel})`;
   }
 }
 
 function updateStats() {
-  let counts = { "1": 0, "2": 0, "3": 0 };
+  let counts = { "1": 0, "2": 0, "3": 0, "4": 0 };
   trackedResults.forEach(r => {
     if (counts.hasOwnProperty(r.appResult)) counts[r.appResult]++;
   });
   document.getElementById("count1").innerText = counts["1"];
   document.getElementById("count2").innerText = counts["2"];
   document.getElementById("count3").innerText = counts["3"];
+  document.getElementById("count4").innerText = counts["4"];
   document.getElementById("totalCount").innerText = trackedResults.length;
   document.getElementById("totalRecordsDisplay").innerText = `Total: ${trackedResults.length}`;
   updateCacheInfo();
@@ -808,11 +841,13 @@ function updateStats() {
 }
 
 // ===== WIN RATE TRACKER =====
-// Only rows where a REAL prediction was made (betPrediction is "1"/"2"/"3",
-// not "Waiting" or the NO_MATCH "?") count toward accuracy — a row that was
-// never predicted can't be scored as a win or a loss. Also breaks the
-// accuracy down per pattern-length (10 down to 3) so you can see whether
-// any particular level is actually beating pure chance (~33.3%) or not.
+// Only rows where a REAL prediction was made (betPrediction is an array of
+// 1 or 2 categories, not "Waiting" or the NO_MATCH "?") count toward
+// accuracy — a row that was never predicted can't be scored as a win or a
+// loss. In predictTwoMode, a hit on EITHER predicted category counts as
+// correct. Also breaks the accuracy down per pattern-length so you can see
+// whether any particular level is actually beating pure chance (~25% with
+// 4 groups, single-pick mode) or not.
 function updateWinRateStats() {
   const pctEl = document.getElementById("winRatePercent");
   if (!pctEl) return; // markup not present in this build
@@ -832,10 +867,10 @@ function updateWinRateStats() {
       noMatchCount++;
       return; // not counted toward the win-rate percentage
     }
-    if (!CATEGORIES.includes(r.betPrediction)) return; // skip "Waiting" — nothing was predicted yet
+    if (!Array.isArray(r.betPrediction)) return; // skip "Waiting" — nothing was predicted yet
 
     total++;
-    const isCorrect = r.betPrediction === r.appResult;
+    const isCorrect = r.betPrediction.includes(r.appResult);
     if (isCorrect) { correct++; } else { wrong++; }
 
     const lvl = r.formulaLength;
@@ -1031,9 +1066,10 @@ function updateTableDisplay() {
   for (let i = displayResults.length - 1; i >= 0; i--) {
     let row = displayResults[i];
     if (!row) continue;
-    let win = row.betPrediction === row.appResult;
-    let cls = (row.betPrediction === "Waiting" || row.betPrediction === NO_MATCH) ? "" : (win ? "win-match" : "win-miss");
-    let betDisplay = row.betPrediction || "-";
+    const isArrayPred = Array.isArray(row.betPrediction);
+    let win = isArrayPred && row.betPrediction.includes(row.appResult);
+    let cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
+    let betDisplay = isArrayPred ? row.betPrediction.join(" / ") : (row.betPrediction || "-");
     let formulaDisplay = row.formulaLength ? `${row.formulaLength} လုံး` : "-";
     let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
     let blockDisplay = row.manual ? `📝 Manual #${Math.abs(row.blockNum)}` : row.blockNum;
@@ -1396,6 +1432,7 @@ function clearStoredData() {
     document.getElementById("count1").innerText = "0";
     document.getElementById("count2").innerText = "0";
     document.getElementById("count3").innerText = "0";
+    document.getElementById("count4").innerText = "0";
     document.getElementById("totalCount").innerText = "0";
     document.getElementById("lastResult").innerText = "--";
     document.getElementById("winRatePercent").innerText = "--%";
