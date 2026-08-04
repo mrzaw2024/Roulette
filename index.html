@@ -260,10 +260,6 @@
         <div class="win-rate-by-level" id="losingStreakSummary">
           <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
-        <div style="color:#94a3b8; font-size:13px; margin:14px 0 8px;">🕐 အသေးစိတ် (ဘယ်တုန်းကဖြစ်ခဲ့လဲ):</div>
-        <div class="win-rate-by-level" id="losingStreakLog">
-          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
-        </div>
       </div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
@@ -713,6 +709,8 @@ const NO_MATCH = "❓";
 const FORMULA_NAMES = ["Sequence Cascade"];
 let currentFormulaIndex = 0;
 let nextUsedLength = null;
+let nextUsedStats = null;   // { "1": count, "2": count, ... } — how many times each Group followed the CURRENT matched pattern
+let nextUsedKeyDisplay = null; // the matched pattern itself, e.g. "7,2,9" formatted for display
 
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 let excludeLastCategory = false;
@@ -815,9 +813,9 @@ function recalculateAllPredictions() {
       const firstExcludedCount = stats[sorted[pickCount]];
       if (lastPickedCount === firstExcludedCount) continue;
 
-      return { categories: picked, length: len };
+      return { categories: picked, length: len, stats, key };
     }
-    return { categories: null, length: null };
+    return { categories: null, length: null, stats: null, key: null };
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -857,10 +855,14 @@ function recalculateAllPredictions() {
   if (valid.length < 10) {
     nextCalculatedBet = "Waiting";
     nextUsedLength = null;
+    nextUsedStats = null;
+    nextUsedKeyDisplay = null;
   } else {
     const pred = predictSequenceCascade();
     nextCalculatedBet = pred.categories ? pred.categories : NO_MATCH;
     nextUsedLength = pred.length;
+    nextUsedStats = pred.stats || null;
+    nextUsedKeyDisplay = pred.key ? pred.key.split(",").join("") : null;
   }
 
   saveData();
@@ -943,7 +945,6 @@ function updateWinRateStats() {
 
   let total = 0, correct = 0, wrong = 0, noMatchCount = 0;
   const byLevel = {};
-  const byGroup = {}; // group -> how many times it was the ACTUAL result among scored (real-prediction) rounds
 
   recentResults.forEach(r => {
     if (!CATEGORIES.includes(r.appResult)) return;
@@ -957,8 +958,6 @@ function updateWinRateStats() {
     total++;
     const isCorrect = r.betPrediction.includes(r.appResult);
     if (isCorrect) { correct++; } else { wrong++; }
-
-    byGroup[r.appResult] = (byGroup[r.appResult] || 0) + 1;
 
     const lvl = r.formulaLength;
     if (lvl) {
@@ -988,30 +987,31 @@ function updateWinRateStats() {
 
   const byGroupEl = document.getElementById("winRateByGroup");
   if (byGroupEl) {
-    const groupsSorted = CATEGORIES.slice().sort((a, b) => (byGroup[b] || 0) - (byGroup[a] || 0));
-    byGroupEl.innerHTML = groupsSorted.map(g =>
-      `<div class="level-row"><span>Group ${g}</span><span>${byGroup[g] || 0} ကြိမ်</span></div>`
-    ).join("");
+    if (nextUsedStats && nextUsedLength) {
+      // Show, for the exact pattern currently driving the next prediction
+      // (e.g. Level 3 Pattern "7,2,9"), how many times each Group followed
+      // it historically — this is the real basis for the current bet.
+      const groupsSorted = CATEGORIES.slice().sort((a, b) => (nextUsedStats[b] || 0) - (nextUsedStats[a] || 0));
+      byGroupEl.innerHTML =
+        `<div class="level-row"><span>${nextUsedLength} လုံး Pattern (${nextUsedKeyDisplay})</span><span>-</span></div>` +
+        groupsSorted.map(g =>
+          `<div class="level-row"><span>Group ${g}</span><span>${nextUsedStats[g] || 0} ကြိမ်</span></div>`
+        ).join("");
+    } else {
+      byGroupEl.innerHTML = `<div class="level-row"><span>လက်ရှိ ခန့်မှန်းမှုအတွက် Pattern မတွေ့သေးပါ</span><span>-</span></div>`;
+    }
   }
 
   updateLosingStreakSummary(recentResults);
 }
 
-// ===== FIXED: Losing Streak Summary - shows exact streak lengths (3, 4, 5, etc.) =====
+// ===== Losing Streak Summary - shows exact streak lengths (3, 4, 5, etc.) =====
 function updateLosingStreakSummary(recentResults) {
   const summaryEl = document.getElementById("losingStreakSummary");
-  const logEl = document.getElementById("losingStreakLog");
   if (!summaryEl) return;
 
-  function blockLabel(row) {
-    return row.manual ? `Manual #${Math.abs(row.blockNum)}` : String(row.blockNum);
-  }
-
   const streakCounts = {};   // length -> how many times a streak of exactly this length occurred
-  const streakEvents = [];   // { length, startLabel, endLabel, ongoing } — one per occurrence, in chronological order
   let currentStreak = 0;
-  let streakStartLabel = null;
-  let lastLossLabel = null;
 
   recentResults.forEach(r => {
     // A row with no digit at all (never resolved) can't be judged - skip entirely.
@@ -1027,13 +1027,9 @@ function updateLosingStreakSummary(recentResults) {
     if (isCorrect) {
       if (currentStreak >= 3) {
         streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
-        streakEvents.push({ length: currentStreak, startLabel: streakStartLabel, endLabel: lastLossLabel, ongoing: false });
       }
       currentStreak = 0;
-      streakStartLabel = null;
     } else {
-      if (currentStreak === 0) streakStartLabel = blockLabel(r);
-      lastLossLabel = blockLabel(r);
       currentStreak++;
     }
   });
@@ -1041,7 +1037,6 @@ function updateLosingStreakSummary(recentResults) {
   // Ongoing streak at the end
   if (currentStreak >= 3) {
     streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
-    streakEvents.push({ length: currentStreak, startLabel: streakStartLabel, endLabel: lastLossLabel, ongoing: true });
   }
 
   // --- Aggregate summary: "5 ကြိမ်ဆက်ရှုံး — 1 ကြိမ်" etc, longest first ---
@@ -1055,20 +1050,6 @@ function updateLosingStreakSummary(recentResults) {
     summaryEl.innerHTML = lengths.map(len =>
       `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
     ).join("");
-  }
-
-  // --- Detailed log: every individual occurrence, newest first, with the
-  // block range it happened at ---
-  if (logEl) {
-    if (streakEvents.length === 0) {
-      logEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
-    } else {
-      logEl.innerHTML = streakEvents.slice().reverse().map(ev => {
-        const tag = ev.ongoing ? " (ဖြစ်ပျက်နေဆဲ)" : "";
-        const range = ev.startLabel === ev.endLabel ? ev.startLabel : `${ev.startLabel} → ${ev.endLabel}`;
-        return `<div class="level-row"><span>${ev.length} ကြိမ်ဆက်ရှုံး${tag}</span><span>${range}</span></div>`;
-      }).join("");
-    }
   }
 }
 
@@ -1578,7 +1559,6 @@ function clearStoredData() {
     document.getElementById("winRateByLevel").innerHTML = "";
     document.getElementById("winRateByGroup").innerHTML = "";
     document.getElementById("losingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
-    document.getElementById("losingStreakLog").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
     document.getElementById("currentBlockDisplay").innerText = `Block: ${startBlock}`;
