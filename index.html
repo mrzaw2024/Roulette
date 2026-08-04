@@ -194,6 +194,8 @@
           <div class="breakdown-chip nomatch"><span id="winNoMatchCount">0</span><label>❓ မခန့်မှန်း</label></div>
         </div>
         <div class="win-rate-by-level" id="winRateByLevel"></div>
+        <div style="color:#94a3b8; font-size:13px; margin:14px 0 8px;">🔢 ခန့်မှန်းတဲ့အခါ Group တစ်ခုစီ ဘယ်နှစ်ကြိမ် ထွက်ခဲ့လဲ:</div>
+        <div class="win-rate-by-level" id="winRateByGroup"></div>
       </div>
 
       <label>🔢 Group အရေအတွက် ရွေးရန် (2-10 ခုအထိ):</label>
@@ -941,6 +943,7 @@ function updateWinRateStats() {
 
   let total = 0, correct = 0, wrong = 0, noMatchCount = 0;
   const byLevel = {};
+  const byGroup = {}; // group -> how many times it was the ACTUAL result among scored (real-prediction) rounds
 
   recentResults.forEach(r => {
     if (!CATEGORIES.includes(r.appResult)) return;
@@ -954,6 +957,8 @@ function updateWinRateStats() {
     total++;
     const isCorrect = r.betPrediction.includes(r.appResult);
     if (isCorrect) { correct++; } else { wrong++; }
+
+    byGroup[r.appResult] = (byGroup[r.appResult] || 0) + 1;
 
     const lvl = r.formulaLength;
     if (lvl) {
@@ -979,6 +984,14 @@ function updateWinRateStats() {
       const p = t > 0 ? (c / t * 100).toFixed(1) : "0.0";
       return `<div class="level-row"><span>${lvl} လုံး Pattern</span><span>${c}/${t} (${p}%)</span></div>`;
     }).join("");
+  }
+
+  const byGroupEl = document.getElementById("winRateByGroup");
+  if (byGroupEl) {
+    const groupsSorted = CATEGORIES.slice().sort((a, b) => (byGroup[b] || 0) - (byGroup[a] || 0));
+    byGroupEl.innerHTML = groupsSorted.map(g =>
+      `<div class="level-row"><span>Group ${g}</span><span>${byGroup[g] || 0} ကြိမ်</span></div>`
+    ).join("");
   }
 
   updateLosingStreakSummary(recentResults);
@@ -1563,6 +1576,7 @@ function clearStoredData() {
     document.getElementById("winWrongCount").innerText = "0";
     document.getElementById("winNoMatchCount").innerText = "0";
     document.getElementById("winRateByLevel").innerHTML = "";
+    document.getElementById("winRateByGroup").innerHTML = "";
     document.getElementById("losingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("losingStreakLog").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("roadMapTable").innerHTML = "";
