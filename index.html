@@ -225,8 +225,10 @@
         <label class="level-chip"><input type="checkbox" value="5" checked onchange="applyLevelSelection()"> 5</label>
         <label class="level-chip"><input type="checkbox" value="4" checked onchange="applyLevelSelection()"> 4</label>
         <label class="level-chip"><input type="checkbox" value="3" checked onchange="applyLevelSelection()"> 3</label>
+        <label class="level-chip"><input type="checkbox" value="2" checked onchange="applyLevelSelection()"> 2</label>
+        <label class="level-chip"><input type="checkbox" value="1" checked onchange="applyLevelSelection()"> 1</label>
       </div>
-      <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည်</div>
+      <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည် — Group အရေအတွက် များများ (ဥပမာ 10 ခု) နဲ့ Predict အရေအတွက် များများ (ဥပမာ 5 ခု) သုံးရင်၊ Level 3 နှင့်အထက်တွေမှာ pattern အတိအကျ ထပ်မထွက်လွန်းလို့ "❓ ခန့်မှန်းမှု မရှိပါ" ဖြစ်တတ်ပါတယ် — Level 1၊ 2 လို တိုတိုတွေကို ထပ်ထည့် Check ထားရင် ဒေတာပိုအလွယ်တကူ ရှာတွေ့ပါလိမ့်မယ်</div>
 
       <label>🧮 ခန့်မှန်းနည်း (Follower Category များထဲက ဘယ်ဟာကိုယူမလဲ):</label>
       <div id="selectionModeSelector" class="level-selector">
@@ -747,7 +749,7 @@ const FORMULA_NAMES = ["Sequence Cascade"];
 let currentFormulaIndex = 0;
 let nextUsedLength = null;
 
-let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3];
+let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 let selectionMode = "least";
 let excludeLastCategory = false;
 
