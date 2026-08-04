@@ -251,6 +251,23 @@
       </div>
       <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည် — Group အရေအတွက် များများ (ဥပမာ 10 ခု) နဲ့ Predict အရေအတွက် များများ (ဥပမာ 5 ခု) သုံးရင်၊ Level 3 နှင့်အထက်တွေမှာ pattern အတိအကျ ထပ်မထွက်လွန်းလို့ "❓ ခန့်မှန်းမှု မရှိပါ" ဖြစ်တတ်ပါတယ် — Level 1၊ 2 လို တိုတိုတွေကို ထပ်ထည့် Check ထားရင် ဒေတာပိုအလွယ်တကူ ရှာတွေ့ပါလိမ့်မယ်</div>
 
+      <!-- NEW SETTINGS: BET GAP FORMULA -->
+      <div style="background: #1e293b; border-radius: 8px; padding: 12px; margin-top: 15px; border: 1px solid var(--border-color);">
+          <label class="level-chip" style="width:fit-content; margin-bottom:6px;">
+            <input type="checkbox" id="useGapFormulaToggle" onchange="applyFormulaSettings()">
+            🎯 ကွာဟမှု (Gap) ဖော်မြူလာ သုံးရန် (အများကြီးကွာရင် နည်းတာကို ရွေးမည်)
+          </label>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
+              <label style="font-size: 13px; color: #94a3b8;">ကွာခြားမှု ပမာဏ (Gap Threshold):</label>
+              <input type="range" id="gapThresholdSlider" min="2" max="9" value="4" oninput="document.getElementById('gapThresholdLabel').innerText = this.value; applyFormulaSettings();" style="width: 150px; accent-color: var(--accent-blue);">
+              <span id="gapThresholdLabel" style="font-weight: bold; color: #f8fafc;">4</span>
+              <span style="font-size: 11px; color:#64748b;">(Gap ဒီထက်ကြီးရင် နည်းတာကို ပြန်ရွေးမယ်)</span>
+          </div>
+          <div class="input-hint" style="margin-top: 4px;">
+              💡 ဥပမာ 4 ထားရင် - အများဆုံး (4) နဲ့ ဒုတိယအများဆုံး (2) ကွာခြားချက် 2 ဖြစ်နေရင် အများဆုံးကို ခန့်မှန်းမယ်။ ကွာခြားချက် 5 ဖြစ်နေရင် နည်းတာကို ပြန်ခန့်မှန်းမယ်။
+          </div>
+      </div>
+
       <label class="level-chip" style="width:fit-content; margin-top:6px;">
         <input type="checkbox" id="excludeLastCategoryToggle" onchange="applyFormulaSettings()">
         🚫 နောက်ဆုံးထွက်ခဲ့တဲ့ Category ကို ခန့်မှန်းချက်ထဲ ထည့်မသုံးပါနဲ့
@@ -326,6 +343,10 @@ let hasCachedData = false;
 let isFirstLoad = true;
 let processedBlocks = new Set();
 
+// ===== NEW SETTINGS =====
+let useGapFormula = false;
+let gapThreshold = 4;
+
 // ===== DATA STORAGE FUNCTIONS =====
 function saveData() {
   try {
@@ -341,6 +362,8 @@ function saveData() {
     localStorage.setItem("savedPredictCount", String(predictCount));
     localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
     localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
+    localStorage.setItem("savedUseGapFormula", useGapFormula ? "1" : "0");
+    localStorage.setItem("savedGapThreshold", String(gapThreshold));
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -349,6 +372,17 @@ function saveData() {
 
 function loadData() {
   try {
+    const storedUseGap = localStorage.getItem("savedUseGapFormula");
+    if (storedUseGap !== null) useGapFormula = storedUseGap === "1";
+    document.getElementById("useGapFormulaToggle").checked = useGapFormula;
+
+    const storedGapThreshold = localStorage.getItem("savedGapThreshold");
+    if (storedGapThreshold && !isNaN(storedGapThreshold)) {
+      gapThreshold = parseInt(storedGapThreshold);
+    }
+    document.getElementById("gapThresholdSlider").value = gapThreshold;
+    document.getElementById("gapThresholdLabel").innerText = gapThreshold;
+
     const storedGroupCount = localStorage.getItem("savedGroupCount");
     if (storedGroupCount && !isNaN(storedGroupCount)) {
       const n = parseInt(storedGroupCount);
@@ -394,9 +428,6 @@ function loadData() {
       if (toggle) toggle.checked = excludeLastCategory;
     }
 
-    // predictCount: prefer the new setting; migrate from the old boolean
-    // "predict 2" checkbox if this is an existing user who hasn't seen the
-    // new configurable-count feature yet.
     const storedPredictCount = localStorage.getItem("savedPredictCount");
     if (storedPredictCount && !isNaN(storedPredictCount)) {
       predictCount = parseInt(storedPredictCount);
@@ -529,9 +560,6 @@ function switchTab(tabId) {
 }
 
 // ===== DIGIT → CATEGORY MAPPING =====
-// Now supports "?" which means "ignore this digit". Group count is now
-// user-configurable (2-10), so DIGIT_CATEGORY_MAP and the number of groups
-// used are both dynamic instead of a fixed 5.
 let groupCount = 5;
 let DIGIT_CATEGORY_MAP = { "0":"1", "1":"1", "2":"1", "3":"2", "4":"2", "5":"3", "6":"3", "7":"4", "8":"4", "9":"4" };
 let historyDisplayLimit = 300;
@@ -542,8 +570,6 @@ function digitToCategory(d) {
   return val;
 }
 
-// Builds a balanced default distribution of digits 0-9 across N groups,
-// e.g. N=5 -> 2 digits/group, N=10 -> 1 digit/group, N=3 -> ~3-4 digits/group.
 function buildDefaultDigitMap(n) {
   const map = {};
   for (let d = 0; d <= 9; d++) {
@@ -624,7 +650,6 @@ function applyDigitMapping() {
     newMap[sel.getAttribute('data-digit')] = sel.value;
   });
 
-  // At least 2 groups must be used (excluding "?")
   const usedGroups = new Set(Object.values(newMap).filter(v => v !== "?"));
   if (usedGroups.size < 2) {
     alert("အနည်းဆုံး Group 2 ခုတော့ သုံးရပါမည်။");
@@ -665,16 +690,12 @@ function applyGroupCount() {
   groupCount = newCount;
   localStorage.setItem("savedGroupCount", String(groupCount));
 
-  // Group count changed structurally, so rebuild the digit->group mapping
-  // from scratch with a balanced default spread across the new group count.
-  // The user can then re-customize individual digits via the selectors below.
   DIGIT_CATEGORY_MAP = buildDefaultDigitMap(groupCount);
   localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
 
   CATEGORIES = [];
   for (let g = 1; g <= groupCount; g++) CATEGORIES.push(String(g));
 
-  // Predict count can never exceed groupCount - 1 (need more candidates than picks)
   if (predictCount > groupCount - 1) {
     predictCount = Math.max(1, groupCount - 1);
     const pcSel = document.getElementById("predictCountSelect");
@@ -686,8 +707,6 @@ function applyGroupCount() {
   renderStatsCounterRow();
   updateGroupSummary();
 
-  // Every already-recorded row was categorized under the OLD group scheme —
-  // re-derive appResult/colorClass for all of them from the raw digit.
   trackedResults.forEach(row => {
     if (row.digit !== undefined && row.digit !== "-" && row.digit !== null) {
       const cat = digitToCategory(row.digit);
@@ -728,16 +747,11 @@ const NO_MATCH = "❓";
 const FORMULA_NAMES = ["Sequence Cascade"];
 let currentFormulaIndex = 0;
 let nextUsedLength = null;
-let nextUsedStats = null;   // { "1": count, "2": count, ... } — how many times each Group followed the CURRENT matched pattern
-let nextUsedKeyDisplay = null; // the matched pattern itself, e.g. "7,2,9" formatted for display
+let nextUsedStats = null;   
+let nextUsedKeyDisplay = null; 
 
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 let excludeLastCategory = false;
-
-// predictCount: how many Groups to predict simultaneously (1-5). The
-// cascade always ranks the Follower Categories from MOST-frequent to
-// LEAST-frequent, and always takes the top `predictCount` off that ranking
-// — e.g. predictCount=2 always bets the two most-frequent followers.
 let predictCount = 1;
 
 function onPredictCountChange() {
@@ -749,9 +763,13 @@ function onPredictCountChange() {
 
 function applyFormulaSettings() {
   excludeLastCategory = document.getElementById("excludeLastCategoryToggle").checked;
+  useGapFormula = document.getElementById("useGapFormulaToggle").checked;
+  gapThreshold = parseInt(document.getElementById("gapThresholdSlider").value);
 
   localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
   localStorage.setItem("savedPredictCount", String(predictCount));
+  localStorage.setItem("savedUseGapFormula", useGapFormula ? "1" : "0");
+  localStorage.setItem("savedGapThreshold", String(gapThreshold));
 
   recalculateAllPredictions();
   updateTrendBoard();
@@ -759,7 +777,6 @@ function applyFormulaSettings() {
   updatePredictionDisplay();
   updateStats();
 }
-
 
 function applyLevelSelection() {
   const boxes = document.querySelectorAll('#levelSelector input[type="checkbox"]');
@@ -784,6 +801,7 @@ function applyLevelSelection() {
   updateStats();
 }
 
+// ===== CORE PREDICTION LOGIC =====
 function recalculateAllPredictions() {
   const SEQ_LENGTHS = enabledLevels;
   const makeCounter = () => { const o = {}; CATEGORIES.forEach(c => o[c] = 0); return o; };
@@ -812,29 +830,38 @@ function recalculateAllPredictions() {
         seen = seen.filter(c => c !== lastCategory);
       }
 
-      // Need strictly MORE candidates than we're picking, otherwise we'd
-      // just be taking "everything available" rather than making a real
-      // choice — not decisive, try a shorter pattern instead.
       if (seen.length <= pickCount) continue;
 
-      // Always rank Follower Categories from MOST-frequent to LEAST-frequent,
-      // and always take the top `pickCount` off that ranking (e.g. Group
-      // 0-9, ranking "01648" with predictCount=2 bets on groups 0 and 1 —
-      // the two most-frequent followers).
       const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
-      const picked = sorted.slice(0, pickCount);
+      
+      // Check Gap Logic Here
+      if (useGapFormula && sorted.length >= 2) {
+        const firstCount = stats[sorted[0]];
+        const secondCount = stats[sorted[1]];
+        const gap = firstCount - secondCount;
 
-      // The boundary between "picked" and "not picked" must be a clear cut
-      // — if the last picked category and the first excluded one are tied
-      // on count, it's ambiguous which one really belongs in the set, so
-      // this level isn't decisive either.
+        if (gap >= gapThreshold) {
+          // If gap is large, pick the LEAST frequent one instead (reversal)
+          const leastFreq = sorted[sorted.length - 1];
+          const isDecisive = stats[leastFreq] !== stats[sorted[sorted.length - 2]]; // Ensure no tie at bottom
+          
+          if (isDecisive) {
+             // Return only the least frequent one (or up to predictCount from the bottom if you prefer)
+             // Here we return just 1 prediction as requested logic implies reversal
+             return { categories: [leastFreq], length: len, stats, key, isReversal: true };
+          }
+        }
+      }
+
+      // Default logic: Pick Highest
+      const picked = sorted.slice(0, pickCount);
       const lastPickedCount = stats[picked[pickCount - 1]];
       const firstExcludedCount = stats[sorted[pickCount]];
       if (lastPickedCount === firstExcludedCount) continue;
 
-      return { categories: picked, length: len, stats, key };
+      return { categories: picked, length: len, stats, key, isReversal: false };
     }
-    return { categories: null, length: null, stats: null, key: null };
+    return { categories: null, length: null, stats: null, key: null, isReversal: false };
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -892,9 +919,6 @@ function renderPredictionGroupBreakdown() {
   const el = document.getElementById("predictionGroupBreakdown");
   if (!el) return;
   if (nextUsedStats && nextUsedLength) {
-    // Shows, for the exact pattern currently driving the next prediction
-    // (e.g. Level 3 Pattern "7,2,9"), how many times each Group followed it
-    // historically — i.e. the actual ranking that produced picks like "4 / 2 / 3 / 8 / 10".
     const groupsSorted = CATEGORIES.slice().sort((a, b) => (nextUsedStats[b] || 0) - (nextUsedStats[a] || 0));
     el.innerHTML =
       `<div class="level-row"><span>${nextUsedLength} လုံး Pattern (${nextUsedKeyDisplay})</span><span>-</span></div>` +
@@ -1028,24 +1052,21 @@ function updateWinRateStats() {
   updateLosingStreakSummary(recentResults);
 }
 
-// ===== Losing Streak Summary - shows exact streak lengths (3, 4, 5, etc.) =====
+// ===== LOSING STREAK =====
 function updateLosingStreakSummary(recentResults) {
   const summaryEl = document.getElementById("losingStreakSummary");
   if (!summaryEl) return;
 
-  const streakCounts = {};   // length -> how many times a streak of exactly this length occurred
+  const streakCounts = {};   
   let currentStreak = 0;
 
   recentResults.forEach(r => {
-    // A row with no digit at all (never resolved) can't be judged - skip entirely.
     const hasDigit = r.digit !== undefined && r.digit !== "-" && r.digit !== null;
     if (!hasDigit) return;
 
     if (r.betPrediction === NO_MATCH) return;
     if (!Array.isArray(r.betPrediction)) return;
 
-    // A digit that rolled into an unmapped ("?") group has no valid category,
-    // so a bet (which only ever contains 1-4) could never match it - count as a loss.
     const isCorrect = CATEGORIES.includes(r.appResult) && r.betPrediction.includes(r.appResult);
     if (isCorrect) {
       if (currentStreak >= 3) {
@@ -1057,12 +1078,10 @@ function updateLosingStreakSummary(recentResults) {
     }
   });
 
-  // Ongoing streak at the end
   if (currentStreak >= 3) {
     streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
   }
 
-  // --- Aggregate summary: "5 ကြိမ်ဆက်ရှုံး — 1 ကြိမ်" etc, longest first ---
   const lengths = Object.keys(streakCounts)
     .map(Number)
     .sort((a, b) => b - a);
@@ -1076,7 +1095,7 @@ function updateLosingStreakSummary(recentResults) {
   }
 }
 
-// ===== DIGIT DATA — COPY & MANUAL IMPORT =====
+// ===== DIGIT DATA =====
 let manualIdCounter = -1;
 
 function getDigitDataString() {
@@ -1300,7 +1319,7 @@ function hideWaitingMessage() {
   retryEl.style.display = "none";
 }
 
-// ===== FETCH BLOCK DATA WITH CACHE CHECK =====
+// ===== FETCH BLOCK DATA =====
 let isFetchingBlock = false;
 
 async function fetchNextLiveBlock() {
