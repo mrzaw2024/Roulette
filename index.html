@@ -161,6 +161,7 @@
         <div id="waitingMessage" class="waiting-message" style="display:none;">⏳ Waiting... <span class="loading-dots"></span></div>
         <div id="retryCount" class="retry-count" style="display:none;">ပြန်လည်ကြိုးစားမှု: 0 (၃ စက္ကန့်တစ်ခါ)</div>
         <div id="groupSummary" style="font-size:12px; color:#94a3b8;"></div>
+        <div id="predictionGroupBreakdown" class="win-rate-by-level" style="width:100%; margin-top:8px;"></div>
       </div>
 
       <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
@@ -194,8 +195,6 @@
           <div class="breakdown-chip nomatch"><span id="winNoMatchCount">0</span><label>❓ မခန့်မှန်း</label></div>
         </div>
         <div class="win-rate-by-level" id="winRateByLevel"></div>
-        <div style="color:#94a3b8; font-size:13px; margin:14px 0 8px;">🔢 ခန့်မှန်းတဲ့အခါ Group တစ်ခုစီ ဘယ်နှစ်ကြိမ် ထွက်ခဲ့လဲ:</div>
-        <div class="win-rate-by-level" id="winRateByGroup"></div>
       </div>
 
       <label>🔢 Group အရေအတွက် ရွေးရန် (2-10 ခုအထိ):</label>
@@ -869,6 +868,24 @@ function recalculateAllPredictions() {
 }
 
 // ===== UPDATE DISPLAY FUNCTIONS =====
+function renderPredictionGroupBreakdown() {
+  const el = document.getElementById("predictionGroupBreakdown");
+  if (!el) return;
+  if (nextUsedStats && nextUsedLength) {
+    // Shows, for the exact pattern currently driving the next prediction
+    // (e.g. Level 3 Pattern "7,2,9"), how many times each Group followed it
+    // historically — i.e. the actual ranking that produced picks like "4 / 2 / 3 / 8 / 10".
+    const groupsSorted = CATEGORIES.slice().sort((a, b) => (nextUsedStats[b] || 0) - (nextUsedStats[a] || 0));
+    el.innerHTML =
+      `<div class="level-row"><span>${nextUsedLength} လုံး Pattern (${nextUsedKeyDisplay})</span><span>-</span></div>` +
+      groupsSorted.map(g =>
+        `<div class="level-row"><span>Group ${g}</span><span>${nextUsedStats[g] || 0} ကြိမ်</span></div>`
+      ).join("");
+  } else {
+    el.innerHTML = "";
+  }
+}
+
 function updatePredictionDisplay() {
   const predBox = document.getElementById("nextBlockPrediction");
   const detailEl = document.getElementById("predictionDetail");
@@ -881,6 +898,7 @@ function updatePredictionDisplay() {
     detailEl.innerText = `ဒေတာ ${trackedResults.length}/10 ရှိပါသည်`;
     waitingMsg.style.display = "block";
     retryEl.style.display = "block";
+    renderPredictionGroupBreakdown();
   } else if (nextCalculatedBet === NO_MATCH) {
     waitingMsg.style.display = "none";
     retryEl.style.display = "none";
@@ -888,6 +906,7 @@ function updatePredictionDisplay() {
     predBox.style.background = "";
     predBox.innerText = `${NO_MATCH} ခန့်မှန်းမှု မရှိပါ`;
     detailEl.innerText = "ယခင်တွင် ဒီအစီအစဉ် (Triple/Pair) ရှာမတွေ့ပါ";
+    renderPredictionGroupBreakdown();
   } else {
     waitingMsg.style.display = "none";
     retryEl.style.display = "none";
@@ -912,6 +931,7 @@ function updatePredictionDisplay() {
     predBox.innerText = `🔮 ${picksLabel}`;
     const lenLabel = nextUsedLength ? `${nextUsedLength} လုံး Pattern` : FORMULA_NAMES[0];
     detailEl.innerText = `"${picksLabel}" ထွက်ရန် ခန့်မှန်းထားသည် (${lenLabel})`;
+    renderPredictionGroupBreakdown();
   }
 }
 
@@ -983,23 +1003,6 @@ function updateWinRateStats() {
       const p = t > 0 ? (c / t * 100).toFixed(1) : "0.0";
       return `<div class="level-row"><span>${lvl} လုံး Pattern</span><span>${c}/${t} (${p}%)</span></div>`;
     }).join("");
-  }
-
-  const byGroupEl = document.getElementById("winRateByGroup");
-  if (byGroupEl) {
-    if (nextUsedStats && nextUsedLength) {
-      // Show, for the exact pattern currently driving the next prediction
-      // (e.g. Level 3 Pattern "7,2,9"), how many times each Group followed
-      // it historically — this is the real basis for the current bet.
-      const groupsSorted = CATEGORIES.slice().sort((a, b) => (nextUsedStats[b] || 0) - (nextUsedStats[a] || 0));
-      byGroupEl.innerHTML =
-        `<div class="level-row"><span>${nextUsedLength} လုံး Pattern (${nextUsedKeyDisplay})</span><span>-</span></div>` +
-        groupsSorted.map(g =>
-          `<div class="level-row"><span>Group ${g}</span><span>${nextUsedStats[g] || 0} ကြိမ်</span></div>`
-        ).join("");
-    } else {
-      byGroupEl.innerHTML = `<div class="level-row"><span>လက်ရှိ ခန့်မှန်းမှုအတွက် Pattern မတွေ့သေးပါ</span><span>-</span></div>`;
-    }
   }
 
   updateLosingStreakSummary(recentResults);
@@ -1557,7 +1560,7 @@ function clearStoredData() {
     document.getElementById("winWrongCount").innerText = "0";
     document.getElementById("winNoMatchCount").innerText = "0";
     document.getElementById("winRateByLevel").innerHTML = "";
-    document.getElementById("winRateByGroup").innerHTML = "";
+    document.getElementById("predictionGroupBreakdown").innerHTML = "";
     document.getElementById("losingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
