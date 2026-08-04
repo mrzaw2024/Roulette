@@ -230,19 +230,12 @@
       </div>
       <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည် — Group အရေအတွက် များများ (ဥပမာ 10 ခု) နဲ့ Predict အရေအတွက် များများ (ဥပမာ 5 ခု) သုံးရင်၊ Level 3 နှင့်အထက်တွေမှာ pattern အတိအကျ ထပ်မထွက်လွန်းလို့ "❓ ခန့်မှန်းမှု မရှိပါ" ဖြစ်တတ်ပါတယ် — Level 1၊ 2 လို တိုတိုတွေကို ထပ်ထည့် Check ထားရင် ဒေတာပိုအလွယ်တကူ ရှာတွေ့ပါလိမ့်မယ်</div>
 
-      <label>🧮 ခန့်မှန်းနည်း (Follower Category များထဲက ဘယ်ဟာကိုယူမလဲ):</label>
-      <div id="selectionModeSelector" class="level-selector">
-        <label class="level-chip"><input type="radio" name="selectionMode" value="least" checked onchange="applyFormulaSettings()"> အနည်းဆုံးဟာ</label>
-        <label class="level-chip"><input type="radio" name="selectionMode" value="most" onchange="applyFormulaSettings()"> အများဆုံးဟာ</label>
-      </div>
-
       <label class="level-chip" style="width:fit-content; margin-top:6px;">
         <input type="checkbox" id="excludeLastCategoryToggle" onchange="applyFormulaSettings()">
         🚫 နောက်ဆုံးထွက်ခဲ့တဲ့ Category ကို ခန့်မှန်းချက်ထဲ ထည့်မသုံးပါနဲ့
       </label>
       <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
 
-      <!-- UPDATED: predict count is now configurable 1-5, and the pick-rule combos are generated dynamically by JS based on Group count + predict count -->
       <div style="background:#0f172a; border-radius:8px; padding:12px; margin-top:12px;">
         <label style="width:fit-content; margin-top:6px; display:block;">
           🎯 တစ်ကြိမ်ကို Group ဘယ်နှစ်ခု ခန့်မှန်းမလဲ (1-5 ခုအထိ):
@@ -254,27 +247,19 @@
           <option value="4">4 ခု</option>
           <option value="5">5 ခု</option>
         </select>
-        <div id="rankSelectionPanel" style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
-            <span style="color:#94a3b8; font-size:13px;">ခန့်မှန်းမည့် အုပ်စုများကို စီခြင်း (စီစဉ်ပုံ):</span>
-            <select id="rankRuleSelect" onchange="applyFormulaSettings()" style="background:#1e293b; color:white; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px;">
-              <option value="most">အကြိမ်ရေ အများဆုံး (most)</option>
-              <option value="least">အကြိမ်ရေ အနည်းဆုံး (least)</option>
-            </select>
-          </div>
-          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
-            <span style="color:#94a3b8; font-size:13px;">ထိုစီစဉ်မှုထဲက ဘယ်အတွဲကို ယူမလဲ:</span>
-            <select id="pickRuleSelect" onchange="applyFormulaSettings()" style="background:#1e293b; color:white; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px;"></select>
-          </div>
-          <div style="font-size:12px; color:#64748b; margin-top:4px;">
-            💡 ဥပမာ — "အကြိမ်ရေ အများဆုံး" နဲ့ "AB" ဆိုရင် အများဆုံးနှင့် ဒုတိယအများဆုံး 2 ခုကို ခန့်မှန်းမည်။ "အကြိမ်ရေ အနည်းဆုံး" + "CD" ဆိုရင် အနည်းဆုံးနှင့် ဒုတိယအနည်းဆုံး 2 ခုကို ခန့်မှန်းမည် — Group/Predict အရေအတွက် ပြောင်းတိုင်း ဒီစာရင်းလည်း auto ပြန်ဆောက်ပေးပါလိမ့်မယ်။
-          </div>
+        <div style="font-size:12px; color:#64748b; margin-top:8px;">
+          💡 ဥပမာ — Group 0-9 ရှိတယ်ဆိုပါစို့၊ Pattern ရှာတွေ့တဲ့ Follower Category တွေကို အကြိမ်ရေ အများဆုံးကနေ အနည်းဆုံးအထိ စီရင် <b>01648</b> လို့ ရလာရင် (0 က အများဆုံး၊ 8 က အနည်းဆုံး) — "5 ခု ခန့်မှန်းမည်" ဆိုရင် <b>ထိပ်ဆုံးကနေ အောက်ခြေအထိ 5 ခုစလုံး</b> (0,1,6,4,8) ကို ခန့်မှန်းမည်။ "2 ခု" ဆိုရင် အများဆုံး 2 ခု (0,1) ကိုပဲ ခန့်မှန်းမည် — အမြဲတမ်း <b>အများဆုံးမှ အနည်းဆုံးသို့</b> အစဉ်လိုက်ပဲ ယူပါမည်။
         </div>
       </div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📉 ဆက်တိုက်ရှုံးမှု စာရင်း (Losing Streaks)</h3>
       <div class="win-rate-box">
+        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 စုစုပေါင်း (ဘယ်ဟာအများဆုံးဖြစ်ခဲ့လဲ):</div>
         <div class="win-rate-by-level" id="losingStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+        <div style="color:#94a3b8; font-size:13px; margin:14px 0 8px;">🕐 အသေးစိတ် (ဘယ်တုန်းကဖြစ်ခဲ့လဲ):</div>
+        <div class="win-rate-by-level" id="losingStreakLog">
           <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
@@ -334,12 +319,9 @@ function saveData() {
     localStorage.setItem("savedLastBlock", currentTrackingBlock);
     localStorage.setItem("savedProcessedBlocks", JSON.stringify([...processedBlocks]));
     localStorage.setItem("savedEnabledLevels", JSON.stringify(enabledLevels));
-    localStorage.setItem("savedSelectionMode", selectionMode);
     localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
     localStorage.setItem("savedGroupCount", String(groupCount));
     localStorage.setItem("savedPredictCount", String(predictCount));
-    localStorage.setItem("savedRankRule", rankRule);
-    localStorage.setItem("savedPickRule", pickRule);
     localStorage.setItem("savedDigitCategoryMap", JSON.stringify(DIGIT_CATEGORY_MAP));
     localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
     localStorage.setItem("savedTimestamp", Date.now());
@@ -388,12 +370,6 @@ function loadData() {
     document.getElementById("historyLimitLabel1").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
 
-    const storedMode = localStorage.getItem("savedSelectionMode");
-    if (storedMode === "most" || storedMode === "least") {
-      selectionMode = storedMode;
-      const radio = document.querySelector(`input[name="selectionMode"][value="${storedMode}"]`);
-      if (radio) radio.checked = true;
-    }
     const storedExclude = localStorage.getItem("savedExcludeLastCategory");
     if (storedExclude !== null) {
       excludeLastCategory = storedExclude === "1";
@@ -414,17 +390,6 @@ function loadData() {
     if (predictCount > groupCount - 1) predictCount = Math.max(1, groupCount - 1);
     const predictCountSel = document.getElementById("predictCountSelect");
     if (predictCountSel) predictCountSel.value = String(predictCount);
-
-    const storedRankRule = localStorage.getItem("savedRankRule");
-    if (storedRankRule) {
-      rankRule = storedRankRule;
-      const sel = document.getElementById("rankRuleSelect");
-      if (sel) sel.value = rankRule;
-    }
-    const storedPickRule = localStorage.getItem("savedPickRule");
-    if (storedPickRule) pickRule = storedPickRule;
-    rebuildPickRuleOptions();
-    updateRankPanelVisibility();
 
     const storedLevels = localStorage.getItem("savedEnabledLevels");
     if (storedLevels) {
@@ -703,8 +668,6 @@ function applyGroupCount() {
   renderDigitGroupSelector();
   renderStatsCounterRow();
   updateGroupSummary();
-  rebuildPickRuleOptions();
-  updateRankPanelVisibility();
 
   // Every already-recorded row was categorized under the OLD group scheme —
   // re-derive appResult/colorClass for all of them from the raw digit.
@@ -750,93 +713,26 @@ let currentFormulaIndex = 0;
 let nextUsedLength = null;
 
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-let selectionMode = "least";
 let excludeLastCategory = false;
 
-// predictCount: how many Groups to predict simultaneously (1-5). 1 = old
-// single-pick mode (uses selectionMode most/least). 2+ = multi-pick mode
-// (uses rankRule + pickRule below).
+// predictCount: how many Groups to predict simultaneously (1-5). The
+// cascade always ranks the Follower Categories from MOST-frequent to
+// LEAST-frequent, and always takes the top `predictCount` off that ranking
+// — e.g. predictCount=2 always bets the two most-frequent followers.
 let predictCount = 1;
-
-// rankRule: "most" or "least" — which end of the frequency ranking is "A".
-// pickRule: a string of `predictCount` letters (e.g. "AB", "ACE") chosen
-// from the dynamically-generated combination list for the current
-// groupCount/predictCount.
-let rankRule = "most";
-let pickRule = "AB";
-
-function letterRange(n) {
-  const letters = [];
-  for (let i = 0; i < n; i++) letters.push(String.fromCharCode(65 + i)); // A, B, C, ...
-  return letters;
-}
-
-function generateCombinations(letters, k) {
-  const results = [];
-  function backtrack(start, combo) {
-    if (combo.length === k) { results.push(combo.join("")); return; }
-    for (let i = start; i < letters.length; i++) {
-      combo.push(letters[i]);
-      backtrack(i + 1, combo);
-      combo.pop();
-    }
-  }
-  backtrack(0, []);
-  return results;
-}
-
-// Ordinal words used to label each rank position in the pick-rule dropdown.
-const ORDINAL_WORDS = ["ထိပ်ဆုံး", "ဒုတိယ", "တတိယ", "စတုတ္ထ", "ပဉ္စမ", "ဆဌမ", "သတ္တမ", "အဋ္ဌမ", "နဝမ", "ဒသမ"];
-
-function rebuildPickRuleOptions() {
-  const sel = document.getElementById("pickRuleSelect");
-  if (!sel) return;
-  const letters = letterRange(CATEGORIES.length);
-  const combos = generateCombinations(letters, predictCount);
-
-  sel.innerHTML = combos.map(combo => {
-    const words = combo.split("").map(ch => ORDINAL_WORDS[ch.charCodeAt(0) - 65] || ch);
-    return `<option value="${combo}">${combo} (${words.join(" + ")})</option>`;
-  }).join("");
-
-  if (combos.includes(pickRule)) {
-    sel.value = pickRule;
-  } else if (combos.length > 0) {
-    pickRule = combos[0];
-    sel.value = pickRule;
-    localStorage.setItem("savedPickRule", pickRule);
-  }
-}
-
-function updateRankPanelVisibility() {
-  const panel = document.getElementById("rankSelectionPanel");
-  if (panel) panel.style.display = predictCount >= 2 ? "flex" : "none";
-}
 
 function onPredictCountChange() {
   const sel = document.getElementById("predictCountSelect");
   predictCount = parseInt(sel.value) || 1;
   localStorage.setItem("savedPredictCount", String(predictCount));
-  rebuildPickRuleOptions();
-  updateRankPanelVisibility();
   applyFormulaSettings();
 }
 
 function applyFormulaSettings() {
-  const modeInput = document.querySelector('input[name="selectionMode"]:checked');
-  selectionMode = modeInput ? modeInput.value : "least";
   excludeLastCategory = document.getElementById("excludeLastCategoryToggle").checked;
 
-  const rankSel = document.getElementById("rankRuleSelect");
-  if (rankSel) rankRule = rankSel.value;
-  const pickSel = document.getElementById("pickRuleSelect");
-  if (pickSel) pickRule = pickSel.value;
-
-  localStorage.setItem("savedSelectionMode", selectionMode);
   localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
   localStorage.setItem("savedPredictCount", String(predictCount));
-  localStorage.setItem("savedRankRule", rankRule);
-  localStorage.setItem("savedPickRule", pickRule);
 
   recalculateAllPredictions();
   updateTrendBoard();
@@ -883,16 +779,9 @@ function recalculateAllPredictions() {
     return parts.join(",");
   }
 
-  // Ranks are A=0, B=1, C=2, ... (0-indexed into the sorted `seen` array).
-  const RANK_INDEX = {};
-  letterRange(10).forEach((letter, idx) => { RANK_INDEX[letter] = idx; });
-
   function predictSequenceCascade() {
     const lastCategory = valid.length > 0 ? valid[valid.length - 1] : null;
     const pickCount = predictCount;
-    // In single-pick mode, sort order follows the "least/most" radio (selectionMode).
-    // In multi-pick mode, sort order follows the rank rule dropdown (rankRule).
-    const sortRule = pickCount >= 2 ? rankRule : selectionMode;
 
     for (const len of SEQ_LENGTHS) {
       const key = buildKey(len);
@@ -904,48 +793,25 @@ function recalculateAllPredictions() {
         seen = seen.filter(c => c !== lastCategory);
       }
 
+      // Need strictly MORE candidates than we're picking, otherwise we'd
+      // just be taking "everything available" rather than making a real
+      // choice — not decisive, try a shorter pattern instead.
       if (seen.length <= pickCount) continue;
 
-      const sorted = seen.slice().sort((a, b) => {
-        if (sortRule === "most") {
-          return stats[b] - stats[a];
-        } else {
-          return stats[a] - stats[b];
-        }
-      });
+      // Always rank Follower Categories from MOST-frequent to LEAST-frequent,
+      // and always take the top `pickCount` off that ranking (e.g. Group
+      // 0-9, ranking "01648" with predictCount=2 bets on groups 0 and 1 —
+      // the two most-frequent followers).
+      const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
+      const picked = sorted.slice(0, pickCount);
 
-      let picked = [];
-      if (pickCount >= 2) {
-        // Map pickRule (e.g. "ACD") to indices into `sorted`. If the pattern
-        // doesn't have enough distinct followers for the requested ranks,
-        // fall back to the top `pickCount` items instead.
-        const letters = pickRule ? pickRule.split("") : [];
-        const validRule = letters.length === pickCount && letters.every(l => RANK_INDEX.hasOwnProperty(l));
-        if (validRule) {
-          const indices = letters.map(l => RANK_INDEX[l]);
-          if (sorted.length > Math.max(...indices)) {
-            picked = indices.map(idx => sorted[idx]);
-          } else {
-            picked = sorted.slice(0, pickCount);
-          }
-        } else {
-          picked = sorted.slice(0, pickCount);
-        }
-      } else {
-        // Single-pick mode: bet one category only.
-        picked = sorted.slice(0, 1);
-      }
-
-      if (picked.length < pickCount) {
-        picked = sorted.slice(0, pickCount);
-      }
-
-      // Check decisiveness: only if we have more items than pickCount
-      if (sorted.length > pickCount) {
-        const lastPickedCount = stats[picked[pickCount - 1]];
-        const firstExcludedCount = stats[sorted[pickCount]];
-        if (lastPickedCount === firstExcludedCount) continue;
-      }
+      // The boundary between "picked" and "not picked" must be a clear cut
+      // — if the last picked category and the first excluded one are tied
+      // on count, it's ambiguous which one really belongs in the set, so
+      // this level isn't decisive either.
+      const lastPickedCount = stats[picked[pickCount - 1]];
+      const firstExcludedCount = stats[sorted[pickCount]];
+      if (lastPickedCount === firstExcludedCount) continue;
 
       return { categories: picked, length: len };
     }
@@ -1120,11 +986,19 @@ function updateWinRateStats() {
 
 // ===== FIXED: Losing Streak Summary - shows exact streak lengths (3, 4, 5, etc.) =====
 function updateLosingStreakSummary(recentResults) {
-  const el = document.getElementById("losingStreakSummary");
-  if (!el) return;
+  const summaryEl = document.getElementById("losingStreakSummary");
+  const logEl = document.getElementById("losingStreakLog");
+  if (!summaryEl) return;
 
-  const streakCounts = {};
+  function blockLabel(row) {
+    return row.manual ? `Manual #${Math.abs(row.blockNum)}` : String(row.blockNum);
+  }
+
+  const streakCounts = {};   // length -> how many times a streak of exactly this length occurred
+  const streakEvents = [];   // { length, startLabel, endLabel, ongoing } — one per occurrence, in chronological order
   let currentStreak = 0;
+  let streakStartLabel = null;
+  let lastLossLabel = null;
 
   recentResults.forEach(r => {
     // A row with no digit at all (never resolved) can't be judged - skip entirely.
@@ -1140,9 +1014,13 @@ function updateLosingStreakSummary(recentResults) {
     if (isCorrect) {
       if (currentStreak >= 3) {
         streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+        streakEvents.push({ length: currentStreak, startLabel: streakStartLabel, endLabel: lastLossLabel, ongoing: false });
       }
       currentStreak = 0;
+      streakStartLabel = null;
     } else {
+      if (currentStreak === 0) streakStartLabel = blockLabel(r);
+      lastLossLabel = blockLabel(r);
       currentStreak++;
     }
   });
@@ -1150,20 +1028,35 @@ function updateLosingStreakSummary(recentResults) {
   // Ongoing streak at the end
   if (currentStreak >= 3) {
     streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+    streakEvents.push({ length: currentStreak, startLabel: streakStartLabel, endLabel: lastLossLabel, ongoing: true });
   }
 
+  // --- Aggregate summary: "5 ကြိမ်ဆက်ရှုံး — 1 ကြိမ်" etc, longest first ---
   const lengths = Object.keys(streakCounts)
     .map(Number)
-    .sort((a, b) => b - a); // longest first
+    .sort((a, b) => b - a);
 
   if (lengths.length === 0) {
-    el.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
-    return;
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
   }
 
-  el.innerHTML = lengths.map(len =>
-    `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
-  ).join("");
+  // --- Detailed log: every individual occurrence, newest first, with the
+  // block range it happened at ---
+  if (logEl) {
+    if (streakEvents.length === 0) {
+      logEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
+    } else {
+      logEl.innerHTML = streakEvents.slice().reverse().map(ev => {
+        const tag = ev.ongoing ? " (ဖြစ်ပျက်နေဆဲ)" : "";
+        const range = ev.startLabel === ev.endLabel ? ev.startLabel : `${ev.startLabel} → ${ev.endLabel}`;
+        return `<div class="level-row"><span>${ev.length} ကြိမ်ဆက်ရှုံး${tag}</span><span>${range}</span></div>`;
+      }).join("");
+    }
+  }
 }
 
 // ===== DIGIT DATA — COPY & MANUAL IMPORT =====
@@ -1671,6 +1564,7 @@ function clearStoredData() {
     document.getElementById("winNoMatchCount").innerText = "0";
     document.getElementById("winRateByLevel").innerHTML = "";
     document.getElementById("losingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
+    document.getElementById("losingStreakLog").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
     document.getElementById("currentBlockDisplay").innerText = `Block: ${startBlock}`;
