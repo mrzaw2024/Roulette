@@ -211,7 +211,6 @@
       </select>
       <div class="input-hint">💡 Group အရေအတွက်ကို ပြောင်းရင် ဂဏန်း 0-9 ကို Group အသစ်တွေထဲ အလိုအလျောက် ညီညီညာညာ ပြန်ခွဲပေးမယ် — ပြီးရင် အောက်က Group သတ်မှတ်ခြင်းမှာ ကိုယ်တိုင် ထပ်ချိန်ညှိနိုင်ပါတယ်</div>
 
-      <!-- UPDATED: Digit to Group mapping with "?" option (rendered dynamically by JS based on Group count) -->
       <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group ထဲ ကိုယ်တိုင်ရွေးပါ၊ ? ဆိုရင် မထည့်ပါ):</label>
       <div id="digitGroupSelector" class="digit-selector-grid"></div>
       <div class="input-hint">💡 "?" ရွေးထားရင် အဲဒီဂဏန်းကို ဘယ် Group မှ မထည့်ပါ — ရှာဖွေတဲ့အခါ ဂရုမစိုက်ပါ။ အနည်းဆုံး Group 2 ခုတော့ ရှိရပါမည်။</div>
@@ -251,7 +250,6 @@
       </div>
       <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည် — Group အရေအတွက် များများ (ဥပမာ 10 ခု) နဲ့ Predict အရေအတွက် များများ (ဥပမာ 5 ခု) သုံးရင်၊ Level 3 နှင့်အထက်တွေမှာ pattern အတိအကျ ထပ်မထွက်လွန်းလို့ "❓ ခန့်မှန်းမှု မရှိပါ" ဖြစ်တတ်ပါတယ် — Level 1၊ 2 လို တိုတိုတွေကို ထပ်ထည့် Check ထားရင် ဒေတာပိုအလွယ်တကူ ရှာတွေ့ပါလိမ့်မယ်</div>
 
-      <!-- NEW SETTINGS: BET GAP FORMULA -->
       <div style="background: #1e293b; border-radius: 8px; padding: 12px; margin-top: 15px; border: 1px solid var(--border-color);">
           <label class="level-chip" style="width:fit-content; margin-bottom:6px;">
             <input type="checkbox" id="useGapFormulaToggle" onchange="applyFormulaSettings()">
@@ -287,6 +285,14 @@
         </select>
         <div style="font-size:12px; color:#64748b; margin-top:8px;">
           💡 ဥပမာ — Group 0-9 ရှိတယ်ဆိုပါစို့၊ Pattern ရှာတွေ့တဲ့ Follower Category တွေကို အကြိမ်ရေ အများဆုံးကနေ အနည်းဆုံးအထိ စီရင် <b>01648</b> လို့ ရလာရင် (0 က အများဆုံး၊ 8 က အနည်းဆုံး) — "5 ခု ခန့်မှန်းမည်" ဆိုရင် <b>ထိပ်ဆုံးကနေ အောက်ခြေအထိ 5 ခုစလုံး</b> (0,1,6,4,8) ကို ခန့်မှန်းမည်။ "2 ခု" ဆိုရင် အများဆုံး 2 ခု (0,1) ကိုပဲ ခန့်မှန်းမည် — အမြဲတမ်း <b>အများဆုံးမှ အနည်းဆုံးသို့</b> အစဉ်လိုက်ပဲ ယူပါမည်။
+        </div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📈 ဆက်တိုက်နိုင်မှု စာရင်း (Winning Streaks)</h3>
+      <div class="win-rate-box">
+        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 စုစုပေါင်း (ဘယ်ဟာအများဆုံးဖြစ်ခဲ့လဲ):</div>
+        <div class="win-rate-by-level" id="winningStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
 
@@ -1050,9 +1056,10 @@ function updateWinRateStats() {
   }
 
   updateLosingStreakSummary(recentResults);
+  updateWinningStreakSummary(recentResults);
 }
 
-// ===== LOSING STREAK =====
+// ===== STREAK SUMMARIES =====
 function updateLosingStreakSummary(recentResults) {
   const summaryEl = document.getElementById("losingStreakSummary");
   if (!summaryEl) return;
@@ -1091,6 +1098,49 @@ function updateLosingStreakSummary(recentResults) {
   } else {
     summaryEl.innerHTML = lengths.map(len =>
       `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+// ===== NEW: WINNING STREAK SUMMARY =====
+function updateWinningStreakSummary(recentResults) {
+  const summaryEl = document.getElementById("winningStreakSummary");
+  if (!summaryEl) return;
+
+  const streakCounts = {};   
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    const hasDigit = r.digit !== undefined && r.digit !== "-" && r.digit !== null;
+    if (!hasDigit) return;
+
+    if (r.betPrediction === NO_MATCH) return;
+    if (!Array.isArray(r.betPrediction)) return;
+
+    const isCorrect = CATEGORIES.includes(r.appResult) && r.betPrediction.includes(r.appResult);
+    if (isCorrect) {
+      currentStreak++;
+    } else {
+      if (currentStreak >= 3) {
+        streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      }
+      currentStreak = 0;
+    }
+  });
+
+  if (currentStreak >= 3) {
+    streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+  }
+
+  const lengths = Object.keys(streakCounts)
+    .map(Number)
+    .sort((a, b) => b - a);
+
+  if (lengths.length === 0) {
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်နိုင်မှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်နိုင်</span><span>${streakCounts[len]} ကြိမ်</span></div>`
     ).join("");
   }
 }
@@ -1601,6 +1651,7 @@ function clearStoredData() {
     document.getElementById("winRateByLevel").innerHTML = "";
     document.getElementById("predictionGroupBreakdown").innerHTML = "";
     document.getElementById("losingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
+    document.getElementById("winningStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
     document.getElementById("currentBlockDisplay").innerText = `Block: ${startBlock}`;
