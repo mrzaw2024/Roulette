@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Lottery Analysis Tool v61</title>
+  <title>Premium Lottery Analysis Tool v62</title>
   <style>
     :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --accent-red: #ef4444; --accent-blue: #3b82f6; --border-color: #334155; }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; max-width: 1200px; margin: 0 auto; }
@@ -195,7 +195,7 @@
           <option value="7">7 ခု</option>
         </select>
         <div style="font-size:12px; color:#64748b; margin-top:8px;">
-          💡 ဥပမာ — Pattern ရှာတွေ့သည့် Follower Category များကို အကြိမ်ရေ အများဆုံးမှ အနည်းဆုံးအထိ စီပြီး ခန့်မှန်းပေးမည်။
+          💡 Raw ဂဏန်း Pattern အတို/အရှည် အစဉ်လိုက် တူညီတာ ရှာတွေ့ရင် ထွက်လာမယ့် ဂဏန်းတွေကို Group ပြောင်းပြီး ခန့်မှန်းပေးမည်။
         </div>
       </div>
 
@@ -248,7 +248,7 @@
       <label style="margin-top:10px; display:block;">🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9):</label>
       <div id="digitGroupSelector" class="digit-selector-grid"></div>
 
-      <label style="margin-top:15px; display:block;">🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
+      <label style="margin-top:15px; display:block;">🎚️ Pattern Level ရွေးရန် (အရှည်မှ အတိုသို့ လျှော့ရှာမည်):</label>
       <div id="levelSelector" class="level-selector">
         <label class="level-chip"><input type="checkbox" value="30" onchange="applyLevelSelection()"> 30</label>
         <label class="level-chip"><input type="checkbox" value="29" onchange="applyLevelSelection()"> 29</label>
@@ -773,7 +773,7 @@ function analyzeHashData(blockHash) {
   return { result: category, colorClass: "color-" + category, digit: targetDigit };
 }
 
-// ===== PREDICTION ENGINE =====
+// ===== PREDICTION ENGINE (RAW DIGIT PATTERN MATCHING) =====
 let CATEGORIES = ["1", "2", "3", "4", "5"];
 const NO_MATCH = "❓";
 
@@ -783,7 +783,7 @@ let nextUsedLength = null;
 let nextUsedStats = null;   
 let nextUsedKeyDisplay = null; 
 
-let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+let enabledLevels = [30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 let excludeLastCategory = false;
 let bsModeEnabled = true;
 let predictCount = 5;
@@ -835,64 +835,87 @@ function applyLevelSelection() {
   updateStats();
 }
 
-// ===== CORE PREDICTION LOGIC =====
+// ===== RAW DIGIT PATTERN MATCHING LOGIC =====
 function recalculateAllPredictions() {
   const SEQ_LENGTHS = enabledLevels;
-  const makeCounter = () => { const o = {}; CATEGORIES.forEach(c => o[c] = 0); return o; };
-  const transitionMaps = {};
-  SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
-  const valid = [];
-  const globalCounts = {};
-  CATEGORIES.forEach(c => globalCounts[c] = 0);
+  const rawDigitsHistory = [];
+  const globalGroupCounts = {};
+  CATEGORIES.forEach(c => globalGroupCounts[c] = 0);
 
-  function buildKey(len) {
-    if (valid.length < len) return null;
-    const parts = [];
-    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
-    return parts.join(",");
-  }
+  function predictRawDigitSequence(currentLimitIdx) {
+    const historySlice = rawDigitsHistory.slice(0, currentLimitIdx);
+    if (historySlice.length === 0) return { categories: null, length: null, stats: null, key: null };
 
-  function predictSequenceCascade() {
-    const lastCategory = valid.length > 0 ? valid[valid.length - 1] : null;
+    const lastCat = historySlice.length > 0 ? digitToCategory(historySlice[historySlice.length - 1]) : null;
     let availableCategories = CATEGORIES.slice();
 
-    if (excludeLastCategory && lastCategory !== null) {
-      availableCategories = availableCategories.filter(c => c !== lastCategory);
+    if (excludeLastCategory && lastCat !== null) {
+      availableCategories = availableCategories.filter(c => c !== lastCat);
     }
 
     const targetPickCount = Math.min(predictCount, availableCategories.length);
     if (targetPickCount < 1) return { categories: null, length: null, stats: null, key: null };
 
+    // အရှည်ဆုံး Level (ဥပမာ- ၃၀) မှ စတင်ကာ အတိုသို့ လျှော့၍ ရာဇဝင်ထဲက တူညီသည့် Pattern ကို ရှာဖွေခြင်း
     for (const len of SEQ_LENGTHS) {
-      const key = buildKey(len);
-      if (key === null) continue;
-      const stats = transitionMaps[len][key];
-      if (!stats) continue;
+      if (historySlice.length < len) continue;
 
-      let sortedByStats = availableCategories.slice().sort((a, b) => (stats[b] || 0) - (stats[a] || 0));
+      const targetPattern = historySlice.slice(historySlice.length - len);
+      const targetPatternKey = targetPattern.join(",");
 
-      if (useGapFormula && sortedByStats.length >= 2) {
-        const firstCount = stats[sortedByStats[0]] || 0;
-        const secondCount = stats[sortedByStats[1]] || 0;
-        const gap = firstCount - secondCount;
-
-        if (gap >= gapThreshold) {
-          const leastFreq = sortedByStats[sortedByStats.length - 1];
-          return { categories: [leastFreq], length: len, stats, key, isReversal: true };
+      // သမိုင်းကြောင်းထဲတွင် အပြည့်အဝ တူညီသည့် အစီအစဉ် ရှာဖွေခြင်း
+      const followerDigits = [];
+      for (let i = 0; i <= historySlice.length - len - 1; i++) {
+        let match = true;
+        for (let j = 0; k = i + j, j < len; j++) {
+          if (historySlice[i + j] !== targetPattern[j]) {
+            match = false;
+            break;
+          }
+        }
+        if (match) {
+          // တူညီပါက နောက်ထွက်ခဲ့သည့် ဂဏန်း (Follower Digit) ကို ယူပါမည်
+          followerDigits.push(historySlice[i + len]);
         }
       }
 
-      sortedByStats.sort((a, b) => {
-        const diff = (stats[b] || 0) - (stats[a] || 0);
-        if (diff !== 0) return diff;
-        return (globalCounts[b] || 0) - (globalCounts[a] || 0);
-      });
+      if (followerDigits.length > 0) {
+        // Follower Digits များကို Group များသို့ ပြောင်းလဲပြီး အကြိမ်ရေ ရေတွက်ခြင်း
+        const groupStats = {};
+        CATEGORIES.forEach(c => groupStats[c] = 0);
 
-      const picked = sortedByStats.slice(0, targetPickCount);
-      return { categories: picked, length: len, stats, key, isReversal: false };
+        followerDigits.forEach(d => {
+          const cat = digitToCategory(d);
+          if (cat && groupStats.hasOwnProperty(cat)) {
+            groupStats[cat]++;
+          }
+        });
+
+        let sortedByGroup = availableCategories.slice().sort((a, b) => (groupStats[b] || 0) - (groupStats[a] || 0));
+
+        // Gap Formula 적용
+        if (useGapFormula && sortedByGroup.length >= 2) {
+          const firstCount = groupStats[sortedByGroup[0]] || 0;
+          const secondCount = groupStats[sortedByGroup[1]] || 0;
+          if ((firstCount - secondCount) >= gapThreshold) {
+            const leastFreq = sortedByGroup[sortedByGroup.length - 1];
+            return { categories: [leastFreq], length: len, stats: groupStats, key: targetPatternKey, isReversal: true };
+          }
+        }
+
+        // Frequency + Global History အလိုက် စီစဉ်ခြင်း
+        sortedByGroup.sort((a, b) => {
+          const diff = (groupStats[b] || 0) - (groupStats[a] || 0);
+          if (diff !== 0) return diff;
+          return (globalGroupCounts[b] || 0) - (globalGroupCounts[a] || 0);
+        });
+
+        return { categories: sortedByGroup.slice(0, targetPickCount), length: len, stats: groupStats, key: targetPatternKey, isReversal: false };
+      }
     }
 
-    let fallbackSorted = availableCategories.slice().sort((a, b) => (globalCounts[b] || 0) - (globalCounts[a] || 0));
+    // Pattern အတိအကျ ရှာမတွေ့ပါက Global History အလိုက် အများဆုံးထွက်ထားသည့် Group ကို ရွေးပေးမည်
+    let fallbackSorted = availableCategories.slice().sort((a, b) => (globalGroupCounts[b] || 0) - (globalGroupCounts[a] || 0));
     return { categories: fallbackSorted.slice(0, targetPickCount), length: null, stats: null, key: null, isReversal: false };
   }
 
@@ -901,43 +924,38 @@ function recalculateAllPredictions() {
     let betPrediction;
     let usedLength = null;
 
-    if (valid.length < 10) {
+    if (rawDigitsHistory.length < 10) {
       betPrediction = "Waiting";
     } else {
-      const pred = predictSequenceCascade();
+      const pred = predictRawDigitSequence(i);
       betPrediction = pred.categories ? pred.categories : NO_MATCH;
       usedLength = pred.length;
     }
 
     row.betPrediction = betPrediction;
-    row.formulaUsed = valid.length < 10 ? null : 0;
+    row.formulaUsed = rawDigitsHistory.length < 10 ? null : 0;
     row.formulaLength = usedLength;
 
-    const cur = row.appResult;
-    const curIsValid = CATEGORIES.includes(cur);
-
-    if (curIsValid) {
-      globalCounts[cur] = (globalCounts[cur] || 0) + 1;
-      SEQ_LENGTHS.forEach(len => {
-        const key = buildKey(len);
-        if (key !== null) {
-          const map = transitionMaps[len];
-          if (!map[key]) map[key] = makeCounter();
-          map[key][cur]++;
+    if (row.digit !== undefined && row.digit !== "-" && row.digit !== null) {
+      const d = parseInt(row.digit);
+      if (!isNaN(d)) {
+        rawDigitsHistory.push(d);
+        const cat = digitToCategory(d);
+        if (cat && globalGroupCounts.hasOwnProperty(cat)) {
+          globalGroupCounts[cat]++;
         }
-      });
-      valid.push(cur);
+      }
     }
   }
 
   currentFormulaIndex = 0;
-  if (valid.length < 10) {
+  if (rawDigitsHistory.length < 10) {
     nextCalculatedBet = "Waiting";
     nextUsedLength = null;
     nextUsedStats = null;
     nextUsedKeyDisplay = null;
   } else {
-    const pred = predictSequenceCascade();
+    const pred = predictRawDigitSequence(rawDigitsHistory.length);
     nextCalculatedBet = pred.categories ? pred.categories : NO_MATCH;
     nextUsedLength = pred.length;
     nextUsedStats = pred.stats || null;
@@ -1131,7 +1149,6 @@ function updateBsWinningStreakSummary(recentResults) {
   }
 }
 
-// ===== FIX: Group B/S ဆက်တိုက်နိုင်/ရှုံး စာရင်း တွက်ချက်မှု Logic ပြင်ဆင်ခြင်း =====
 function updateGroupBsStreaks(recentResults) {
   const winEl = document.getElementById("groupBsWinningStreakSummary");
   const lossEl = document.getElementById("groupBsLosingStreakSummary");
@@ -1145,7 +1162,6 @@ function updateGroupBsStreaks(recentResults) {
   recentResults.forEach(r => {
     if (!CATEGORIES.includes(r.appResult)) return;
     
-    // Group∩B/S Column ထဲက Filter လုပ်ထားသော ရလဒ်များတွင် Result ပါမပါ စစ်ဆေးခြင်း
     const matched = groupsMatchingBs(r);
     const isWin = (matched && Array.isArray(matched) && matched.includes(r.appResult));
 
