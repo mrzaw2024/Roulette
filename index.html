@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Lottery Analysis Tool v57</title>
+  <title>Premium Lottery Analysis Tool v58</title>
   <style>
     :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --accent-red: #ef4444; --accent-blue: #3b82f6; --border-color: #334155; }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; max-width: 1200px; margin: 0 auto; }
@@ -137,13 +137,13 @@
         <span id="cacheInfo" class="cache-info">📦 Cache: <span id="cacheStatus">Empty</span></span>
       </div>
 
-      <!-- Main Prediction Panel (ဂဏန်း ခန့်မှန်းချက် + B/S ခန့်မှန်းချက် ပူးတွဲပြသမှု) -->
+      <!-- Main Prediction Panel -->
       <div class="prediction-panel">
-        <!-- 1. အပေါ်က ဂဏန်း ခန့်မှန်းချက် အစိမ်းရောင် Box -->
+        <!-- 1. အပေါ်က ဂဏန်း ခန့်မှန်းချက် Box -->
         <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
         <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
 
-        <!-- 2. အောက်က B/S ခန့်မှန်းချက် အစိမ်း/အနီရောင် Box -->
+        <!-- 2. အောက်က B/S ခန့်မှန်းချက် Box -->
         <div id="bsPredictionPanelInMain" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 5px;">
           <div id="bsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
           <div id="bsPredictionDetail" style="font-size:14px; color:#94a3b8;"></div>
@@ -958,12 +958,14 @@ function digitToBS(d) {
   return n >= 5 ? "B" : "S";
 }
 
+// Group∩B/S Column သီးသန့်အတွက် B/S Filter ပြုလုပ်သည့် Function
 function groupsMatchingBs(row) {
   if (!Array.isArray(row.betPrediction)) return null;
+  if (row.bsPrediction !== "B" && row.bsPrediction !== "S") return row.betPrediction;
 
   const matched = row.betPrediction.filter(g =>
     Object.keys(DIGIT_CATEGORY_MAP).some(d =>
-      DIGIT_CATEGORY_MAP[d] === g
+      DIGIT_CATEGORY_MAP[d] === g && digitToBS(d) === row.bsPrediction
     )
   );
   return matched.slice().sort((a, b) => parseInt(a) - parseInt(b));
@@ -1183,7 +1185,6 @@ function updateGroupBsStreaks(recentResults) {
   }
 }
 
-// B/S Display တွင် Pattern Length အမှန်အတိုင်း ပြသရန် ပြင်ဆင်ထားသည်
 function updateBsDisplay(pred, length, winCount, totalCount) {
   const badge = document.getElementById("bsPredictionBadge");
   const detail = document.getElementById("bsPredictionDetail");
@@ -1589,6 +1590,7 @@ function updateTableDisplay() {
     let row = displayResults[i];
     if (!row) continue;
     
+    // Bet Column ပြသမှု - မူလ Group ခန့်မှန်းချက်အတိုင်း လုံးဝမตัดဘဲ အပြည့်အဝ ပြန်ပြပေးထားသည်
     const isArrayPred = Array.isArray(row.betPrediction);
     let win = isArrayPred && row.betPrediction.includes(row.appResult);
     let cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
@@ -1600,6 +1602,7 @@ function updateTableDisplay() {
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
 
+    // Group∩B/S ကော်လံအတွက် B/S နဲ့ ကိုက်ညီတာများကို သီးသန့်စစ်ဆေးပြသခြင်း
     const matched = groupsMatchingBs(row);
     const matchDisplay = matched && matched.length > 0 ? matched.join("/") : "-";
     let groupBsMatchClass = (matched && row.appResult && matched.includes(row.appResult)) ? "win-match" : "";
