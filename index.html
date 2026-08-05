@@ -156,6 +156,7 @@
 
       <div class="prediction-panel">
         <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
+        <div id="nextBlockBsSub" style="display:none; font-size:16px; font-weight:bold; margin-top:-2px;"></div>
         <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
         <div style="font-size:12px; color:#64748b;" id="blockInfo">Started from: -- | Current: --</div>
         <div id="waitingMessage" class="waiting-message" style="display:none;">⏳ Waiting... <span class="loading-dots"></span></div>
@@ -172,6 +173,11 @@
         </label>
         <div class="input-hint">💡 Group Count ဘယ်လောက်ထားထား ဒီ B/S ခွဲခြင်းက အမြဲ digit 0-4 vs 5-9 ကိုပဲ အခြေခံပါတယ် — Group system ကနေ လုံးဝ သီးခြားစီ အလုပ်လုပ်ပါတယ်</div>
 
+        <label class="level-chip" style="width:fit-content; margin-top:8px;">
+          <input type="checkbox" id="bsReverseToggle" onchange="applyBsReverseToggle()">
+          🔄 ပြောင်းပြန်ခန့်မှန်း — B ထွက်မယ်လို့ တွက်ရင် S လောင်း၊ S ထွက်မယ်လို့ တွက်ရင် B လောင်း (Group B/S ကလည်း အလိုက်သင့် ပြောင်းသွားမည်)
+        </label>
+
         <div id="bsPredictionPanel" style="display:none; margin-top:12px;">
           <div id="bsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
           <div id="bsPredictionDetail" class="input-hint" style="text-align:center;"></div>
@@ -179,15 +185,6 @@
             <div>B: <span id="bsCountB" style="color:#ef4444;">0</span></div>
             <div>S: <span id="bsCountS" style="color:#22c55e;">0</span></div>
             <div>Win Rate: <span id="bsWinRate">--</span></div>
-          </div>
-
-          <div style="color:#94a3b8; font-size:13px; margin-top:14px; margin-bottom:6px;">📈 B/S ဆက်တိုက်နိုင်မှု (နောက်ဆုံး <span id="historyLimitLabelBs">300</span>):</div>
-          <div class="win-rate-by-level" id="bsWinningStreakSummary">
-            <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
-          </div>
-          <div style="color:#94a3b8; font-size:13px; margin-top:10px; margin-bottom:6px;">📉 B/S ဆက်တိုက်ရှုံးမှု (နောက်ဆုံး <span id="historyLimitLabelBs2">300</span>):</div>
-          <div class="win-rate-by-level" id="bsLosingStreakSummary">
-            <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
           </div>
         </div>
       </div>
@@ -364,6 +361,20 @@
           <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📈 B/S ဆက်တိုက်နိုင်မှု (နောက်ဆုံး <span id="historyLimitLabelBs">300</span>)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="bsWinningStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📉 B/S ဆက်တိုက်ရှုံးမှု (နောက်ဆုံး <span id="historyLimitLabelBs2">300</span>)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="bsLosingStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -417,6 +428,7 @@ function saveData() {
     localStorage.setItem("savedUseGapFormula", useGapFormula ? "1" : "0");
     localStorage.setItem("savedGapThreshold", String(gapThreshold));
     localStorage.setItem("savedBsModeEnabled", bsModeEnabled ? "1" : "0");
+    localStorage.setItem("savedBsReverseEnabled", bsReverseEnabled ? "1" : "0");
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -490,6 +502,13 @@ function loadData() {
       if (bsToggle) bsToggle.checked = bsModeEnabled;
       const bsPanel = document.getElementById("bsPredictionPanel");
       if (bsPanel) bsPanel.style.display = bsModeEnabled ? "block" : "none";
+    }
+
+    const storedBsReverse = localStorage.getItem("savedBsReverseEnabled");
+    if (storedBsReverse !== null) {
+      bsReverseEnabled = storedBsReverse === "1";
+      const bsReverseToggle = document.getElementById("bsReverseToggle");
+      if (bsReverseToggle) bsReverseToggle.checked = bsReverseEnabled;
     }
 
     const storedPredictCount = localStorage.getItem("savedPredictCount");
@@ -822,6 +841,8 @@ let nextUsedKeyDisplay = null;
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 let excludeLastCategory = false;
 let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) prediction mode
+let bsReverseEnabled = false; // when on, flips the computed B/S pick (B<->S) before it's used anywhere
+let nextBsCalculatedBet = "Waiting"; // latest B/S pick, kept in sync so it can be shown under the main prediction badge
 let predictCount = 1;
 
 function onPredictCountChange() {
@@ -1020,8 +1041,33 @@ function applyBsModeToggle() {
   localStorage.setItem("savedBsModeEnabled", bsModeEnabled ? "1" : "0");
   const panel = document.getElementById("bsPredictionPanel");
   if (panel) panel.style.display = bsModeEnabled ? "block" : "none";
+  if (bsModeEnabled) {
+    recalculateBsPredictions();
+  } else {
+    nextBsCalculatedBet = "Waiting";
+  }
+  updateTableDisplay();
+  updatePredictionDisplay();
+  saveData();
+}
+
+// Flips a B/S pick when reverse mode is on. Only ever applied to the final
+// computed pick (never to the actual raw result), so pattern-learning still
+// tracks what really happened while the *bet* shown/used everywhere is the
+// opposite of what the pattern would normally suggest.
+function flipBS(v) {
+  if (!bsReverseEnabled) return v;
+  if (v === "B") return "S";
+  if (v === "S") return "B";
+  return v;
+}
+
+function applyBsReverseToggle() {
+  bsReverseEnabled = document.getElementById("bsReverseToggle").checked;
+  localStorage.setItem("savedBsReverseEnabled", bsReverseEnabled ? "1" : "0");
   if (bsModeEnabled) recalculateBsPredictions();
   updateTableDisplay();
+  updatePredictionDisplay();
   saveData();
 }
 
@@ -1060,7 +1106,7 @@ function recalculateBsPredictions() {
     let bsPred = "Waiting";
     if (valid.length >= 10) {
       const pred = predictBs();
-      bsPred = pred.pick || NO_MATCH;
+      bsPred = pred.pick ? flipBS(pred.pick) : NO_MATCH;
     }
     row.bsPrediction = bsPred;
 
@@ -1081,7 +1127,7 @@ function recalculateBsPredictions() {
   let nextBsLength = null;
   if (valid.length >= 10) {
     const pred = predictBs();
-    nextBsPrediction = pred.pick || NO_MATCH;
+    nextBsPrediction = pred.pick ? flipBS(pred.pick) : NO_MATCH;
     nextBsLength = pred.length;
   }
 
@@ -1097,7 +1143,9 @@ function recalculateBsPredictions() {
     }
   });
 
+  nextBsCalculatedBet = nextBsPrediction;
   updateBsDisplay(nextBsPrediction, nextBsLength, recentWinCount, recentTotalCount);
+  updatePredictionDisplay();
 
   updateBsLosingStreakSummary(bsRecent);
   updateBsWinningStreakSummary(bsRecent);
@@ -1317,11 +1365,39 @@ function renderPredictionGroupBreakdown() {
   }
 }
 
+// Renders the small "B(56789)" / "S(01234)" label directly under the main
+// group prediction badge, mirroring the independent B/S prediction so the
+// user doesn't have to scroll down to the separate B/S panel to see it.
+function renderNextBlockBsSub() {
+  const sub = document.getElementById("nextBlockBsSub");
+  if (!sub) return;
+
+  if (!bsModeEnabled || nextBsCalculatedBet === "Waiting" || nextBsCalculatedBet === NO_MATCH) {
+    sub.style.display = "none";
+    sub.innerText = "";
+    return;
+  }
+
+  sub.style.display = "block";
+  if (nextBsCalculatedBet === "B") {
+    sub.style.color = "#ef4444";
+    sub.innerText = "B(56789)";
+  } else if (nextBsCalculatedBet === "S") {
+    sub.style.color = "#22c55e";
+    sub.innerText = "S(01234)";
+  } else {
+    sub.style.display = "none";
+    sub.innerText = "";
+  }
+}
+
 function updatePredictionDisplay() {
   const predBox = document.getElementById("nextBlockPrediction");
   const detailEl = document.getElementById("predictionDetail");
   const waitingMsg = document.getElementById("waitingMessage");
   const retryEl = document.getElementById("retryCount");
+
+  renderNextBlockBsSub();
   
   if (nextCalculatedBet === "Waiting" || trackedResults.length < 10) {
     predBox.className = "pred-badge waiting";
