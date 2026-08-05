@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Lottery Analysis Tool v55</title>
+  <title>Premium Lottery Analysis Tool v56</title>
   <style>
     :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --accent-red: #ef4444; --accent-blue: #3b82f6; --border-color: #334155; }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; max-width: 1200px; margin: 0 auto; }
@@ -302,7 +302,7 @@
 
       <div style="background:#0f172a; border-radius:8px; padding:12px; margin-top:12px;">
         <label style="width:fit-content; margin-top:6px; display:block;">
-          🎯 တစ်ကြိမ်ကို Group ဘယ်နှစ်ခု ခန့်မှန်းမလဲ (1-5 ခုအထိ):
+          🎯 တစ်ကြိမ်ကို Group ဘယ်နှစ်ခု ခန့်မှန်းမလဲ (1-7 ခုအထိ):
         </label>
         <select id="predictCountSelect" onchange="onPredictCountChange()">
           <option value="1">1 ခု (Group တစ်ခုတည်း)</option>
@@ -310,6 +310,8 @@
           <option value="3">3 ခု</option>
           <option value="4">4 ခု</option>
           <option value="5">5 ခု</option>
+          <option value="6">6 ခု</option>
+          <option value="7">7 ခု</option>
         </select>
         <div style="font-size:12px; color:#64748b; margin-top:8px;">
           💡 ဥပမာ — Group 0-9 ရှိတယ်ဆိုပါစို့၊ Pattern ရှာတွေ့တဲ့ Follower Category တွေကို အကြိမ်ရေ အများဆုံးကနေ အနည်းဆုံးအထိ စီရင် <b>01648</b> လို့ ရလာရင် (0 က အများဆုံး၊ 8 က အနည်းဆုံး) — "5 ခု ခန့်မှန်းမည်" ဆိုရင် <b>ထိပ်ဆုံးကနေ အောက်ခြေအထိ 5 ခုစလုံး</b> (0,1,6,4,8) ကို ခန့်မှန်းမည်။ "2 ခု" ဆိုရင် အများဆုံး 2 ခု (0,1) ကိုပဲ ခန့်မှန်းမည် — အမြဲတမ်း <b>အများဆုံးမှ အနည်းဆုံးသို့</b> အစဉ်လိုက်ပဲ ယူပါမည်။
@@ -966,8 +968,6 @@ function recalculateAllPredictions() {
 }
 
 // ===== INDEPENDENT BIG/SMALL PREDICTION (digit 0-4 = S, 5-9 = B) =====
-// This is completely separate from the Group system / DIGIT_CATEGORY_MAP —
-// it always uses the raw digit regardless of how Groups are configured.
 function digitToBS(d) {
   if (d === undefined || d === null || d === "-") return null;
   const n = parseInt(d);
@@ -975,12 +975,6 @@ function digitToBS(d) {
   return n >= 5 ? "B" : "S";
 }
 
-// Cross-references the Group prediction (row.betPrediction, an array of 1-5
-// groups) against the B/S prediction (row.bsPrediction, "B" or "S") and
-// returns only the groups whose underlying digit(s) actually fall within
-// that B/S range — e.g. Group prediction [8,2,6,4,1] + B/S prediction "S"
-// (digits 0-4) → returns ["1","2","4"]. A group with multiple digits (when
-// groupCount < 10) is included if ANY of its digits match.
 function groupsMatchingBs(row) {
   if (!bsModeEnabled) return null;
   if (!Array.isArray(row.betPrediction)) return null;
@@ -1064,9 +1058,6 @@ function recalculateBsPredictions() {
     nextBsLength = pred.length;
   }
 
-  // Win rate must reflect only the configured "Record History / Win Rate
-  // Window" (historyDisplayLimit), matching the Group prediction's Win Rate
-  // Tracker — not the entire dataset.
   const bsRecent = trackedResults.slice(-historyDisplayLimit);
   let recentWinCount = 0, recentTotalCount = 0;
   bsRecent.forEach(r => {
@@ -1379,7 +1370,6 @@ function updateLosingStreakSummary(recentResults) {
   }
 }
 
-// ===== NEW: WINNING STREAK SUMMARY =====
 function updateWinningStreakSummary(recentResults) {
   const summaryEl = document.getElementById("winningStreakSummary");
   if (!summaryEl) return;
@@ -1594,13 +1584,23 @@ function updateTableDisplay() {
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
 
+    // 🔥 NEW: Group∩B/S အရောင်ပြခြင်း
     let matchCell = "";
     if (bsModeEnabled) {
       const matched = groupsMatchingBs(row);
       const matchDisplay = matched && matched.length > 0 ? matched.join("/") : "-";
-      matchCell = `<td>${matchDisplay}</td>`;
+      let isMatchColorCls = "";
+      if (matched && matched.length > 0) {
+        // Check if digit is actually in the matched groups
+        const digitStr = String(row.digit);
+        const actualGroup = DIGIT_CATEGORY_MAP[digitStr];
+        const isCorrect = matched.includes(actualGroup);
+        isMatchColorCls = isCorrect ? "win-match" : "win-miss";
+      }
+      matchCell = `<td><span class="big-digit-display ${isMatchColorCls}">${matchDisplay}</span></td>`;
     }
 
+    // 🔥 NEW: B/S Bet အရောင်ပြခြင်း
     let bsCells = "";
     if (bsModeEnabled) {
       const bsBet = row.bsPrediction && row.bsPrediction !== "Waiting" ? row.bsPrediction : "-";
@@ -1609,7 +1609,7 @@ function updateTableDisplay() {
       const bsWin = bsIsPick && row.bsPrediction === row.bsResult;
       const bsCls = bsIsPick ? (bsWin ? "win-match" : "win-miss") : "";
       const bsColor = bsResult === "B" ? "color:#ef4444;" : (bsResult === "S" ? "color:#22c55e;" : "");
-      bsCells = `<td>${bsBet}</td><td><span class="big-digit-display ${bsCls}" style="${bsColor}">${bsResult}</span></td>`;
+      bsCells = `<td><span class="big-digit-display ${bsCls}">${bsBet}</span></td><td><span class="big-digit-display" style="${bsColor}">${bsResult}</span></td>`;
     }
 
     table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td>${matchCell}${bsCells}<td>${formulaDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
@@ -1978,7 +1978,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-console.log("✅ Premium Lottery Analysis Tool v55 Loaded Successfully");
+console.log("✅ Premium Lottery Analysis Tool v56 Loaded Successfully");
 console.log("📊 Digit→Group mapping now supports '?' to ignore digits");
 console.log(`🔄 Auto-retry every ${retryInterval/1000} seconds`);
 console.log(`📈 Tracked Results: ${trackedResults.length}`);
