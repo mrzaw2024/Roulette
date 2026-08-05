@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Lottery Analysis Tool v55</title>
+  <title>Premium Lottery Analysis Tool v57</title>
   <style>
     :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --accent-red: #ef4444; --accent-blue: #3b82f6; --border-color: #334155; }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; max-width: 1200px; margin: 0 auto; }
@@ -40,19 +40,6 @@
     .circle.color-purple { background: linear-gradient(135deg, #c084fc, #a855f7); }
     .circle.color-skip { background: #475569; }
     .stats-counter { display: flex; gap: 20px; margin-top: 15px; font-weight: bold; background: #0f172a; padding: 10px 15px; border-radius: 8px; flex-wrap: wrap; }
-    .stat-b { color: #ef4444; }
-    .stat-s { color: #22c55e; }
-    .stat-0 { color: #ef4444; }
-    .stat-1 { color: #f97316; }
-    .stat-2 { color: #22c55e; }
-    .stat-3 { color: #3b82f6; }
-    .stat-4 { color: #a855f7; }
-    .stat-5 { color: #ec4899; }
-    .stat-6 { color: #14b8a6; }
-    .stat-7 { color: #eab308; }
-    .stat-8 { color: #6366f1; }
-    .stat-9 { color: #f43f5e; }
-    .stat-10 { color: #84cc16; }
     .stat-last { color: #60a5fa; font-size: 14px; }
     .level-selector { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
     .level-chip { display: flex; align-items: center; gap: 5px; background: #1e293b; padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; user-select: none; }
@@ -77,7 +64,7 @@
     .pred-badge.waiting { background: linear-gradient(135deg, #f59e0b, #d97706); animation: pulse-wait 1.5s infinite; }
     @keyframes pulse-wait { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     .big-digit-display { font-size: 22px; font-weight: 700; display: block; }
-    .win-match { color: #22c55e; }
+    .win-match { color: #22c55e !important; font-weight: bold; }
     .win-miss { color: #ef4444; }
     .iframe-container { width: 100%; height: 750px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #000; }
     .iframe-container iframe { width: 100%; height: 100%; border: 0; display: block; }
@@ -85,13 +72,9 @@
     .status-suspended { background: #334155; color: #94a3b8; }
     .status-running { background: #15803d; color: #22c55e; animation: pulse 2s infinite; }
     .status-waiting { background: #92400e; color: #fbbf24; animation: pulse 1.5s infinite; }
-    .status-error { background: #7f1d1d; color: #f87171; animation: pulse 1s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     .block-display { font-size: 14px; color: #94a3b8; margin-top: 5px; }
-    .status-detail { font-size: 12px; color: #64748b; margin-left: 10px; }
     .last-update { font-size: 13px; color: #94a3b8; margin-top: 5px; }
-    .refresh-btn { background: #3b82f6; padding: 8px 16px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 13px; }
-    .input-hint { font-size: 12px; color: #64748b; margin-top: 4px; }
     .warning-box { background: #7f1d1d; padding: 10px 15px; border-radius: 8px; margin-top: 10px; color: #f87171; display: none; }
     .warning-box.show { display: block; }
     .waiting-message { color: #fbbf24; font-size: 16px; padding: 10px; text-align: center; }
@@ -154,31 +137,38 @@
         <span id="cacheInfo" class="cache-info">📦 Cache: <span id="cacheStatus">Empty</span></span>
       </div>
 
+      <!-- Main Prediction Panel (ဂဏန်း ခန့်မှန်းချက် + B/S ခန့်မှန်းချက် ပူးတွဲပြသမှု) -->
       <div class="prediction-panel">
+        <!-- 1. အပေါ်က ဂဏန်း ခန့်မှန်းချက် အစိမ်းရောင် Box -->
         <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
         <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
-        <div style="font-size:12px; color:#64748b;" id="blockInfo">Started from: -- | Current: --</div>
+
+        <!-- 2. အောက်က B/S ခန့်မှန်းချက် အစိမ်း/အနီရောင် Box -->
+        <div id="bsPredictionPanelInMain" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 5px;">
+          <div id="bsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
+          <div id="bsPredictionDetail" style="font-size:14px; color:#94a3b8;"></div>
+        </div>
+
+        <div style="font-size:12px; color:#64748b; margin-top:6px;" id="blockInfo">Started from: -- | Current: --</div>
         <div id="waitingMessage" class="waiting-message" style="display:none;">⏳ Waiting... <span class="loading-dots"></span></div>
         <div id="retryCount" class="retry-count" style="display:none;">ပြန်လည်ကြိုးစားမှု: 0 (၃ စက္ကန့်တစ်ခါ)</div>
         <div id="groupSummary" style="font-size:12px; color:#94a3b8;"></div>
         <div id="predictionGroupBreakdown" class="win-rate-by-level" style="width:100%; margin-top:8px;"></div>
       </div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">🎲 Big/Small ခန့်မှန်းခြင်း (Group system အပြင် ထပ်ပြရန်)</h3>
-      <div class="win-rate-box">
+      <!-- B/S ခန့်မှန်းခြင်း အချက်အလက်နှင့် ဆက်တိုက်နိုင်/ရှုံး စာရင်းများ -->
+      <div class="win-rate-box" style="margin-top: 15px;">
+        <h3 style="color:#60a5fa; margin-top:0;">🎲 Big/Small ခန့်မှန်းခြင်း အသေးစိတ် စာရင်း</h3>
         <label class="level-chip" style="width:fit-content;">
           <input type="checkbox" id="bsModeToggle" onchange="applyBsModeToggle()">
           ဖွင့်ရန် — 0,1,2,3,4 = <b style="color:#22c55e;">S (Small)</b> / 5,6,7,8,9 = <b style="color:#ef4444;">B (Big)</b>
         </label>
-        <div class="input-hint">💡 Group Count ဘယ်လောက်ထားထား ဒီ B/S ခွဲခြင်းက အမြဲ digit 0-4 vs 5-9 ကိုပဲ အခြေခံပါတယ် — Group system ကနေ လုံးဝ သီးခြားစီ အလုပ်လုပ်ပါတယ်</div>
 
-        <div id="bsPredictionPanel" style="display:none; margin-top:12px;">
-          <div id="bsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
-          <div id="bsPredictionDetail" class="input-hint" style="text-align:center;"></div>
-          <div style="display:flex; gap:20px; margin-top:10px; font-weight:bold;">
+        <div id="bsStatsSubPanel" style="margin-top:12px;">
+          <div style="display:flex; gap:20px; font-weight:bold; font-size:16px;">
             <div>B: <span id="bsCountB" style="color:#ef4444;">0</span></div>
             <div>S: <span id="bsCountS" style="color:#22c55e;">0</span></div>
-            <div>Win Rate: <span id="bsWinRate">--</span></div>
+            <div>Win Rate: <span id="bsWinRate" style="color:#4ade80;">--</span></div>
           </div>
 
           <div style="color:#94a3b8; font-size:13px; margin-top:14px; margin-bottom:6px;">📈 B/S ဆက်တိုက်နိုင်မှု (နောက်ဆုံး <span id="historyLimitLabelBs">300</span>):</div>
@@ -192,7 +182,26 @@
         </div>
       </div>
 
-      <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
+      <!-- Settings & Controls -->
+      <div style="background:#0f172a; border-radius:8px; padding:12px; margin-top:15px; border:1px solid var(--border-color);">
+        <label style="width:fit-content; margin-top:6px; display:block; font-weight:bold; color:#60a5fa;">
+          🎯 တစ်ကြိမ်ကို Group ဘယ်နှစ်ခု ခန့်မှန်းမလဲ (1-7 ခုအထိ):
+        </label>
+        <select id="predictCountSelect" onchange="onPredictCountChange()">
+          <option value="1">1 ခု (Group တစ်ခုတည်း)</option>
+          <option value="2">2 ခု</option>
+          <option value="3">3 ခု</option>
+          <option value="4">4 ခု</option>
+          <option value="5" selected>5 ခု</option>
+          <option value="6">6 ခု</option>
+          <option value="7">7 ခု</option>
+        </select>
+        <div style="font-size:12px; color:#64748b; margin-top:8px;">
+          💡 ဥပမာ — Pattern ရှာတွေ့သည့် Follower Category များကို အကြိမ်ရေ အများဆုံးမှ အနည်းဆုံးအထိ စီပြီး ခန့်မှန်းပေးမည်။
+        </div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📊 Matrix Trend Map (Big Road)</h3>
       <div class="stats-counter" id="statsCounterRow">
         <div class="stat-last">Last: <span id="lastResult">--</span></div>
         <div class="stat-last">Total: <span id="totalCount">0</span></div>
@@ -202,9 +211,9 @@
         <table class="road-map-table" id="roadMapTable"></table>
       </div>
 
-      <label>🔢 မှတ်တမ်းပြမည့် အရေအတွက် (Record History / Win Rate Window):</label>
+      <label style="margin-top:20px; display:block;">🔢 မှတ်တမ်းပြမည့် အရေအတွက် (Record History / Win Rate Window):</label>
       <input type="number" id="historyLimitInput" value="300" min="1" onchange="applyHistoryLimit()">
-      <div class="input-hint">💡 အောက်မှတ်တမ်းနဲ့ Win Rate Tracker နှစ်ခုစလုံး ဒီနံပါတ်ကိုပဲ သုံးပါလိမ့်မယ် — မိမိကြိုက်ရာ ပြောင်းနိုင်ပါတယ်</div>
+      <div class="input-hint">💡 အောက်မှတ်တမ်းနဲ့ Win Rate Tracker နှစ်ခုစလုံး ဒီနံပါတ်ကိုပဲ သုံးပါလိမ့်မယ်</div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📋 အောက်မှတ်တမ်း (နောက်ဆုံး <span id="historyLimitLabel1">300</span>)</h3>
       <div class="table-wrapper" id="tableWrapper">
@@ -225,7 +234,7 @@
         <div class="win-rate-by-level" id="winRateByLevel"></div>
       </div>
 
-      <label>🔢 Group အရေအတွက် ရွေးရန် (2-10 ခုအထိ):</label>
+      <label style="margin-top:20px; display:block;">🔢 Group အရေအတွက် ရွေးရန် (2-10 ခုအထိ):</label>
       <select id="groupCountSelect" onchange="applyGroupCount()">
         <option value="2">2</option>
         <option value="3">3</option>
@@ -237,13 +246,11 @@
         <option value="9">9</option>
         <option value="10">10</option>
       </select>
-      <div class="input-hint">💡 Group အရေအတွက်ကို ပြောင်းရင် ဂဏန်း 0-9 ကို Group အသစ်တွေထဲ အလိုအလျောက် ညီညီညာညာ ပြန်ခွဲပေးမယ် — ပြီးရင် အောက်က Group သတ်မှတ်ခြင်းမှာ ကိုယ်တိုင် ထပ်ချိန်ညှိနိုင်ပါတယ်</div>
 
-      <label>🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9 ကို Group ထဲ ကိုယ်တိုင်ရွေးပါ၊ ? ဆိုရင် မထည့်ပါ):</label>
+      <label style="margin-top:10px; display:block;">🔢 ဂဏန်း → Group သတ်မှတ်ခြင်း (Digit 0-9):</label>
       <div id="digitGroupSelector" class="digit-selector-grid"></div>
-      <div class="input-hint">💡 "?" ရွေးထားရင် အဲဒီဂဏန်းကို ဘယ် Group မှ မထည့်ပါ — ရှာဖွေတဲ့အခါ ဂရုမစိုက်ပါ။ အနည်းဆုံး Group 2 ခုတော့ ရှိရပါမည်။</div>
 
-      <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
+      <label style="margin-top:15px; display:block;">🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
       <div id="levelSelector" class="level-selector">
         <label class="level-chip"><input type="checkbox" value="30" onchange="applyLevelSelection()"> 30</label>
         <label class="level-chip"><input type="checkbox" value="29" onchange="applyLevelSelection()"> 29</label>
@@ -276,73 +283,62 @@
         <label class="level-chip"><input type="checkbox" value="2" checked onchange="applyLevelSelection()"> 2</label>
         <label class="level-chip"><input type="checkbox" value="1" checked onchange="applyLevelSelection()"> 1</label>
       </div>
-      <div class="input-hint" id="levelSelectorHint">💡 Check ထားတဲ့ Level တွေကိုပဲ ရှည်ရာကနေ တိုရာအစဉ်လိုက် သုံးပါမည် — Group အရေအတွက် များများ (ဥပမာ 10 ခု) နဲ့ Predict အရေအတွက် များများ (ဥပမာ 5 ခု) သုံးရင်၊ Level 3 နှင့်အထက်တွေမှာ pattern အတိအကျ ထပ်မထွက်လွန်းလို့ "❓ ခန့်မှန်းမှု မရှိပါ" ဖြစ်တတ်ပါတယ် — Level 1၊ 2 လို တိုတိုတွေကို ထပ်ထည့် Check ထားရင် ဒေတာပိုအလွယ်တကူ ရှာတွေ့ပါလိမ့်မယ်</div>
 
       <div style="background: #1e293b; border-radius: 8px; padding: 12px; margin-top: 15px; border: 1px solid var(--border-color);">
           <label class="level-chip" style="width:fit-content; margin-bottom:6px;">
             <input type="checkbox" id="useGapFormulaToggle" onchange="applyFormulaSettings()">
-            🎯 ကွာဟမှု (Gap) ဖော်မြူလာ သုံးရန် (အများကြီးကွာရင် နည်းတာကို ရွေးမည်)
+            🎯 ကွာဟမှု (Gap) ဖော်မြူလာ သုံးရန်
           </label>
           <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
               <label style="font-size: 13px; color: #94a3b8;">ကွာခြားမှု ပမာဏ (Gap Threshold):</label>
               <input type="range" id="gapThresholdSlider" min="2" max="9" value="4" oninput="document.getElementById('gapThresholdLabel').innerText = this.value; applyFormulaSettings();" style="width: 150px; accent-color: var(--accent-blue);">
               <span id="gapThresholdLabel" style="font-weight: bold; color: #f8fafc;">4</span>
-              <span style="font-size: 11px; color:#64748b;">(Gap ဒီထက်ကြီးရင် နည်းတာကို ပြန်ရွေးမယ်)</span>
-          </div>
-          <div class="input-hint" style="margin-top: 4px;">
-              💡 ဥပမာ 4 ထားရင် - အများဆုံး (4) နဲ့ ဒုတိယအများဆုံး (2) ကွာခြားချက် 2 ဖြစ်နေရင် အများဆုံးကို ခန့်မှန်းမယ်။ ကွာခြားချက် 5 ဖြစ်နေရင် နည်းတာကို ပြန်ခန့်မှန်းမယ်။
           </div>
       </div>
 
-      <label class="level-chip" style="width:fit-content; margin-top:6px;">
+      <label class="level-chip" style="width:fit-content; margin-top:10px;">
         <input type="checkbox" id="excludeLastCategoryToggle" onchange="applyFormulaSettings()">
         🚫 နောက်ဆုံးထွက်ခဲ့တဲ့ Category ကို ခန့်မှန်းချက်ထဲ ထည့်မသုံးပါနဲ့
       </label>
-      <div class="input-hint">💡 ဥပမာ — 1 ထွက်ပြီးရင် နောက်ခန့်မှန်းမှာ "1" ကို လုံးဝ မထည့်တော့ဘဲ 2 နဲ့ 3 ထဲကပဲ ရွေးမည်</div>
 
-      <div style="background:#0f172a; border-radius:8px; padding:12px; margin-top:12px;">
-        <label style="width:fit-content; margin-top:6px; display:block;">
-          🎯 တစ်ကြိမ်ကို Group ဘယ်နှစ်ခု ခန့်မှန်းမလဲ (1-5 ခုအထိ):
-        </label>
-        <select id="predictCountSelect" onchange="onPredictCountChange()">
-          <option value="1">1 ခု (Group တစ်ခုတည်း)</option>
-          <option value="2">2 ခု</option>
-          <option value="3">3 ခု</option>
-          <option value="4">4 ခု</option>
-          <option value="5">5 ခု</option>
-        </select>
-        <div style="font-size:12px; color:#64748b; margin-top:8px;">
-          💡 ဥပမာ — Group 0-9 ရှိတယ်ဆိုပါစို့၊ Pattern ရှာတွေ့တဲ့ Follower Category တွေကို အကြိမ်ရေ အများဆုံးကနေ အနည်းဆုံးအထိ စီရင် <b>01648</b> လို့ ရလာရင် (0 က အများဆုံး၊ 8 က အနည်းဆုံး) — "5 ခု ခန့်မှန်းမည်" ဆိုရင် <b>ထိပ်ဆုံးကနေ အောက်ခြေအထိ 5 ခုစလုံး</b> (0,1,6,4,8) ကို ခန့်မှန်းမည်။ "2 ခု" ဆိုရင် အများဆုံး 2 ခု (0,1) ကိုပဲ ခန့်မှန်းမည် — အမြဲတမ်း <b>အများဆုံးမှ အနည်းဆုံးသို့</b> အစဉ်လိုက်ပဲ ယူပါမည်။
+      <!-- Streaks Summaries -->
+      <h3 style="color:#60a5fa; margin-top:20px;">📈 Group B/S ဆက်တိုက်နိုင်မှု စာရင်း</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="groupBsWinningStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">📈 ဆက်တိုက်နိုင်မှု စာရင်း (Winning Streaks)</h3>
+      <h3 style="color:#60a5fa; margin-top:20px;">📉 Group B/S ဆက်တိုက်ရှုံးမှု စာရင်း</h3>
       <div class="win-rate-box">
-        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 စုစုပေါင်း (ဘယ်ဟာအများဆုံးဖြစ်ခဲ့လဲ):</div>
+        <div class="win-rate-by-level" id="groupBsLosingStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📈 Pattern ခန့်မှန်းချက် ဆက်တိုက်နိုင်မှု စာရင်း</h3>
+      <div class="win-rate-box">
         <div class="win-rate-by-level" id="winningStreakSummary">
           <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">📉 ဆက်တိုက်ရှုံးမှု စာရင်း (Losing Streaks)</h3>
+      <h3 style="color:#60a5fa; margin-top:20px;">📉 Pattern ခန့်မှန်းချက် ဆက်တိုက်ရှုံးမှု စာရင်း</h3>
       <div class="win-rate-box">
-        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 စုစုပေါင်း (ဘယ်ဟာအများဆုံးဖြစ်ခဲ့လဲ):</div>
         <div class="win-rate-by-level" id="losingStreakSummary">
           <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📋 ဂဏန်း Data (Copy / Import)</h3>
-
-      <label>📤 လက်ရှိ Data (ကူးယူနိုင်သည် — ဘယ်ဘက်က အဟောင်း၊ ညာဘက်က အသစ်):</label>
+      <label>📤 လက်ရှိ Data:</label>
       <textarea id="digitDataPreview" readonly placeholder="Data မရှိသေးပါ" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
       <div class="btn-container">
         <button onclick="copyDigitData()" style="background:#3b82f6;">📤 Copy All Digits</button>
       </div>
 
-      <label style="margin-top:15px; display:block;">📥 ကိုယ်တိုင် Data ထည့်ရန် (Block hash မလို — ရလဒ်ဂဏန်း 0-9 ကို ကော်မာ ခံပြီးထည့်ပါ):</label>
+      <label style="margin-top:15px; display:block;">📥 ကိုယ်တိုင် Data ထည့်ရန်:</label>
       <textarea id="manualDataInput" placeholder="ဥပမာ - 6,1,4,6,2,0,5,2,5" style="width:100%; min-height:70px; padding:12px; margin-top:6px; font-size:14px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:8px; box-sizing:border-box; font-family:monospace; resize:vertical;"></textarea>
-      <div class="input-hint">💡 ဒီနေရာမှာ ထည့်တဲ့ ဂဏန်းတွေက ရှေ့ဆုံး history အဖြစ် ထည့်ပေးမှာဖြစ်ပြီး၊ Start Stream နှိပ်လိုက်ရင် ဒီ data ရဲ့ အဆုံးကနေ ဆက်ပြီး auto ဖြည့်ပေးသွားပါလိမ့်မယ်။</div>
       <div class="btn-container">
         <button onclick="importManualData()" style="background:#22c55e;">➕ Import Data</button>
       </div>
@@ -453,10 +449,7 @@ function loadData() {
       historyDisplayLimit = parseInt(storedHistoryLimit);
     }
     document.getElementById("historyLimitInput").value = historyDisplayLimit;
-    document.getElementById("historyLimitLabel1").innerText = historyDisplayLimit;
-    document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
-    document.getElementById("historyLimitLabelBs").innerText = historyDisplayLimit;
-    document.getElementById("historyLimitLabelBs2").innerText = historyDisplayLimit;
+    updateHistoryLabels();
 
     const storedExclude = localStorage.getItem("savedExcludeLastCategory");
     if (storedExclude !== null) {
@@ -470,18 +463,13 @@ function loadData() {
       bsModeEnabled = storedBsMode === "1";
       const bsToggle = document.getElementById("bsModeToggle");
       if (bsToggle) bsToggle.checked = bsModeEnabled;
-      const bsPanel = document.getElementById("bsPredictionPanel");
-      if (bsPanel) bsPanel.style.display = bsModeEnabled ? "block" : "none";
     }
 
     const storedPredictCount = localStorage.getItem("savedPredictCount");
     if (storedPredictCount && !isNaN(storedPredictCount)) {
       predictCount = parseInt(storedPredictCount);
-    } else {
-      const storedPredictTwo = localStorage.getItem("savedPredictTwoMode");
-      predictCount = storedPredictTwo === "1" ? 2 : 1;
     }
-    if (predictCount > groupCount - 1) predictCount = Math.max(1, groupCount - 1);
+    if (predictCount > 7) predictCount = 7;
     const predictCountSel = document.getElementById("predictCountSelect");
     if (predictCountSel) predictCountSel.value = String(predictCount);
 
@@ -495,7 +483,7 @@ function loadData() {
             b.checked = enabledLevels.includes(parseInt(b.value));
           });
         }
-      } catch (e) { /* ignore malformed storage, keep default */ }
+      } catch (e) { }
     }
 
     const inputBlock = document.getElementById("startBlock").value.trim();
@@ -558,6 +546,14 @@ function loadData() {
   } catch(e) { console.log("Load error:", e); }
 }
 
+function updateHistoryLabels() {
+  const lbls = ["historyLimitLabel1", "historyLimitLabel2", "historyLimitLabelBs", "historyLimitLabelBs2"];
+  lbls.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = historyDisplayLimit;
+  });
+}
+
 function updateCacheInfo() {
   const cacheStatus = document.getElementById("cacheStatus");
   const cacheBadge = document.getElementById("cacheBadge");
@@ -612,7 +608,7 @@ let historyDisplayLimit = 300;
 
 function digitToCategory(d) {
   const val = DIGIT_CATEGORY_MAP[String(d)];
-  if (val === "?" || val === undefined) return null; // ignore this digit
+  if (val === "?" || val === undefined) return null;
   return val;
 }
 
@@ -682,12 +678,10 @@ function applyHistoryLimit() {
   }
   historyDisplayLimit = value;
   localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
-  document.getElementById("historyLimitLabel1").innerText = historyDisplayLimit;
-  document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
-  document.getElementById("historyLimitLabelBs").innerText = historyDisplayLimit;
-  document.getElementById("historyLimitLabelBs2").innerText = historyDisplayLimit;
+  updateHistoryLabels();
   updateTableDisplay();
   updateWinRateStats();
+  if (bsModeEnabled) recalculateBsPredictions();
   saveData();
 }
 
@@ -744,13 +738,6 @@ function applyGroupCount() {
   CATEGORIES = [];
   for (let g = 1; g <= groupCount; g++) CATEGORIES.push(String(g));
 
-  if (predictCount > groupCount - 1) {
-    predictCount = Math.max(1, groupCount - 1);
-    const pcSel = document.getElementById("predictCountSelect");
-    if (pcSel) pcSel.value = String(predictCount);
-    localStorage.setItem("savedPredictCount", String(predictCount));
-  }
-
   renderDigitGroupSelector();
   renderStatsCounterRow();
   updateGroupSummary();
@@ -800,8 +787,8 @@ let nextUsedKeyDisplay = null;
 
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 let excludeLastCategory = false;
-let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) prediction mode
-let predictCount = 1;
+let bsModeEnabled = true;
+let predictCount = 5;
 
 function onPredictCountChange() {
   const sel = document.getElementById("predictCountSelect");
@@ -879,34 +866,32 @@ function recalculateAllPredictions() {
         seen = seen.filter(c => c !== lastCategory);
       }
 
-      if (seen.length <= pickCount) continue;
+      if (seen.length < 1) continue;
 
       const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
       
-      // Check Gap Logic Here
       if (useGapFormula && sorted.length >= 2) {
         const firstCount = stats[sorted[0]];
         const secondCount = stats[sorted[1]];
         const gap = firstCount - secondCount;
 
         if (gap >= gapThreshold) {
-          // If gap is large, pick the LEAST frequent one instead (reversal)
           const leastFreq = sorted[sorted.length - 1];
-          const isDecisive = stats[leastFreq] !== stats[sorted[sorted.length - 2]]; // Ensure no tie at bottom
-          
+          const isDecisive = stats[leastFreq] !== stats[sorted[sorted.length - 2]];
           if (isDecisive) {
-             // Return only the least frequent one (or up to predictCount from the bottom if you prefer)
-             // Here we return just 1 prediction as requested logic implies reversal
              return { categories: [leastFreq], length: len, stats, key, isReversal: true };
           }
         }
       }
 
-      // Default logic: Pick Highest
-      const picked = sorted.slice(0, pickCount);
-      const lastPickedCount = stats[picked[pickCount - 1]];
-      const firstExcludedCount = stats[sorted[pickCount]];
-      if (lastPickedCount === firstExcludedCount) continue;
+      const actualPickCount = Math.min(pickCount, sorted.length);
+      const picked = sorted.slice(0, actualPickCount);
+
+      if (sorted.length > actualPickCount) {
+        const lastPickedCount = stats[picked[actualPickCount - 1]];
+        const firstExcludedCount = stats[sorted[actualPickCount]];
+        if (lastPickedCount === firstExcludedCount) continue;
+      }
 
       return { categories: picked, length: len, stats, key, isReversal: false };
     }
@@ -965,9 +950,7 @@ function recalculateAllPredictions() {
   if (bsModeEnabled) recalculateBsPredictions();
 }
 
-// ===== INDEPENDENT BIG/SMALL PREDICTION (digit 0-4 = S, 5-9 = B) =====
-// This is completely separate from the Group system / DIGIT_CATEGORY_MAP —
-// it always uses the raw digit regardless of how Groups are configured.
+// ===== INDEPENDENT BIG/SMALL PREDICTION =====
 function digitToBS(d) {
   if (d === undefined || d === null || d === "-") return null;
   const n = parseInt(d);
@@ -975,20 +958,12 @@ function digitToBS(d) {
   return n >= 5 ? "B" : "S";
 }
 
-// Cross-references the Group prediction (row.betPrediction, an array of 1-5
-// groups) against the B/S prediction (row.bsPrediction, "B" or "S") and
-// returns only the groups whose underlying digit(s) actually fall within
-// that B/S range — e.g. Group prediction [8,2,6,4,1] + B/S prediction "S"
-// (digits 0-4) → returns ["1","2","4"]. A group with multiple digits (when
-// groupCount < 10) is included if ANY of its digits match.
 function groupsMatchingBs(row) {
-  if (!bsModeEnabled) return null;
   if (!Array.isArray(row.betPrediction)) return null;
-  if (row.bsPrediction !== "B" && row.bsPrediction !== "S") return null;
 
   const matched = row.betPrediction.filter(g =>
     Object.keys(DIGIT_CATEGORY_MAP).some(d =>
-      DIGIT_CATEGORY_MAP[d] === g && digitToBS(d) === row.bsPrediction
+      DIGIT_CATEGORY_MAP[d] === g
     )
   );
   return matched.slice().sort((a, b) => parseInt(a) - parseInt(b));
@@ -997,8 +972,8 @@ function groupsMatchingBs(row) {
 function applyBsModeToggle() {
   bsModeEnabled = document.getElementById("bsModeToggle").checked;
   localStorage.setItem("savedBsModeEnabled", bsModeEnabled ? "1" : "0");
-  const panel = document.getElementById("bsPredictionPanel");
-  if (panel) panel.style.display = bsModeEnabled ? "block" : "none";
+  const panel = document.getElementById("bsPredictionPanelInMain");
+  if (panel) panel.style.display = bsModeEnabled ? "flex" : "none";
   if (bsModeEnabled) recalculateBsPredictions();
   updateTableDisplay();
   saveData();
@@ -1025,7 +1000,7 @@ function recalculateBsPredictions() {
       const stats = transitionMaps[len][key];
       if (!stats) continue;
       const bCount = stats["B"], sCount = stats["S"];
-      if (bCount === sCount) continue; // not decisive, try a shorter/longer pattern
+      if (bCount === sCount) continue;
       return { pick: bCount > sCount ? "B" : "S", length: len };
     }
     return { pick: null, length: null };
@@ -1037,11 +1012,14 @@ function recalculateBsPredictions() {
     row.bsResult = bsVal;
 
     let bsPred = "Waiting";
+    let bsLen = null;
     if (valid.length >= 10) {
       const pred = predictBs();
       bsPred = pred.pick || NO_MATCH;
+      bsLen = pred.length;
     }
     row.bsPrediction = bsPred;
+    row.bsFormulaLength = bsLen;
 
     if (bsVal !== null) {
       SEQ_LENGTHS.forEach(len => {
@@ -1064,9 +1042,6 @@ function recalculateBsPredictions() {
     nextBsLength = pred.length;
   }
 
-  // Win rate must reflect only the configured "Record History / Win Rate
-  // Window" (historyDisplayLimit), matching the Group prediction's Win Rate
-  // Tracker — not the entire dataset.
   const bsRecent = trackedResults.slice(-historyDisplayLimit);
   let recentWinCount = 0, recentTotalCount = 0;
   bsRecent.forEach(r => {
@@ -1077,9 +1052,9 @@ function recalculateBsPredictions() {
   });
 
   updateBsDisplay(nextBsPrediction, nextBsLength, recentWinCount, recentTotalCount);
-
   updateBsLosingStreakSummary(bsRecent);
   updateBsWinningStreakSummary(bsRecent);
+  updateGroupBsStreaks(bsRecent);
 }
 
 function updateBsLosingStreakSummary(recentResults) {
@@ -1156,6 +1131,59 @@ function updateBsWinningStreakSummary(recentResults) {
   }
 }
 
+function updateGroupBsStreaks(recentResults) {
+  const winEl = document.getElementById("groupBsWinningStreakSummary");
+  const lossEl = document.getElementById("groupBsLosingStreakSummary");
+  if (!winEl || !lossEl) return;
+
+  const winStreaks = {};
+  const lossStreaks = {};
+  let curWin = 0;
+  let curLoss = 0;
+
+  recentResults.forEach(r => {
+    if (!CATEGORIES.includes(r.appResult) || !Array.isArray(r.betPrediction)) return;
+    
+    const isWin = r.betPrediction.includes(r.appResult);
+
+    if (isWin) {
+      curWin++;
+      if (curLoss >= 3) {
+        lossStreaks[curLoss] = (lossStreaks[curLoss] || 0) + 1;
+      }
+      curLoss = 0;
+    } else {
+      curLoss++;
+      if (curWin >= 3) {
+        winStreaks[curWin] = (winStreaks[curWin] || 0) + 1;
+      }
+      curWin = 0;
+    }
+  });
+
+  if (curWin >= 3) winStreaks[curWin] = (winStreaks[curWin] || 0) + 1;
+  if (curLoss >= 3) lossStreaks[curLoss] = (lossStreaks[curLoss] || 0) + 1;
+
+  const winLens = Object.keys(winStreaks).map(Number).sort((a, b) => b - a);
+  if (winLens.length === 0) {
+    winEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်မှန်မှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    winEl.innerHTML = winLens.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်မှန်</span><span>${winStreaks[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+
+  const lossLens = Object.keys(lossStreaks).map(Number).sort((a, b) => b - a);
+  if (lossLens.length === 0) {
+    lossEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်မှားမှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    lossEl.innerHTML = lossLens.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်မှား</span><span>${lossStreaks[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+// B/S Display တွင် Pattern Length အမှန်အတိုင်း ပြသရန် ပြင်ဆင်ထားသည်
 function updateBsDisplay(pred, length, winCount, totalCount) {
   const badge = document.getElementById("bsPredictionBadge");
   const detail = document.getElementById("bsPredictionDetail");
@@ -1172,11 +1200,11 @@ function updateBsDisplay(pred, length, winCount, totalCount) {
   } else if (pred === "B") {
     badge.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
     badge.innerText = "🔴 B (56789)";
-    detail.innerText = `${length} လုံး Pattern ကို အခြေခံထားသည်`;
+    detail.innerText = length ? `"${pred}" ထွက်ရန် ခန့်မှန်းထားသည် (${length} လုံး Pattern)` : `"${pred}" ထွက်ရန် ခန့်မှန်းထားသည်`;
   } else {
     badge.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
     badge.innerText = "🟢 S (01234)";
-    detail.innerText = `${length} လုံး Pattern ကို အခြေခံထားသည်`;
+    detail.innerText = length ? `"${pred}" ထွက်ရန် ခန့်မှန်းထားသည် (${length} လုံး Pattern)` : `"${pred}" ထွက်ရန် ခန့်မှန်းထားသည်`;
   }
 
   const winRateEl = document.getElementById("bsWinRate");
@@ -1195,7 +1223,6 @@ function updateBsDisplay(pred, length, winCount, totalCount) {
   if (cb) cb.innerText = countB;
   if (cs) cs.innerText = countS;
 }
-
 
 // ===== UPDATE DISPLAY FUNCTIONS =====
 function renderPredictionGroupBreakdown() {
@@ -1232,29 +1259,15 @@ function updatePredictionDisplay() {
     predBox.className = "pred-badge none";
     predBox.style.background = "";
     predBox.innerText = `${NO_MATCH} ခန့်မှန်းမှု မရှိပါ`;
-    detailEl.innerText = "ယခင်တွင် ဒီအစီအစဉ် (Triple/Pair) ရှာမတွေ့ပါ";
+    detailEl.innerText = "ယခင်တွင် ဒီအစီအစဉ် ရှာမတွေ့ပါ";
     renderPredictionGroupBreakdown();
   } else {
     waitingMsg.style.display = "none";
     retryEl.style.display = "none";
     predBox.className = "pred-badge";
-    const catColors = {
-      "1": "linear-gradient(135deg, #f97316, #ea580c)",
-      "2": "linear-gradient(135deg, #22c55e, #16a34a)",
-      "3": "linear-gradient(135deg, #3b82f6, #1d4ed8)",
-      "4": "linear-gradient(135deg, #a855f7, #7e22ce)",
-      "5": "linear-gradient(135deg, #ec4899, #be185d)",
-      "6": "linear-gradient(135deg, #14b8a6, #0f766e)",
-      "7": "linear-gradient(135deg, #eab308, #a16207)",
-      "8": "linear-gradient(135deg, #6366f1, #4338ca)",
-      "9": "linear-gradient(135deg, #f43f5e, #be123c)",
-      "10": "linear-gradient(135deg, #84cc16, #4d7c0f)"
-    };
     const picks = Array.isArray(nextCalculatedBet) ? nextCalculatedBet : [nextCalculatedBet];
-    predBox.style.background = picks.length >= 2
-      ? `linear-gradient(135deg, ${catColors[picks[0]]?.match(/#[0-9a-f]{6}/i)?.[0] || "#3b82f6"}, ${catColors[picks[picks.length - 1]]?.match(/#[0-9a-f]{6}/i)?.[0] || "#1d4ed8"})`
-      : (catColors[picks[0]] || catColors["1"]);
-    const picksLabel = picks.join(" / ");
+    predBox.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
+    const picksLabel = picks.join("/");
     predBox.innerText = `🔮 ${picksLabel}`;
     const lenLabel = nextUsedLength ? `${nextUsedLength} လုံး Pattern` : FORMULA_NAMES[0];
     detailEl.innerText = `"${picksLabel}" ထွက်ရန် ခန့်မှန်းထားသည် (${lenLabel})`;
@@ -1366,9 +1379,7 @@ function updateLosingStreakSummary(recentResults) {
     streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
   }
 
-  const lengths = Object.keys(streakCounts)
-    .map(Number)
-    .sort((a, b) => b - a);
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
 
   if (lengths.length === 0) {
     summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
@@ -1379,7 +1390,6 @@ function updateLosingStreakSummary(recentResults) {
   }
 }
 
-// ===== NEW: WINNING STREAK SUMMARY =====
 function updateWinningStreakSummary(recentResults) {
   const summaryEl = document.getElementById("winningStreakSummary");
   if (!summaryEl) return;
@@ -1409,9 +1419,7 @@ function updateWinningStreakSummary(recentResults) {
     streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
   }
 
-  const lengths = Object.keys(streakCounts)
-    .map(Number)
-    .sort((a, b) => b - a);
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
 
   if (lengths.length === 0) {
     summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်နိုင်မှု မရှိသေးပါ</span><span>-</span></div>`;
@@ -1481,14 +1489,10 @@ function importManualData() {
   const digits = [];
   for (const p of parts) {
     if (!/^[0-9]$/.test(p)) {
-      alert(`"${p}" သည် ဂဏန်း 0-9 တစ်လုံးတည်း မဟုတ်ပါ။ ဂဏန်းများကို ကော်မာ (,) ခံပြီး ထည့်ပါ (ဥပမာ - 6,1,4,6,2,0,5,2,5) — Block hash မလိုအပ်ပါ။`);
+      alert(`"${p}" သည် ဂဏန်း 0-9 တစ်လုံးတည်း မဟုတ်ပါ။ ဂဏန်းများကို ကော်မာ (,) ခံပြီး ထည့်ပါ`);
       return;
     }
     digits.push(parseInt(p, 10));
-  }
-  if (digits.length === 0) {
-    alert("မှန်ကန်သော ဂဏန်းများ မတွေ့ပါ။");
-    return;
   }
 
   digits.forEach(d => {
@@ -1577,16 +1581,18 @@ function updateTableDisplay() {
   }
   
   const displayResults = trackedResults.slice(-historyDisplayLimit);
-  const matchHeader = bsModeEnabled ? `<th>Group∩B/S</th>` : "";
-  const bsHeaders = bsModeEnabled ? `<th>B/S Bet</th><th>B/S</th>` : "";
+  const matchHeader = `<th>Group∩B/S</th>`;
+  const bsHeaders = `<th>B/S Bet</th><th>B/S</th>`;
+
   let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th>${matchHeader}${bsHeaders}<th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   for (let i = displayResults.length - 1; i >= 0; i--) {
     let row = displayResults[i];
     if (!row) continue;
+    
     const isArrayPred = Array.isArray(row.betPrediction);
     let win = isArrayPred && row.betPrediction.includes(row.appResult);
     let cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
-    let betDisplay = isArrayPred ? row.betPrediction.join(" / ") : (row.betPrediction || "-");
+    let betDisplay = isArrayPred ? row.betPrediction.join("/") : (row.betPrediction || "-");
     let formulaDisplay = row.formulaLength ? `${row.formulaLength} လုံး` : "-";
     let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
     let blockDisplay = row.manual ? `📝 Manual #${Math.abs(row.blockNum)}` : row.blockNum;
@@ -1594,23 +1600,18 @@ function updateTableDisplay() {
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
 
-    let matchCell = "";
-    if (bsModeEnabled) {
-      const matched = groupsMatchingBs(row);
-      const matchDisplay = matched && matched.length > 0 ? matched.join("/") : "-";
-      matchCell = `<td>${matchDisplay}</td>`;
-    }
+    const matched = groupsMatchingBs(row);
+    const matchDisplay = matched && matched.length > 0 ? matched.join("/") : "-";
+    let groupBsMatchClass = (matched && row.appResult && matched.includes(row.appResult)) ? "win-match" : "";
+    let matchCell = `<td><span class="${groupBsMatchClass}">${matchDisplay}</span></td>`;
 
-    let bsCells = "";
-    if (bsModeEnabled) {
-      const bsBet = row.bsPrediction && row.bsPrediction !== "Waiting" ? row.bsPrediction : "-";
-      const bsResult = row.bsResult || "-";
-      const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
-      const bsWin = bsIsPick && row.bsPrediction === row.bsResult;
-      const bsCls = bsIsPick ? (bsWin ? "win-match" : "win-miss") : "";
-      const bsColor = bsResult === "B" ? "color:#ef4444;" : (bsResult === "S" ? "color:#22c55e;" : "");
-      bsCells = `<td>${bsBet}</td><td><span class="big-digit-display ${bsCls}" style="${bsColor}">${bsResult}</span></td>`;
-    }
+    const bsBet = row.bsPrediction && row.bsPrediction !== "Waiting" ? row.bsPrediction : "-";
+    const bsResult = row.bsResult || "-";
+    const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
+    const bsWin = bsIsPick && row.bsPrediction === row.bsResult;
+    const bsBetCls = bsWin ? "win-match" : (bsIsPick ? "win-miss" : "");
+    const bsResultColor = bsResult === "B" ? "color:#ef4444;" : (bsResult === "S" ? "color:#22c55e;" : "");
+    let bsCells = `<td><span class="${bsBetCls}">${bsBet}</span></td><td><span class="big-digit-display" style="${bsResultColor}">${bsResult}</span></td>`;
 
     table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td>${matchCell}${bsCells}<td>${formulaDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
   }
@@ -1671,10 +1672,7 @@ function hideWaitingMessage() {
 let isFetchingBlock = false;
 
 async function fetchNextLiveBlock() {
-  if (isFetchingBlock) {
-    console.log("⏭️ Previous fetch still in progress, skipping this tick");
-    return;
-  }
+  if (isFetchingBlock) return;
   isFetchingBlock = true;
   try {
     await fetchNextLiveBlockInner();
@@ -1688,7 +1686,6 @@ async function fetchNextLiveBlockInner() {
   const currentBlock = currentTrackingBlock;
   
   if (processedBlocks.has(currentBlock)) {
-    console.log(`⏭️ Block ${currentBlock} already processed, skipping...`);
     currentTrackingBlock += 20;
     document.getElementById("startBlock").value = currentTrackingBlock;
     saveData();
@@ -1741,7 +1738,7 @@ async function fetchNextLiveBlockInner() {
         updatePredictionDisplay();
         updateStats();
       } catch (displayError) {
-        console.error("Display update error (data was still saved):", displayError);
+        console.error("Display update error:", displayError);
       }
 
       document.getElementById("currentBlockDisplay").innerText = `Block: ${currentBlock}`;
@@ -1763,8 +1760,6 @@ async function fetchNextLiveBlockInner() {
       statusEl.innerText = "▶️ Status: Running";
       
       document.getElementById("warningBox").classList.remove("show");
-      
-      console.log(`✅ Block ${currentBlock} processed successfully`);
     } else {
       throw new Error("No blockID in response");
     }
@@ -1780,62 +1775,6 @@ async function fetchNextLiveBlockInner() {
     const retryEl = document.getElementById("retryCount");
     retryEl.style.display = "block";
     retryEl.innerText = `ပြန်လည်ကြိုးစားမှု: ${fetchAttempts} (၃ စက္ကန့်တစ်ခါ)`;
-    
-    if (fetchAttempts < 10) {
-      try {
-        const altResponse = await fetch("https://api.trongrid.io/wallet/getblockbynum?nocache=" + Date.now(), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ num: currentBlock })
-        });
-        if (altResponse.ok) {
-          const altData = await altResponse.json();
-          if (altData.blockID) {
-            const analysis = analyzeHashData(altData.blockID);
-            
-            processedBlocks.add(currentBlock);
-            
-            trackedResults.push({
-              blockNum: currentBlock,
-              blockHash: altData.blockID,
-              appResult: analysis.result,
-              colorClass: analysis.colorClass,
-              digit: analysis.digit,
-              betPrediction: "Waiting"
-            });
-            if (trackedResults.length > maxHistory) {
-              const removed = trackedResults.shift();
-              if (removed) {
-                processedBlocks.delete(removed.blockNum);
-              }
-            }
-            try {
-              recalculateAllPredictions();
-              updateTrendBoard();
-              updateTableDisplay();
-              updatePredictionDisplay();
-              updateStats();
-            } catch (displayError) {
-              console.error("Display update error (data was still saved):", displayError);
-            }
-            currentTrackingBlock += 20;
-            document.getElementById("startBlock").value = currentTrackingBlock;
-            document.getElementById("currentBlockDisplay").innerText = `Block: ${currentBlock}`;
-            document.getElementById("lastUpdateTime").innerText = `Last update: ${new Date().toLocaleTimeString()}`;
-            const startBlock = trackedResults.length > 0 ? trackedResults[0].blockNum : currentBlock;
-            document.getElementById("blockInfo").innerText = `Started from: ${startBlock} | Current: ${currentBlock}`;
-            saveData();
-            errorCount = 0;
-            fetchAttempts = 0;
-            document.getElementById("warningBox").classList.remove("show");
-            hideWaitingMessage();
-            console.log(`✅ Block ${currentBlock} processed successfully (alt)`);
-          }
-        }
-      } catch (altError) {
-        console.log("Alternative fetch failed:", altError);
-      }
-    }
   }
 }
 
@@ -1909,11 +1848,9 @@ function forceRefresh() {
     errorCount = 0;
     fetchNextLiveBlock();
     document.getElementById("lastUpdateTime").innerText = `Manual refresh: ${new Date().toLocaleTimeString()}`;
-    console.log("🔄 Refresh clicked - keeping cached data");
   } else {
     loadData();
     document.getElementById("lastUpdateTime").innerText = `Loaded from cache: ${new Date().toLocaleTimeString()}`;
-    console.log("🔄 Refresh clicked - loaded from cache");
   }
 }
 
@@ -1950,6 +1887,8 @@ function clearStoredData() {
     document.getElementById("predictionGroupBreakdown").innerHTML = "";
     document.getElementById("losingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("winningStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
+    document.getElementById("groupBsWinningStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
+    document.getElementById("groupBsLosingStreakSummary").innerHTML = '<div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>';
     document.getElementById("roadMapTable").innerHTML = "";
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာရှင်းလင်းပြီးပါပြီ</p>";
     document.getElementById("currentBlockDisplay").innerText = `Block: ${startBlock}`;
@@ -1977,14 +1916,6 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
-
-console.log("✅ Premium Lottery Analysis Tool v55 Loaded Successfully");
-console.log("📊 Digit→Group mapping now supports '?' to ignore digits");
-console.log(`🔄 Auto-retry every ${retryInterval/1000} seconds`);
-console.log(`📈 Tracked Results: ${trackedResults.length}`);
-console.log("💾 Data is cached - Refresh won't clear data");
-console.log("📦 Processed blocks:", processedBlocks.size);
-console.log("⌨️ Press 'R' key to force refresh (keeps cache)");
 </script>
 </body>
 </html>
