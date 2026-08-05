@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Lottery Analysis Tool v60</title>
+  <title>Premium Lottery Analysis Tool v61</title>
   <style>
     :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --accent-red: #ef4444; --accent-blue: #3b82f6; --border-color: #334155; }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; max-width: 1200px; margin: 0 auto; }
@@ -139,11 +139,9 @@
 
       <!-- Main Prediction Panel -->
       <div class="prediction-panel">
-        <!-- 1. အပေါ်က ဂဏန်း ခန့်မှန်းချက် Box -->
         <div id="nextBlockPrediction" class="pred-badge none">⏳ စောင့်ဆိုင်းဆဲ...</div>
         <div style="font-size:14px; color:#94a3b8;" id="predictionDetail">လုံလောက်သော ဒေတာမရှိသေးပါ</div>
 
-        <!-- 2. အောက်က B/S ခန့်မှန်းချက် Box -->
         <div id="bsPredictionPanelInMain" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 5px;">
           <div id="bsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
           <div id="bsPredictionDetail" style="font-size:14px; color:#94a3b8;"></div>
@@ -871,10 +869,8 @@ function recalculateAllPredictions() {
       const stats = transitionMaps[len][key];
       if (!stats) continue;
 
-      // 1. Follower frequency အလိုက် စီစဉ်ခြင်း
       let sortedByStats = availableCategories.slice().sort((a, b) => (stats[b] || 0) - (stats[a] || 0));
 
-      // Gap Formula အလုပ်လုပ်ခြင်း
       if (useGapFormula && sortedByStats.length >= 2) {
         const firstCount = stats[sortedByStats[0]] || 0;
         const secondCount = stats[sortedByStats[1]] || 0;
@@ -886,7 +882,6 @@ function recalculateAllPredictions() {
         }
       }
 
-      // 2. အကယ်၍ stats[c] > 0 မရှိပါက Global Frequency အလိုက် အစဉ်လိုက် အပြည့်ဖြည့်ခြင်း
       sortedByStats.sort((a, b) => {
         const diff = (stats[b] || 0) - (stats[a] || 0);
         if (diff !== 0) return diff;
@@ -897,7 +892,6 @@ function recalculateAllPredictions() {
       return { categories: picked, length: len, stats, key, isReversal: false };
     }
 
-    // Pattern မရှိပါက Global Frequency အလိုက် ရွေးချယ်ခန့်မှန်းခြင်း
     let fallbackSorted = availableCategories.slice().sort((a, b) => (globalCounts[b] || 0) - (globalCounts[a] || 0));
     return { categories: fallbackSorted.slice(0, targetPickCount), length: null, stats: null, key: null, isReversal: false };
   }
@@ -1137,6 +1131,7 @@ function updateBsWinningStreakSummary(recentResults) {
   }
 }
 
+// ===== FIX: Group B/S ဆက်တိုက်နိုင်/ရှုံး စာရင်း တွက်ချက်မှု Logic ပြင်ဆင်ခြင်း =====
 function updateGroupBsStreaks(recentResults) {
   const winEl = document.getElementById("groupBsWinningStreakSummary");
   const lossEl = document.getElementById("groupBsLosingStreakSummary");
@@ -1148,9 +1143,11 @@ function updateGroupBsStreaks(recentResults) {
   let curLoss = 0;
 
   recentResults.forEach(r => {
-    if (!CATEGORIES.includes(r.appResult) || !Array.isArray(r.betPrediction)) return;
+    if (!CATEGORIES.includes(r.appResult)) return;
     
-    const isWin = r.betPrediction.includes(r.appResult);
+    // Group∩B/S Column ထဲက Filter လုပ်ထားသော ရလဒ်များတွင် Result ပါမပါ စစ်ဆေးခြင်း
+    const matched = groupsMatchingBs(r);
+    const isWin = (matched && Array.isArray(matched) && matched.includes(r.appResult));
 
     if (isWin) {
       curWin++;
@@ -1594,7 +1591,6 @@ function updateTableDisplay() {
     let row = displayResults[i];
     if (!row) continue;
     
-    // Bet Column - Predict Count အရေအတွက်အတိုင်း ဂဏန်းများ အပြည့်အဝ ပြသမည်
     const isArrayPred = Array.isArray(row.betPrediction);
     let win = isArrayPred && row.betPrediction.includes(row.appResult);
     let cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
@@ -1606,13 +1602,11 @@ function updateTableDisplay() {
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
 
-    // Group∩B/S Column
     const matched = groupsMatchingBs(row);
     const matchDisplay = matched && matched.length > 0 ? matched.join("/") : "-";
     let groupBsMatchClass = (matched && row.appResult && matched.includes(row.appResult)) ? "win-match" : "";
     let matchCell = `<td><span class="${groupBsMatchClass}">${matchDisplay}</span></td>`;
 
-    // B/S Bet Column
     const bsBet = row.bsPrediction && row.bsPrediction !== "Waiting" ? row.bsPrediction : "-";
     const bsResult = row.bsResult || "-";
     const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
