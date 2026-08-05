@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Premium Lottery Analysis Tool v59</title>
+  <title>Premium Lottery Analysis Tool v60</title>
   <style>
     :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --accent-red: #ef4444; --accent-blue: #3b82f6; --border-color: #334155; }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 15px; max-width: 1200px; margin: 0 auto; }
@@ -844,6 +844,8 @@ function recalculateAllPredictions() {
   const transitionMaps = {};
   SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
   const valid = [];
+  const globalCounts = {};
+  CATEGORIES.forEach(c => globalCounts[c] = 0);
 
   function buildKey(len) {
     if (valid.length < len) return null;
@@ -854,48 +856,50 @@ function recalculateAllPredictions() {
 
   function predictSequenceCascade() {
     const lastCategory = valid.length > 0 ? valid[valid.length - 1] : null;
-    const pickCount = predictCount;
+    let availableCategories = CATEGORIES.slice();
+
+    if (excludeLastCategory && lastCategory !== null) {
+      availableCategories = availableCategories.filter(c => c !== lastCategory);
+    }
+
+    const targetPickCount = Math.min(predictCount, availableCategories.length);
+    if (targetPickCount < 1) return { categories: null, length: null, stats: null, key: null };
 
     for (const len of SEQ_LENGTHS) {
       const key = buildKey(len);
       if (key === null) continue;
       const stats = transitionMaps[len][key];
-      let seen = CATEGORIES.filter(c => stats && stats[c] > 0);
+      if (!stats) continue;
 
-      if (excludeLastCategory && lastCategory !== null) {
-        seen = seen.filter(c => c !== lastCategory);
-      }
+      // 1. Follower frequency အလိုက် စီစဉ်ခြင်း
+      let sortedByStats = availableCategories.slice().sort((a, b) => (stats[b] || 0) - (stats[a] || 0));
 
-      if (seen.length < 1) continue;
-
-      const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
-      
-      if (useGapFormula && sorted.length >= 2) {
-        const firstCount = stats[sorted[0]];
-        const secondCount = stats[sorted[1]];
+      // Gap Formula အလုပ်လုပ်ခြင်း
+      if (useGapFormula && sortedByStats.length >= 2) {
+        const firstCount = stats[sortedByStats[0]] || 0;
+        const secondCount = stats[sortedByStats[1]] || 0;
         const gap = firstCount - secondCount;
 
         if (gap >= gapThreshold) {
-          const leastFreq = sorted[sorted.length - 1];
-          const isDecisive = stats[leastFreq] !== stats[sorted[sorted.length - 2]];
-          if (isDecisive) {
-             return { categories: [leastFreq], length: len, stats, key, isReversal: true };
-          }
+          const leastFreq = sortedByStats[sortedByStats.length - 1];
+          return { categories: [leastFreq], length: len, stats, key, isReversal: true };
         }
       }
 
-      const actualPickCount = Math.min(pickCount, sorted.length);
-      const picked = sorted.slice(0, actualPickCount);
+      // 2. အကယ်၍ stats[c] > 0 မရှိပါက Global Frequency အလိုက် အစဉ်လိုက် အပြည့်ဖြည့်ခြင်း
+      sortedByStats.sort((a, b) => {
+        const diff = (stats[b] || 0) - (stats[a] || 0);
+        if (diff !== 0) return diff;
+        return (globalCounts[b] || 0) - (globalCounts[a] || 0);
+      });
 
-      if (sorted.length > actualPickCount) {
-        const lastPickedCount = stats[picked[actualPickCount - 1]];
-        const firstExcludedCount = stats[sorted[actualPickCount]];
-        if (lastPickedCount === firstExcludedCount) continue;
-      }
-
+      const picked = sortedByStats.slice(0, targetPickCount);
       return { categories: picked, length: len, stats, key, isReversal: false };
     }
-    return { categories: null, length: null, stats: null, key: null, isReversal: false };
+
+    // Pattern မရှိပါက Global Frequency အလိုက် ရွေးချယ်ခန့်မှန်းခြင်း
+    let fallbackSorted = availableCategories.slice().sort((a, b) => (globalCounts[b] || 0) - (globalCounts[a] || 0));
+    return { categories: fallbackSorted.slice(0, targetPickCount), length: null, stats: null, key: null, isReversal: false };
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -919,6 +923,7 @@ function recalculateAllPredictions() {
     const curIsValid = CATEGORIES.includes(cur);
 
     if (curIsValid) {
+      globalCounts[cur] = (globalCounts[cur] || 0) + 1;
       SEQ_LENGTHS.forEach(len => {
         const key = buildKey(len);
         if (key !== null) {
@@ -958,7 +963,6 @@ function digitToBS(d) {
   return n >= 5 ? "B" : "S";
 }
 
-// Group∩B/S ကော်လံအတွက်သာ သီးသန့် B/S Matching Filter လုပ်ပေးခြင်း
 function groupsMatchingBs(row) {
   if (!Array.isArray(row.betPrediction)) return null;
   if (row.bsPrediction !== "B" && row.bsPrediction !== "S") return row.betPrediction;
@@ -1590,7 +1594,7 @@ function updateTableDisplay() {
     let row = displayResults[i];
     if (!row) continue;
     
-    // Bet Column - မူလ Predict Count အတိုင်း ဂဏန်းများ အပြည့်အစုံ ပြသမည်
+    // Bet Column - Predict Count အရေအတွက်အတိုင်း ဂဏန်းများ အပြည့်အဝ ပြသမည်
     const isArrayPred = Array.isArray(row.betPrediction);
     let win = isArrayPred && row.betPrediction.includes(row.appResult);
     let cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
@@ -1602,7 +1606,7 @@ function updateTableDisplay() {
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
 
-    // Group∩B/S Column - Bet ထဲမှ B/S ရလဒ်နှင့် တိုက်ဆိုင်သော Group များကို Filter လုပ်ပြီး သီးသန့်ပြမည်
+    // Group∩B/S Column
     const matched = groupsMatchingBs(row);
     const matchDisplay = matched && matched.length > 0 ? matched.join("/") : "-";
     let groupBsMatchClass = (matched && row.appResult && matched.includes(row.appResult)) ? "win-match" : "";
