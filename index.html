@@ -213,6 +213,25 @@
         </div>
       </div>
 
+      <h3 style="color:#60a5fa; margin-top:20px;">🎲🎯 B/S ခန့်မှန်းခြင်း (Pattern 30→1 ကို အားလုံးစစ်၊ ပထမဆုံး ရလာတဲ့ အဖြေ ၃ ခု အများစုသတ်မှတ်)</h3>
+      <div class="win-rate-box">
+        <label class="level-chip" style="width:fit-content;">
+          <input type="checkbox" id="majorityBsModeToggle" onchange="applyMajorityBsModeToggle()">
+          ဖွင့်ရန် — Pattern Level 30 ကနေ 1 ဆီ အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ (tie မဖြစ်တဲ့) ပထမဆုံး B/S အဖြေ ၃ ခုကို ယူမည်၊ အများစု (2/3 (သို့) 3/3) ဖက်ကို ခန့်မှန်းမည်
+        </label>
+        <div class="input-hint">💡 Group Count ဒါမှမဟုတ် "Pattern Level ရွေးရန်" checkbox တွေနဲ့ လုံးဝ မသက်ဆိုင်ပါ — digit 0-4 vs 5-9 ကိုပဲ အခြေခံပြီး Level 1 အထိ 30 ခုလုံးကို အမြဲစစ်ဆေးပါတယ်</div>
+
+        <div id="majorityBsPredictionPanel" style="display:none; margin-top:12px;">
+          <div id="majorityBsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
+          <div id="majorityBsPredictionDetail" class="input-hint" style="text-align:center;"></div>
+          <div style="display:flex; gap:20px; margin-top:10px; font-weight:bold;">
+            <div>B: <span id="majorityBsCountB" style="color:#ef4444;">0</span></div>
+            <div>S: <span id="majorityBsCountS" style="color:#22c55e;">0</span></div>
+            <div>Win Rate: <span id="majorityBsWinRate">--</span></div>
+          </div>
+        </div>
+      </div>
+
       <h3 style="color:#60a5fa; margin-top:20px;">🎯 Win Rate Tracker (နောက်ဆုံး <span id="historyLimitLabel2">300</span>)</h3>
       <div class="win-rate-box">
         <div class="win-rate-main">
@@ -410,6 +429,20 @@
           <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📈 Pattern30→1 Majority B/S ဆက်တိုက်နိုင်မှု (နောက်ဆုံး <span id="historyLimitLabelMajorityBs1">300</span>)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="majorityBsWinningStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📉 Pattern30→1 Majority B/S ဆက်တိုက်ရှုံးမှု (နောက်ဆုံး <span id="historyLimitLabelMajorityBs2">300</span>)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="majorityBsLosingStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -466,6 +499,7 @@ function saveData() {
     localStorage.setItem("savedBsModeEnabled", bsModeEnabled ? "1" : "0");
     localStorage.setItem("savedBsReverseEnabled", bsReverseEnabled ? "1" : "0");
     localStorage.setItem("savedRoadMapVisible", roadMapVisible ? "1" : "0");
+    localStorage.setItem("savedMajorityBsModeEnabled", majorityBsModeEnabled ? "1" : "0");
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -529,6 +563,8 @@ function loadData() {
     document.getElementById("historyLimitLabelComboBs1").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabelComboBs2").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabelComboBs3").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabelMajorityBs1").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabelMajorityBs2").innerText = historyDisplayLimit;
 
     const storedExclude = localStorage.getItem("savedExcludeLastCategory");
     if (storedExclude !== null) {
@@ -558,6 +594,15 @@ function loadData() {
       bsReverseEnabled = storedBsReverse === "1";
       const bsReverseToggle = document.getElementById("bsReverseToggle");
       if (bsReverseToggle) bsReverseToggle.checked = bsReverseEnabled;
+    }
+
+    const storedMajorityBsMode = localStorage.getItem("savedMajorityBsModeEnabled");
+    if (storedMajorityBsMode !== null) {
+      majorityBsModeEnabled = storedMajorityBsMode === "1";
+      const majorityToggle = document.getElementById("majorityBsModeToggle");
+      if (majorityToggle) majorityToggle.checked = majorityBsModeEnabled;
+      const majorityPanel = document.getElementById("majorityBsPredictionPanel");
+      if (majorityPanel) majorityPanel.style.display = majorityBsModeEnabled ? "block" : "none";
     }
 
     const storedRoadMapVisible = localStorage.getItem("savedRoadMapVisible");
@@ -786,9 +831,12 @@ function applyHistoryLimit() {
   document.getElementById("historyLimitLabelComboBs1").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabelComboBs2").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabelComboBs3").innerText = historyDisplayLimit;
+  document.getElementById("historyLimitLabelMajorityBs1").innerText = historyDisplayLimit;
+  document.getElementById("historyLimitLabelMajorityBs2").innerText = historyDisplayLimit;
   updateTableDisplay();
   updateWinRateStats();
   if (bsModeEnabled) recalculateBsPredictions();
+  if (majorityBsModeEnabled) recalculateMajorityBsPredictions();
   saveData();
 }
 
@@ -904,6 +952,8 @@ let excludeLastCategory = false;
 let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) prediction mode
 let bsReverseEnabled = false; // when on, flips the computed B/S pick (B<->S) before it's used anywhere
 let nextBsCalculatedBet = "Waiting"; // latest B/S pick, kept in sync so it can be shown under the main prediction badge
+let majorityBsModeEnabled = false; // independent "majority of first 3 decisive picks across pattern levels 30->1" B/S system
+let nextMajorityBsCalculatedBet = "Waiting";
 let roadMapVisible = true; // whether the Matrix Trend Map (Big Road) table is shown
 let reverseBetEnabled = false; // when on, the main group prediction picks the LEAST frequent groups instead of the most frequent
 let predictCount = 1;
@@ -1078,6 +1128,7 @@ function recalculateAllPredictions() {
   saveData();
 
   if (bsModeEnabled) recalculateBsPredictions();
+  if (majorityBsModeEnabled) recalculateMajorityBsPredictions();
 }
 
 // ===== INDEPENDENT BIG/SMALL PREDICTION (digit 0-4 = S, 5-9 = B) =====
@@ -1141,6 +1192,20 @@ function applyBsReverseToggle() {
   if (bsModeEnabled) recalculateBsPredictions();
   updateTableDisplay();
   updatePredictionDisplay();
+  saveData();
+}
+
+function applyMajorityBsModeToggle() {
+  majorityBsModeEnabled = document.getElementById("majorityBsModeToggle").checked;
+  localStorage.setItem("savedMajorityBsModeEnabled", majorityBsModeEnabled ? "1" : "0");
+  const panel = document.getElementById("majorityBsPredictionPanel");
+  if (panel) panel.style.display = majorityBsModeEnabled ? "block" : "none";
+  if (majorityBsModeEnabled) {
+    recalculateMajorityBsPredictions();
+  } else {
+    nextMajorityBsCalculatedBet = "Waiting";
+  }
+  updateTableDisplay();
   saveData();
 }
 
@@ -1260,6 +1325,208 @@ function updateGroupBsLosingStreakSummary(recentResults) {
   recentResults.forEach(r => {
     const isCorrect = groupBsIsCorrect(r);
     if (isCorrect === null) return;
+    if (isCorrect) {
+      if (currentStreak >= 3) {
+        streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      }
+      currentStreak = 0;
+    } else {
+      currentStreak++;
+    }
+  });
+
+  if (currentStreak >= 3) {
+    streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+  }
+
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
+  if (lengths.length === 0) {
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+// ===== MAJORITY-OF-3 B/S PREDICTION (independent of the Group system AND
+// of the other single-cascade B/S system above) =====
+// Cascades through EVERY pattern length from 30 down to 1 (fixed range —
+// ignores the "Pattern Level ရွေးရန်" checkboxes, which only govern the
+// Group prediction and the single-cascade B/S prediction). At each length it
+// looks up what followed the current key historically; if B and S counts are
+// tied, that length is not decisive and is skipped. The first THREE decisive
+// levels found (in 30→1 order) each contribute one B/S vote, and whichever
+// side wins 2-of-3 (or 3-of-3) becomes the final prediction.
+function recalculateMajorityBsPredictions() {
+  const ALL_LEVELS = [];
+  for (let len = 30; len >= 1; len--) ALL_LEVELS.push(len);
+
+  const makeBsCounter = () => ({ "B": 0, "S": 0 });
+  const transitionMaps = {};
+  ALL_LEVELS.forEach(len => { transitionMaps[len] = {}; });
+  const valid = [];
+
+  function buildKey(len) {
+    if (valid.length < len) return null;
+    const parts = [];
+    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
+    return parts.join(",");
+  }
+
+  function predictMajorityBs() {
+    const picks = [];
+    for (const len of ALL_LEVELS) {
+      const key = buildKey(len);
+      if (key === null) continue;
+      const stats = transitionMaps[len][key];
+      if (!stats) continue;
+      const bCount = stats["B"], sCount = stats["S"];
+      if (bCount === sCount) continue; // tie at this level — not decisive
+      picks.push(bCount > sCount ? "B" : "S");
+      if (picks.length === 3) break;
+    }
+    if (picks.length < 3) return { pick: null, picks };
+    const bTotal = picks.filter(p => p === "B").length;
+    const sTotal = picks.filter(p => p === "S").length;
+    return { pick: bTotal > sTotal ? "B" : "S", picks };
+  }
+
+  for (let i = 0; i < trackedResults.length; i++) {
+    const row = trackedResults[i];
+    const bsVal = digitToBS(row.digit);
+    row.majorityBsResult = bsVal;
+
+    let bsPred = "Waiting";
+    if (valid.length >= 10) {
+      const pred = predictMajorityBs();
+      bsPred = pred.pick || NO_MATCH;
+    }
+    row.majorityBsPrediction = bsPred;
+
+    if (bsVal !== null) {
+      ALL_LEVELS.forEach(len => {
+        const key = buildKey(len);
+        if (key !== null) {
+          const map = transitionMaps[len];
+          if (!map[key]) map[key] = makeBsCounter();
+          map[key][bsVal]++;
+        }
+      });
+      valid.push(bsVal);
+    }
+  }
+
+  let nextPred = "Waiting";
+  let nextPicks = null;
+  if (valid.length >= 10) {
+    const pred = predictMajorityBs();
+    nextPred = pred.pick || NO_MATCH;
+    nextPicks = pred.picks;
+  }
+
+  const recent = trackedResults.slice(-historyDisplayLimit);
+  let winCount = 0, totalCount = 0;
+  recent.forEach(r => {
+    if (r.majorityBsPrediction === "B" || r.majorityBsPrediction === "S") {
+      totalCount++;
+      if (r.majorityBsPrediction === r.majorityBsResult) winCount++;
+    }
+  });
+
+  nextMajorityBsCalculatedBet = nextPred;
+  updateMajorityBsDisplay(nextPred, nextPicks, winCount, totalCount);
+
+  updateMajorityBsWinningStreakSummary(recent);
+  updateMajorityBsLosingStreakSummary(recent);
+}
+
+function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
+  const badge = document.getElementById("majorityBsPredictionBadge");
+  const detail = document.getElementById("majorityBsPredictionDetail");
+  if (!badge) return;
+
+  const picksLabel = picks ? ` (${picks.join("-")})` : "";
+
+  if (pred === "Waiting") {
+    badge.style.background = "#475569";
+    badge.innerText = "⏳ ဒေတာ မလုံလောက်သေးပါ";
+    detail.innerText = "";
+  } else if (pred === NO_MATCH) {
+    badge.style.background = "#475569";
+    badge.innerText = "❓ ခန့်မှန်းမှု မရှိပါ";
+    detail.innerText = "Pattern 30→1 ထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ၃ ခု မပြည့်သေးပါ";
+  } else if (pred === "B") {
+    badge.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
+    badge.innerText = "🔴 B (56789)";
+    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ၃ ခု${picksLabel} ရဲ့ အများစု`;
+  } else {
+    badge.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
+    badge.innerText = "🟢 S (01234)";
+    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ၃ ခု${picksLabel} ရဲ့ အများစု`;
+  }
+
+  const winRateEl = document.getElementById("majorityBsWinRate");
+  if (winRateEl) {
+    const pct = totalCount > 0 ? ((winCount / totalCount) * 100).toFixed(1) : "--";
+    winRateEl.innerText = totalCount > 0 ? `${pct}% (${winCount}/${totalCount})` : "--";
+  }
+
+  let countB = 0, countS = 0;
+  trackedResults.slice(-historyDisplayLimit).forEach(r => {
+    if (r.majorityBsResult === "B") countB++;
+    else if (r.majorityBsResult === "S") countS++;
+  });
+  const cb = document.getElementById("majorityBsCountB");
+  const cs = document.getElementById("majorityBsCountS");
+  if (cb) cb.innerText = countB;
+  if (cs) cs.innerText = countS;
+}
+
+function updateMajorityBsWinningStreakSummary(recentResults) {
+  const summaryEl = document.getElementById("majorityBsWinningStreakSummary");
+  if (!summaryEl) return;
+
+  const streakCounts = {};
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    if (r.majorityBsPrediction !== "B" && r.majorityBsPrediction !== "S") return;
+    const isCorrect = r.majorityBsPrediction === r.majorityBsResult;
+    if (isCorrect) {
+      currentStreak++;
+    } else {
+      if (currentStreak >= 3) {
+        streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      }
+      currentStreak = 0;
+    }
+  });
+
+  if (currentStreak >= 3) {
+    streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+  }
+
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
+  if (lengths.length === 0) {
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်နိုင်မှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်နိုင်</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+function updateMajorityBsLosingStreakSummary(recentResults) {
+  const summaryEl = document.getElementById("majorityBsLosingStreakSummary");
+  if (!summaryEl) return;
+
+  const streakCounts = {};
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    if (r.majorityBsPrediction !== "B" && r.majorityBsPrediction !== "S") return;
+    const isCorrect = r.majorityBsPrediction === r.majorityBsResult;
     if (isCorrect) {
       if (currentStreak >= 3) {
         streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
