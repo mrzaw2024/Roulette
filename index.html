@@ -318,6 +318,12 @@
         <div style="font-size:12px; color:#64748b; margin-top:8px;">
           💡 ဥပမာ — Group 0-9 ရှိတယ်ဆိုပါစို့၊ Pattern ရှာတွေ့တဲ့ Follower Category တွေကို အကြိမ်ရေ အများဆုံးကနေ အနည်းဆုံးအထိ စီရင် <b>01648</b> လို့ ရလာရင် (0 က အများဆုံး၊ 8 က အနည်းဆုံး) — "5 ခု ခန့်မှန်းမည်" ဆိုရင် <b>ထိပ်ဆုံးကနေ အောက်ခြေအထိ 5 ခုစလုံး</b> (0,1,6,4,8) ကို ခန့်မှန်းမည်။ "2 ခု" ဆိုရင် အများဆုံး 2 ခု (0,1) ကိုပဲ ခန့်မှန်းမည် — အမြဲတမ်း <b>အများဆုံးမှ အနည်းဆုံးသို့</b> အစဉ်လိုက်ပဲ ယူပါမည်။
         </div>
+
+        <label class="level-chip" style="width:fit-content; margin-top:10px;">
+          <input type="checkbox" id="reverseBetToggle" onchange="applyFormulaSettings()">
+          🔁 Bet ပြောင်းပြန်ခန့်မှန်း — ထိပ်ဆုံး Group အစား အောက်ဆုံး (အနည်းဆုံးအကြိမ်ရေ) Group တွေကို ခန့်မှန်းမည်
+        </label>
+        <div class="input-hint">💡 ဥပမာ <b>01648</b> ထဲက "2 ခု ခန့်မှန်းမည်" ရွေးထားရင် — ဒီခလုပ်ပိတ်ထားရင် အများဆုံး 2 ခု (0,1) ကို ခန့်မှန်းမည်၊ ဖွင့်ထားရင် အနည်းဆုံး 2 ခု (4,8) ကို အစားထိုးပြီး ခန့်မှန်းမည်</div>
       </div>
 
       <h3 style="color:#60a5fa; margin-top:20px;">📈 ဆက်တိုက်နိုင်မှု စာရင်း (Winning Streaks)</h3>
@@ -432,6 +438,7 @@ function saveData() {
     localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
     localStorage.setItem("savedUseGapFormula", useGapFormula ? "1" : "0");
     localStorage.setItem("savedGapThreshold", String(gapThreshold));
+    localStorage.setItem("savedReverseBetEnabled", reverseBetEnabled ? "1" : "0");
     localStorage.setItem("savedBsModeEnabled", bsModeEnabled ? "1" : "0");
     localStorage.setItem("savedBsReverseEnabled", bsReverseEnabled ? "1" : "0");
     localStorage.setItem("savedRoadMapVisible", roadMapVisible ? "1" : "0");
@@ -499,6 +506,13 @@ function loadData() {
       excludeLastCategory = storedExclude === "1";
       const toggle = document.getElementById("excludeLastCategoryToggle");
       if (toggle) toggle.checked = excludeLastCategory;
+    }
+
+    const storedReverseBet = localStorage.getItem("savedReverseBetEnabled");
+    if (storedReverseBet !== null) {
+      reverseBetEnabled = storedReverseBet === "1";
+      const reverseBetToggle = document.getElementById("reverseBetToggle");
+      if (reverseBetToggle) reverseBetToggle.checked = reverseBetEnabled;
     }
 
     const storedBsMode = localStorage.getItem("savedBsModeEnabled");
@@ -859,6 +873,7 @@ let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) predictio
 let bsReverseEnabled = false; // when on, flips the computed B/S pick (B<->S) before it's used anywhere
 let nextBsCalculatedBet = "Waiting"; // latest B/S pick, kept in sync so it can be shown under the main prediction badge
 let roadMapVisible = true; // whether the Matrix Trend Map (Big Road) table is shown
+let reverseBetEnabled = false; // when on, the main group prediction picks the LEAST frequent groups instead of the most frequent
 let predictCount = 1;
 
 function onPredictCountChange() {
@@ -872,11 +887,13 @@ function applyFormulaSettings() {
   excludeLastCategory = document.getElementById("excludeLastCategoryToggle").checked;
   useGapFormula = document.getElementById("useGapFormulaToggle").checked;
   gapThreshold = parseInt(document.getElementById("gapThresholdSlider").value);
+  reverseBetEnabled = document.getElementById("reverseBetToggle").checked;
 
   localStorage.setItem("savedExcludeLastCategory", excludeLastCategory ? "1" : "0");
   localStorage.setItem("savedPredictCount", String(predictCount));
   localStorage.setItem("savedUseGapFormula", useGapFormula ? "1" : "0");
   localStorage.setItem("savedGapThreshold", String(gapThreshold));
+  localStorage.setItem("savedReverseBetEnabled", reverseBetEnabled ? "1" : "0");
 
   recalculateAllPredictions();
   updateTrendBoard();
@@ -960,10 +977,18 @@ function recalculateAllPredictions() {
         }
       }
 
-      // Default logic: Pick Highest
-      const picked = sorted.slice(0, pickCount);
-      const lastPickedCount = stats[picked[pickCount - 1]];
-      const firstExcludedCount = stats[sorted[pickCount]];
+      // Default logic: Pick Highest (or Lowest, if Bet-reverse mode is on)
+      let picked, lastPickedCount, firstExcludedCount;
+      if (reverseBetEnabled) {
+        const ascending = sorted.slice().reverse(); // least frequent first
+        picked = ascending.slice(0, pickCount);
+        lastPickedCount = stats[picked[pickCount - 1]];
+        firstExcludedCount = stats[ascending[pickCount]];
+      } else {
+        picked = sorted.slice(0, pickCount);
+        lastPickedCount = stats[picked[pickCount - 1]];
+        firstExcludedCount = stats[sorted[pickCount]];
+      }
       if (lastPickedCount === firstExcludedCount) continue;
 
       return { categories: picked, length: len, stats, key, isReversal: false };
