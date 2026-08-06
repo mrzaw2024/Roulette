@@ -408,7 +408,7 @@
 
       <h3 style="color:#60a5fa; margin-top:20px;">🧮 Bet + Bet B/S ပေါင်းစပ်ရလဒ် (နောက်ဆုံး <span id="historyLimitLabelComboBs1">300</span>)</h3>
       <div class="win-rate-box">
-        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 Bet (Group) နှင့် Bet B/S နှစ်ခုထဲက တစ်ခုခု နိုင်ရင် "အမှန်"၊ နှစ်ခုလုံး ရှုံးမှသာ "အမှား" — ခန့်မှန်းချက် လုံးဝမရှိသေးတဲ့ မှတ်တမ်းများကို မရေတွက်ပါ:</div>
+        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 Bet (Group) နှင့် ဖွင့်ထားတဲ့ B/S system(s) (Bet B/S / Majority B/S) ထဲက တစ်ခုခု နိုင်ရင် "အမှန်"၊ ဖွင့်ထားသမျှ အားလုံး ရှုံးမှသာ "အမှား" — ပိတ်ထားတဲ့ B/S system ကိုတော့ ဒီတွက်ချက်မှုထဲ လုံးဝထည့်မတွက်ပါ (Bet B/S ခလုပ်နဲ့ Majority B/S ခလုပ် နှစ်ခုလုံးဖွင့်ရင် ၃ ခုပေါင်း၊ တစ်ခုပဲဖွင့်ရင် ၂ ခုပေါင်း ဖြစ်ပါမည်):</div>
         <div style="display:flex; gap:20px; font-weight:bold;">
           <div>✅ <span id="comboCorrectCount" style="color:#22c55e;">0</span></div>
           <div>❌ <span id="comboWrongCount" style="color:#ef4444;">0</span></div>
@@ -1169,6 +1169,7 @@ function applyBsModeToggle() {
     recalculateBsPredictions();
   } else {
     nextBsCalculatedBet = "Waiting";
+    refreshComboBetBsSummaries();
   }
   updateTableDisplay();
   updatePredictionDisplay();
@@ -1204,6 +1205,7 @@ function applyMajorityBsModeToggle() {
     recalculateMajorityBsPredictions();
   } else {
     nextMajorityBsCalculatedBet = "Waiting";
+    refreshComboBetBsSummaries();
   }
   updateTableDisplay();
   saveData();
@@ -1439,6 +1441,8 @@ function recalculateMajorityBsPredictions() {
 
   updateMajorityBsWinningStreakSummary(recent);
   updateMajorityBsLosingStreakSummary(recent);
+
+  refreshComboBetBsSummaries();
 }
 
 function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
@@ -1585,19 +1589,49 @@ function updateGroupBsWinningStreakSummary(recentResults) {
   }
 }
 
-// ===== BET + BET B/S COMBINED STREAK TRACKING =====
-// Correctness here means: the Group prediction (Bet) OR the independent B/S
-// prediction (Bet B/S) hit — only counts as wrong if BOTH missed. Rows where
-// neither prediction was actually made yet are skipped (not win or loss).
+// ===== BET + BET B/S (+ MAJORITY B/S) COMBINED STREAK TRACKING =====
+// Correctness here means: the Group prediction (Bet) OR any B/S system that
+// is currently TOGGLED ON hit — only counts as wrong if every toggled-on
+// predictor missed. A B/S system that's switched off is simply left out of
+// the vote entirely (as if it doesn't exist for this calculation). Rows
+// where nothing toggled on actually made a prediction yet are skipped.
 function comboBetBsIsCorrect(row) {
   const isArrayPred = Array.isArray(row.betPrediction);
   const hasResult = CATEGORIES.includes(row.appResult);
   const betWin = isArrayPred && hasResult && row.betPrediction.includes(row.appResult);
-  const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
-  const bsWin = bsIsPick && row.bsPrediction === row.bsResult;
 
-  if (!isArrayPred && !bsIsPick) return null;
-  return betWin || bsWin;
+  let anyPredictionAvailable = isArrayPred;
+  let anyWin = betWin;
+
+  if (bsModeEnabled) {
+    const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
+    if (bsIsPick) {
+      anyPredictionAvailable = true;
+      if (row.bsPrediction === row.bsResult) anyWin = true;
+    }
+  }
+
+  if (majorityBsModeEnabled) {
+    const mIsPick = row.majorityBsPrediction === "B" || row.majorityBsPrediction === "S";
+    if (mIsPick) {
+      anyPredictionAvailable = true;
+      if (row.majorityBsPrediction === row.majorityBsResult) anyWin = true;
+    }
+  }
+
+  if (!anyPredictionAvailable) return null;
+  return anyWin;
+}
+
+// Refreshes the Bet + Bet B/S (+ Majority B/S) combo summaries using the
+// current toggle states — called whenever either B/S system recalculates,
+// or is turned on/off, so the combo always reflects exactly which systems
+// are currently enabled.
+function refreshComboBetBsSummaries() {
+  const recent = trackedResults.slice(-historyDisplayLimit);
+  updateComboWinRateSummary(recent);
+  updateComboWinningStreakSummary(recent);
+  updateComboLosingStreakSummary(recent);
 }
 
 function updateComboWinRateSummary(recentResults) {
@@ -2211,8 +2245,10 @@ function updateTableDisplay() {
   
   const displayResults = trackedResults.slice(-historyDisplayLimit);
   const matchHeader = bsModeEnabled ? `<th>Group B/S</th>` : "";
-  const bsHeaders = bsModeEnabled ? `<th>Bet B/S</th><th>B/S</th>` : "";
-  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th>${matchHeader}${bsHeaders}<th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
+  const betBsHeader = bsModeEnabled ? `<th>Bet B/S</th>` : "";
+  const majorityBsHeader = majorityBsModeEnabled ? `<th>Majority B/S</th>` : "";
+  const actualBsHeader = (bsModeEnabled || majorityBsModeEnabled) ? `<th>B/S</th>` : "";
+  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th>${matchHeader}${betBsHeader}${majorityBsHeader}${actualBsHeader}<th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   for (let i = displayResults.length - 1; i >= 0; i--) {
     let row = displayResults[i];
     if (!row) continue;
@@ -2238,18 +2274,32 @@ function updateTableDisplay() {
       matchCell = `<td><span class="big-digit-display ${matchCls}">${matchDisplay}</span></td>`;
     }
 
-    let bsCells = "";
+    let betBsCell = "";
     if (bsModeEnabled) {
       const bsBet = row.bsPrediction && row.bsPrediction !== "Waiting" ? row.bsPrediction : "-";
-      const bsResult = row.bsResult || "-";
       const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
       const bsWin = bsIsPick && row.bsPrediction === row.bsResult;
       const bsCls = bsIsPick ? (bsWin ? "win-match" : "win-miss") : "";
-      const bsColor = bsResult === "B" ? "color:#ef4444;" : (bsResult === "S" ? "color:#22c55e;" : "");
-      bsCells = `<td><span class="big-digit-display ${bsCls}">${bsBet}</span></td><td><span class="big-digit-display ${bsCls}" style="${bsColor}">${bsResult}</span></td>`;
+      betBsCell = `<td><span class="big-digit-display ${bsCls}">${bsBet}</span></td>`;
     }
 
-    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td>${matchCell}${bsCells}<td>${formulaDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
+    let majorityBsCell = "";
+    if (majorityBsModeEnabled) {
+      const mBet = row.majorityBsPrediction && row.majorityBsPrediction !== "Waiting" ? row.majorityBsPrediction : "-";
+      const mIsPick = row.majorityBsPrediction === "B" || row.majorityBsPrediction === "S";
+      const mWin = mIsPick && row.majorityBsPrediction === row.majorityBsResult;
+      const mCls = mIsPick ? (mWin ? "win-match" : "win-miss") : "";
+      majorityBsCell = `<td><span class="big-digit-display ${mCls}">${mBet}</span></td>`;
+    }
+
+    let actualBsCell = "";
+    if (bsModeEnabled || majorityBsModeEnabled) {
+      const bsResult = row.bsResult || row.majorityBsResult || "-";
+      const bsColor = bsResult === "B" ? "color:#ef4444;" : (bsResult === "S" ? "color:#22c55e;" : "");
+      actualBsCell = `<td><span class="big-digit-display" style="${bsColor}">${bsResult}</span></td>`;
+    }
+
+    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td>${matchCell}${betBsCell}${majorityBsCell}${actualBsCell}<td>${formulaDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
   }
   document.getElementById("output").innerHTML = table + "</tbody></table>";
   
