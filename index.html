@@ -386,6 +386,30 @@
           <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
         </div>
       </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">🧮 Bet + Bet B/S ပေါင်းစပ်ရလဒ် (နောက်ဆုံး <span id="historyLimitLabelComboBs1">300</span>)</h3>
+      <div class="win-rate-box">
+        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 Bet (Group) နှင့် Bet B/S နှစ်ခုထဲက တစ်ခုခု နိုင်ရင် "အမှန်"၊ နှစ်ခုလုံး ရှုံးမှသာ "အမှား" — ခန့်မှန်းချက် လုံးဝမရှိသေးတဲ့ မှတ်တမ်းများကို မရေတွက်ပါ:</div>
+        <div style="display:flex; gap:20px; font-weight:bold;">
+          <div>✅ <span id="comboCorrectCount" style="color:#22c55e;">0</span></div>
+          <div>❌ <span id="comboWrongCount" style="color:#ef4444;">0</span></div>
+          <div>Win Rate: <span id="comboWinRate">--</span></div>
+        </div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📈 Bet + Bet B/S ဆက်တိုက်နိုင်မှု (နောက်ဆုံး <span id="historyLimitLabelComboBs2">300</span>)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="comboWinningStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
+
+      <h3 style="color:#60a5fa; margin-top:20px;">📉 Bet + Bet B/S ဆက်တိုက်ရှုံးမှု (နောက်ဆုံး <span id="historyLimitLabelComboBs3">300</span>)</h3>
+      <div class="win-rate-box">
+        <div class="win-rate-by-level" id="comboLosingStreakSummary">
+          <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -500,6 +524,11 @@ function loadData() {
     document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabelBs").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabelBs2").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabelGroupBs").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabelGroupBs2").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabelComboBs1").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabelComboBs2").innerText = historyDisplayLimit;
+    document.getElementById("historyLimitLabelComboBs3").innerText = historyDisplayLimit;
 
     const storedExclude = localStorage.getItem("savedExcludeLastCategory");
     if (storedExclude !== null) {
@@ -754,6 +783,9 @@ function applyHistoryLimit() {
   document.getElementById("historyLimitLabelBs2").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabelGroupBs").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabelGroupBs2").innerText = historyDisplayLimit;
+  document.getElementById("historyLimitLabelComboBs1").innerText = historyDisplayLimit;
+  document.getElementById("historyLimitLabelComboBs2").innerText = historyDisplayLimit;
+  document.getElementById("historyLimitLabelComboBs3").innerText = historyDisplayLimit;
   updateTableDisplay();
   updateWinRateStats();
   if (bsModeEnabled) recalculateBsPredictions();
@@ -1200,6 +1232,10 @@ function recalculateBsPredictions() {
 
   updateGroupBsLosingStreakSummary(bsRecent);
   updateGroupBsWinningStreakSummary(bsRecent);
+
+  updateComboWinRateSummary(bsRecent);
+  updateComboWinningStreakSummary(bsRecent);
+  updateComboLosingStreakSummary(bsRecent);
 }
 
 // ===== GROUP ∩ B/S STREAK TRACKING =====
@@ -1278,6 +1314,108 @@ function updateGroupBsWinningStreakSummary(recentResults) {
   } else {
     summaryEl.innerHTML = lengths.map(len =>
       `<div class="level-row"><span>${len} ကြိမ်ဆက်နိုင်</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+// ===== BET + BET B/S COMBINED STREAK TRACKING =====
+// Correctness here means: the Group prediction (Bet) OR the independent B/S
+// prediction (Bet B/S) hit — only counts as wrong if BOTH missed. Rows where
+// neither prediction was actually made yet are skipped (not win or loss).
+function comboBetBsIsCorrect(row) {
+  const isArrayPred = Array.isArray(row.betPrediction);
+  const hasResult = CATEGORIES.includes(row.appResult);
+  const betWin = isArrayPred && hasResult && row.betPrediction.includes(row.appResult);
+  const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
+  const bsWin = bsIsPick && row.bsPrediction === row.bsResult;
+
+  if (!isArrayPred && !bsIsPick) return null;
+  return betWin || bsWin;
+}
+
+function updateComboWinRateSummary(recentResults) {
+  const correctEl = document.getElementById("comboCorrectCount");
+  const wrongEl = document.getElementById("comboWrongCount");
+  const rateEl = document.getElementById("comboWinRate");
+  if (!correctEl || !wrongEl || !rateEl) return;
+
+  let correct = 0, wrong = 0;
+  recentResults.forEach(r => {
+    const isCorrect = comboBetBsIsCorrect(r);
+    if (isCorrect === null) return;
+    if (isCorrect) correct++; else wrong++;
+  });
+
+  correctEl.innerText = correct;
+  wrongEl.innerText = wrong;
+  const total = correct + wrong;
+  rateEl.innerText = total > 0 ? `${((correct / total) * 100).toFixed(1)}% (${correct}/${total})` : "--";
+}
+
+function updateComboWinningStreakSummary(recentResults) {
+  const summaryEl = document.getElementById("comboWinningStreakSummary");
+  if (!summaryEl) return;
+
+  const streakCounts = {};
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    const isCorrect = comboBetBsIsCorrect(r);
+    if (isCorrect === null) return;
+    if (isCorrect) {
+      currentStreak++;
+    } else {
+      if (currentStreak >= 3) {
+        streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      }
+      currentStreak = 0;
+    }
+  });
+
+  if (currentStreak >= 3) {
+    streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+  }
+
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
+  if (lengths.length === 0) {
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်နိုင်မှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်နိုင်</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+function updateComboLosingStreakSummary(recentResults) {
+  const summaryEl = document.getElementById("comboLosingStreakSummary");
+  if (!summaryEl) return;
+
+  const streakCounts = {};
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    const isCorrect = comboBetBsIsCorrect(r);
+    if (isCorrect === null) return;
+    if (isCorrect) {
+      if (currentStreak >= 3) {
+        streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      }
+      currentStreak = 0;
+    } else {
+      currentStreak++;
+    }
+  });
+
+  if (currentStreak >= 3) {
+    streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+  }
+
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
+  if (lengths.length === 0) {
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
     ).join("");
   }
 }
