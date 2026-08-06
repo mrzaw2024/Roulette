@@ -213,13 +213,21 @@
         </div>
       </div>
 
-      <h3 style="color:#60a5fa; margin-top:20px;">🎲🎯 B/S ခန့်မှန်းခြင်း (Pattern 30→1 ကို အားလုံးစစ်၊ ပထမဆုံး ရလာတဲ့ အဖြေ ၃ ခု အများစုသတ်မှတ်)</h3>
+      <h3 style="color:#60a5fa; margin-top:20px;">🎲🎯 B/S ခန့်မှန်းခြင်း (Pattern 30→1 ကို အားလုံးစစ်၊ ပထမဆုံး ရလာတဲ့ အဖြေများ အများစုသတ်မှတ်)</h3>
       <div class="win-rate-box">
         <label class="level-chip" style="width:fit-content;">
           <input type="checkbox" id="majorityBsModeToggle" onchange="applyMajorityBsModeToggle()">
-          ဖွင့်ရန် — Pattern Level 30 ကနေ 1 ဆီ အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ (tie မဖြစ်တဲ့) ပထမဆုံး B/S အဖြေ ၃ ခုကို ယူမည်၊ အများစု (2/3 (သို့) 3/3) ဖက်ကို ခန့်မှန်းမည်
+          ဖွင့်ရန် — Pattern Level 30 ကနေ 1 ဆီ အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ (tie မဖြစ်တဲ့) ပထမဆုံး B/S အဖြေများကို ယူမည်၊ အများစုဖက်ကို ခန့်မှန်းမည်
         </label>
         <div class="input-hint">💡 Group Count ဒါမှမဟုတ် "Pattern Level ရွေးရန်" checkbox တွေနဲ့ လုံးဝ မသက်ဆိုင်ပါ — digit 0-4 vs 5-9 ကိုပဲ အခြေခံပြီး Level 1 အထိ 30 ခုလုံးကို အမြဲစစ်ဆေးပါတယ်</div>
+
+        <div style="margin-top:10px;">
+          <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
+          <select id="majorityBsPickCountSelect" onchange="applyMajorityBsPickCount()">
+            <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
+            <option value="5">5 ခုထဲက များတာရွေးမည် (3/5၊ 4/5 သို့ 5/5)</option>
+          </select>
+        </div>
 
         <div id="majorityBsPredictionPanel" style="display:none; margin-top:12px;">
           <div id="majorityBsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
@@ -605,6 +613,13 @@ function loadData() {
       if (majorityPanel) majorityPanel.style.display = majorityBsModeEnabled ? "block" : "none";
     }
 
+    const storedMajorityBsPickCount = localStorage.getItem("savedMajorityBsPickCount");
+    if (storedMajorityBsPickCount === "3" || storedMajorityBsPickCount === "5") {
+      majorityBsPickCount = parseInt(storedMajorityBsPickCount);
+    }
+    const majorityPickCountSel = document.getElementById("majorityBsPickCountSelect");
+    if (majorityPickCountSel) majorityPickCountSel.value = String(majorityBsPickCount);
+
     const storedRoadMapVisible = localStorage.getItem("savedRoadMapVisible");
     if (storedRoadMapVisible !== null) {
       roadMapVisible = storedRoadMapVisible === "1";
@@ -952,7 +967,8 @@ let excludeLastCategory = false;
 let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) prediction mode
 let bsReverseEnabled = false; // when on, flips the computed B/S pick (B<->S) before it's used anywhere
 let nextBsCalculatedBet = "Waiting"; // latest B/S pick, kept in sync so it can be shown under the main prediction badge
-let majorityBsModeEnabled = false; // independent "majority of first 3 decisive picks across pattern levels 30->1" B/S system
+let majorityBsModeEnabled = false; // independent "majority of first N decisive picks across pattern levels 30->1" B/S system
+let majorityBsPickCount = 3; // how many decisive picks (3 or 5) to gather before deciding majority
 let nextMajorityBsCalculatedBet = "Waiting";
 let roadMapVisible = true; // whether the Matrix Trend Map (Big Road) table is shown
 let reverseBetEnabled = false; // when on, the main group prediction picks the LEAST frequent groups instead of the most frequent
@@ -1211,6 +1227,18 @@ function applyMajorityBsModeToggle() {
   saveData();
 }
 
+function applyMajorityBsPickCount() {
+  const sel = document.getElementById("majorityBsPickCountSelect");
+  const n = parseInt(sel.value);
+  majorityBsPickCount = (n === 5) ? 5 : 3;
+  localStorage.setItem("savedMajorityBsPickCount", String(majorityBsPickCount));
+  if (majorityBsModeEnabled) {
+    recalculateMajorityBsPredictions();
+  }
+  updateTableDisplay();
+  saveData();
+}
+
 function applyRoadMapVisibleToggle() {
   roadMapVisible = document.getElementById("roadMapVisibleToggle").checked;
   localStorage.setItem("savedRoadMapVisible", roadMapVisible ? "1" : "0");
@@ -1386,9 +1414,9 @@ function recalculateMajorityBsPredictions() {
       const bCount = stats["B"], sCount = stats["S"];
       if (bCount === sCount) continue; // tie at this level — not decisive
       picks.push(bCount > sCount ? "B" : "S");
-      if (picks.length === 3) break;
+      if (picks.length === majorityBsPickCount) break;
     }
-    if (picks.length < 3) return { pick: null, picks };
+    if (picks.length < majorityBsPickCount) return { pick: null, picks };
     const bTotal = picks.filter(p => p === "B").length;
     const sTotal = picks.filter(p => p === "S").length;
     return { pick: bTotal > sTotal ? "B" : "S", picks };
@@ -1459,15 +1487,15 @@ function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
   } else if (pred === NO_MATCH) {
     badge.style.background = "#475569";
     badge.innerText = "❓ ခန့်မှန်းမှု မရှိပါ";
-    detail.innerText = "Pattern 30→1 ထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ၃ ခု မပြည့်သေးပါ";
+    detail.innerText = `Pattern 30→1 ထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${majorityBsPickCount} ခု မပြည့်သေးပါ`;
   } else if (pred === "B") {
     badge.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
     badge.innerText = "🔴 B (56789)";
-    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ၃ ခု${picksLabel} ရဲ့ အများစု`;
+    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${majorityBsPickCount} ခု${picksLabel} ရဲ့ အများစု`;
   } else {
     badge.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
     badge.innerText = "🟢 S (01234)";
-    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ၃ ခု${picksLabel} ရဲ့ အများစု`;
+    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${majorityBsPickCount} ခု${picksLabel} ရဲ့ အများစု`;
   }
 
   const winRateEl = document.getElementById("majorityBsWinRate");
