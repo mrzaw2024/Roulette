@@ -226,6 +226,7 @@
           <select id="majorityBsPickCountSelect" onchange="applyMajorityBsPickCount()">
             <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
             <option value="5">5 ခုထဲက များတာရွေးမည် (3/5၊ 4/5 သို့ 5/5)</option>
+            <option value="7">7 ခုထဲက များတာရွေးမည် (4/7၊ 5/7၊ 6/7 သို့ 7/7)</option>
           </select>
         </div>
 
@@ -614,7 +615,7 @@ function loadData() {
     }
 
     const storedMajorityBsPickCount = localStorage.getItem("savedMajorityBsPickCount");
-    if (storedMajorityBsPickCount === "3" || storedMajorityBsPickCount === "5") {
+    if (storedMajorityBsPickCount === "3" || storedMajorityBsPickCount === "5" || storedMajorityBsPickCount === "7") {
       majorityBsPickCount = parseInt(storedMajorityBsPickCount);
     }
     const majorityPickCountSel = document.getElementById("majorityBsPickCountSelect");
@@ -968,7 +969,7 @@ let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) predictio
 let bsReverseEnabled = false; // when on, flips the computed B/S pick (B<->S) before it's used anywhere
 let nextBsCalculatedBet = "Waiting"; // latest B/S pick, kept in sync so it can be shown under the main prediction badge
 let majorityBsModeEnabled = false; // independent "majority of first N decisive picks across pattern levels 30->1" B/S system
-let majorityBsPickCount = 3; // how many decisive picks (3 or 5) to gather before deciding majority
+let majorityBsPickCount = 3; // how many decisive picks (3, 5, or 7) to gather before deciding majority
 let nextMajorityBsCalculatedBet = "Waiting";
 let roadMapVisible = true; // whether the Matrix Trend Map (Big Road) table is shown
 let reverseBetEnabled = false; // when on, the main group prediction picks the LEAST frequent groups instead of the most frequent
@@ -1230,7 +1231,7 @@ function applyMajorityBsModeToggle() {
 function applyMajorityBsPickCount() {
   const sel = document.getElementById("majorityBsPickCountSelect");
   const n = parseInt(sel.value);
-  majorityBsPickCount = (n === 5) ? 5 : 3;
+  majorityBsPickCount = (n === 5 || n === 7) ? n : 3;
   localStorage.setItem("savedMajorityBsPickCount", String(majorityBsPickCount));
   if (majorityBsModeEnabled) {
     recalculateMajorityBsPredictions();
