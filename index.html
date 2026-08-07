@@ -203,27 +203,6 @@
     .stat-card.open .stat-card-chevron { transform: rotate(180deg); }
     .stat-card-body { display: none; padding: 0 16px 16px; }
     .stat-card.open .stat-card-body { display: block; }
-
-    /* For majority B/S breakdown display */
-    .majority-breakdown-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 6px;
-      margin-top: 10px;
-    }
-    .majority-breakdown-item {
-      background: #1e293b;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      text-align: center;
-      color: #94a3b8;
-    }
-    .majority-breakdown-item .level-label { font-weight: 600; color: #cbd5e1; }
-    .majority-breakdown-item .level-pick { font-weight: 700; font-size: 16px; }
-    .majority-breakdown-item .level-pick.pick-B { color: #ef4444; }
-    .majority-breakdown-item .level-pick.pick-S { color: #22c55e; }
-    .majority-breakdown-item .level-pick.pick-none { color: #64748b; }
   </style>
 </head>
 <body>
@@ -282,10 +261,17 @@
         <div id="predictionGroupBreakdown" class="win-rate-by-level" style="width:100%; margin-top:8px;"></div>
 
         <div id="topMajorityBsMini" class="triple-pred mini" style="display:none; margin-top:10px; width:100%;">
-          <div class="triple-mini-label">🎯 B/S ခန့်မှန်း (Majority of checked levels)</div>
+          <div class="triple-mini-label">🎯 B/S ခန့်မှန်း (Pattern30→1 Majority)</div>
           <div class="triple-row-ratio" id="topMajorityBsRatio"></div>
           <div class="triple-row-cat" id="topMajorityBsCat"></div>
           <div class="triple-row-final" id="topMajorityBsFinal"></div>
+        </div>
+
+        <div id="topMajorityGroupMini" class="triple-pred mini" style="display:none; margin-top:10px; width:100%;">
+          <div class="triple-mini-label">🎯🔢 Group ခန့်မှန်း (Pattern30→1 Majority)</div>
+          <div class="triple-row-ratio" id="topMajorityGroupRatio"></div>
+          <div class="triple-row-cat" id="topMajorityGroupCat"></div>
+          <div class="triple-row-final" id="topMajorityGroupFinal"></div>
         </div>
       </div>
 
@@ -353,53 +339,24 @@
 
       <div class="stat-card" data-key="majorityBsMode">
         <div class="stat-card-head" onclick="toggleStatCard('majorityBsMode')">
-          <div class="stat-card-title">🎲🎯 B/S ခန့်မှန်းခြင်း <span class="sub">(Majority of checked levels)</span></div>
+          <div class="stat-card-title">🎲🎯 B/S ခန့်မှန်းခြင်း <span class="sub">(Pattern 30→1 Majority)</span></div>
           <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
         </div>
         <div class="stat-card-body">
           <div class="win-rate-box">
             <label class="level-chip" style="width:fit-content;">
               <input type="checkbox" id="majorityBsModeToggle" onchange="applyMajorityBsModeToggle()">
-              ဖွင့်ရန် — အောက်က "Majority B/S Level ရွေးရန်" မှာ ရွေးထားတဲ့ Level တွေရဲ့ B/S ခန့်မှန်းချက်တွေကို စုပြီး အများစုဖက်ကို ခန့်မှန်းမည်
+              ဖွင့်ရန် — Pattern Level 30 ကနေ 1 ဆီ အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ (tie မဖြစ်တဲ့) ပထမဆုံး B/S အဖြေများကို ယူမည်၊ အများစုဖက်ကို ခန့်မှန်းမည်
             </label>
-            <div class="input-hint">💡 ဒီ Level ရွေးချယ်မှုက Settings ထဲက "Pattern Level ရွေးရန်" နဲ့ လုံးဝ မဆိုင်ပါ — သီးသန့် ရွေးချယ်လို့ရပါတယ်</div>
+            <div class="input-hint">💡 Group Count ဒါမှမဟုတ် "Pattern Level ရွေးရန်" checkbox တွေနဲ့ လုံးဝ မသက်ဆိုင်ပါ — digit 0-4 vs 5-9 ကိုပဲ အခြေခံပြီး Level 1 အထိ 30 ခုလုံးကို အမြဲစစ်ဆေးပါတယ်</div>
 
-            <!-- ===== NEW: Independent level selector for Majority B/S ===== -->
             <div style="margin-top:10px;">
-              <label style="font-weight:600; color:#93c5fd;">🎚️ Majority B/S Level ရွေးရန် (ဒီ Level တွေကိုပဲ သုံးပါမည်):</label>
-              <div id="majorityBsLevelSelector" class="level-selector">
-                <label class="level-chip"><input type="checkbox" value="30" onchange="applyMajorityBsLevelSelection()"> 30</label>
-                <label class="level-chip"><input type="checkbox" value="29" onchange="applyMajorityBsLevelSelection()"> 29</label>
-                <label class="level-chip"><input type="checkbox" value="28" onchange="applyMajorityBsLevelSelection()"> 28</label>
-                <label class="level-chip"><input type="checkbox" value="27" onchange="applyMajorityBsLevelSelection()"> 27</label>
-                <label class="level-chip"><input type="checkbox" value="26" onchange="applyMajorityBsLevelSelection()"> 26</label>
-                <label class="level-chip"><input type="checkbox" value="25" onchange="applyMajorityBsLevelSelection()"> 25</label>
-                <label class="level-chip"><input type="checkbox" value="24" onchange="applyMajorityBsLevelSelection()"> 24</label>
-                <label class="level-chip"><input type="checkbox" value="23" onchange="applyMajorityBsLevelSelection()"> 23</label>
-                <label class="level-chip"><input type="checkbox" value="22" onchange="applyMajorityBsLevelSelection()"> 22</label>
-                <label class="level-chip"><input type="checkbox" value="21" onchange="applyMajorityBsLevelSelection()"> 21</label>
-                <label class="level-chip"><input type="checkbox" value="20" onchange="applyMajorityBsLevelSelection()"> 20</label>
-                <label class="level-chip"><input type="checkbox" value="19" onchange="applyMajorityBsLevelSelection()"> 19</label>
-                <label class="level-chip"><input type="checkbox" value="18" onchange="applyMajorityBsLevelSelection()"> 18</label>
-                <label class="level-chip"><input type="checkbox" value="17" onchange="applyMajorityBsLevelSelection()"> 17</label>
-                <label class="level-chip"><input type="checkbox" value="16" onchange="applyMajorityBsLevelSelection()"> 16</label>
-                <label class="level-chip"><input type="checkbox" value="15" onchange="applyMajorityBsLevelSelection()"> 15</label>
-                <label class="level-chip"><input type="checkbox" value="14" onchange="applyMajorityBsLevelSelection()"> 14</label>
-                <label class="level-chip"><input type="checkbox" value="13" onchange="applyMajorityBsLevelSelection()"> 13</label>
-                <label class="level-chip"><input type="checkbox" value="12" onchange="applyMajorityBsLevelSelection()"> 12</label>
-                <label class="level-chip"><input type="checkbox" value="11" onchange="applyMajorityBsLevelSelection()"> 11</label>
-                <label class="level-chip"><input type="checkbox" value="10" checked onchange="applyMajorityBsLevelSelection()"> 10</label>
-                <label class="level-chip"><input type="checkbox" value="9" checked onchange="applyMajorityBsLevelSelection()"> 9</label>
-                <label class="level-chip"><input type="checkbox" value="8" checked onchange="applyMajorityBsLevelSelection()"> 8</label>
-                <label class="level-chip"><input type="checkbox" value="7" checked onchange="applyMajorityBsLevelSelection()"> 7</label>
-                <label class="level-chip"><input type="checkbox" value="6" checked onchange="applyMajorityBsLevelSelection()"> 6</label>
-                <label class="level-chip"><input type="checkbox" value="5" checked onchange="applyMajorityBsLevelSelection()"> 5</label>
-                <label class="level-chip"><input type="checkbox" value="4" checked onchange="applyMajorityBsLevelSelection()"> 4</label>
-                <label class="level-chip"><input type="checkbox" value="3" checked onchange="applyMajorityBsLevelSelection()"> 3</label>
-                <label class="level-chip"><input type="checkbox" value="2" checked onchange="applyMajorityBsLevelSelection()"> 2</label>
-                <label class="level-chip"><input type="checkbox" value="1" checked onchange="applyMajorityBsLevelSelection()"> 1</label>
-              </div>
-              <div class="input-hint">💡 ဒီမှာ ရွေးထားတဲ့ Level တွေကိုပဲ Majority B/S အတွက် သုံးပါမယ် — Settings ထဲက Level ရွေးချယ်မှုနဲ့ သီးခြားဖြစ်ပါတယ်</div>
+              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
+              <select id="majorityBsPickCountSelect" onchange="applyMajorityBsPickCount()">
+                <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
+                <option value="5">5 ခုထဲက များတာရွေးမည် (3/5၊ 4/5 သို့ 5/5)</option>
+                <option value="7">7 ခုထဲက များတာရွေးမည် (4/7၊ 5/7၊ 6/7 သို့ 7/7)</option>
+              </select>
             </div>
 
             <div id="majorityBsPredictionPanel" style="display:none; margin-top:12px;">
@@ -414,10 +371,42 @@
                 <div>S: <span id="majorityBsCountS" style="color:#22c55e;">0</span></div>
                 <div>Win Rate: <span id="majorityBsWinRate">--</span></div>
               </div>
-              <!-- Breakdown of each level's prediction -->
-              <div id="majorityBsBreakdownContainer" style="margin-top:10px;">
-                <div style="font-size:13px; color:#94a3b8; margin-bottom:4px;">📊 အဆင့်လိုက် ခန့်မှန်းချက်များ (ရွေးထားတဲ့ Level များအတွက်):</div>
-                <div id="majorityBsBreakdown" class="majority-breakdown-grid"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card" data-key="majorityGroupMode">
+        <div class="stat-card-head" onclick="toggleStatCard('majorityGroupMode')">
+          <div class="stat-card-title">🎯🔢 Group ခန့်မှန်းခြင်း <span class="sub">(Pattern 30→1 Majority)</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
+        </div>
+        <div class="stat-card-body">
+          <div class="win-rate-box">
+            <label class="level-chip" style="width:fit-content;">
+              <input type="checkbox" id="majorityGroupModeToggle" onchange="applyMajorityGroupModeToggle()">
+              ဖွင့်ရန် — Pattern Level 30 ကနေ 1 ဆီ အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ (tie မဖြစ်တဲ့) ပထမဆုံး Group အဖြေများကို ယူမည်၊ အများဆုံးရလာတဲ့ Group ကို ခန့်မှန်းမည်
+            </label>
+            <div class="input-hint">💡 "Group ဘယ်နှစ်ခုခန့်မှန်းမလဲ" checkbox တွေနဲ့ လုံးဝ မသက်ဆိုင်ပါ — Level တစ်ခုစီမှာ အများဆုံးရလာတဲ့ Group တစ်ခုတည်းကိုသာ vote အဖြစ်ယူပြီး Level 1 အထိ 30 ခုလုံးကို အမြဲစစ်ဆေးပါတယ် — B/S Majority စနစ်နဲ့ အတူတူပါပဲ၊ ဒါပေမဲ့ Group (Bet) အတွက်ဖြစ်ပါတယ်</div>
+
+            <div style="margin-top:10px;">
+              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
+              <select id="majorityGroupPickCountSelect" onchange="applyMajorityGroupPickCount()">
+                <option value="3">3 ခုထဲက များတာရွေးမည်</option>
+                <option value="5">5 ခုထဲက များတာရွေးမည်</option>
+                <option value="7">7 ခုထဲက များတာရွေးမည်</option>
+              </select>
+            </div>
+
+            <div id="majorityGroupPredictionPanel" style="display:none; margin-top:12px;">
+              <div id="majorityGroupTripleCard" class="triple-pred" style="background:#475569;">
+                <div class="triple-row-ratio" id="majorityGroupRatioRow">⏳</div>
+                <div class="triple-row-cat" id="majorityGroupCatRow">ဒေတာ မလုံလောက်သေးပါ</div>
+                <div class="triple-row-final" id="majorityGroupFinalRow"></div>
+              </div>
+              <div id="majorityGroupPredictionDetail" class="input-hint" style="text-align:center; margin-top:8px;"></div>
+              <div style="margin-top:10px; font-weight:bold;">
+                Win Rate: <span id="majorityGroupWinRate">--</span>
               </div>
             </div>
           </div>
@@ -469,7 +458,7 @@
       <div id="digitGroupSelector" class="digit-selector-grid"></div>
       <div class="input-hint">💡 "?" ရွေးထားရင် အဲဒီဂဏန်းကို ဘယ် Group မှ မထည့်ပါ — ရှာဖွေတဲ့အခါ ဂရုမစိုက်ပါ။ အနည်းဆုံး Group 2 ခုတော့ ရှိရပါမည်။</div>
 
-      <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ — Group ခန့်မှန်းချက်အတွက်ပဲ သုံးပါမည်၊ Majority B/S အတွက် မဟုတ်ပါ):</label>
+      <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ):</label>
       <div id="levelSelector" class="level-selector">
         <label class="level-chip"><input type="checkbox" value="30" onchange="applyLevelSelection()"> 30</label>
         <label class="level-chip"><input type="checkbox" value="29" onchange="applyLevelSelection()"> 29</label>
@@ -687,7 +676,7 @@
 
       <div class="stat-card" data-key="majorityWin">
         <div class="stat-card-head" onclick="toggleStatCard('majorityWin')">
-          <div class="stat-card-title">📈 Majority B/S ဆက်တိုက်နိုင်မှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelMajorityBs1">300</span>)</span></div>
+          <div class="stat-card-title">📈 Pattern30→1 Majority B/S ဆက်တိုက်နိုင်မှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelMajorityBs1">300</span>)</span></div>
           <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
         </div>
         <div class="stat-card-body">
@@ -701,12 +690,40 @@
 
       <div class="stat-card" data-key="majorityLoss">
         <div class="stat-card-head" onclick="toggleStatCard('majorityLoss')">
-          <div class="stat-card-title">📉 Majority B/S ဆက်တိုက်ရှုံးမှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelMajorityBs2">300</span>)</span></div>
+          <div class="stat-card-title">📉 Pattern30→1 Majority B/S ဆက်တိုက်ရှုံးမှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelMajorityBs2">300</span>)</span></div>
           <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
         </div>
         <div class="stat-card-body">
           <div class="win-rate-box">
             <div class="win-rate-by-level" id="majorityBsLosingStreakSummary">
+              <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card" data-key="majorityGroupWin">
+        <div class="stat-card-head" onclick="toggleStatCard('majorityGroupWin')">
+          <div class="stat-card-title">📈 Pattern30→1 Majority Group ဆက်တိုက်နိုင်မှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelMajorityGroup1">300</span>)</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
+        </div>
+        <div class="stat-card-body">
+          <div class="win-rate-box">
+            <div class="win-rate-by-level" id="majorityGroupWinningStreakSummary">
+              <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card" data-key="majorityGroupLoss">
+        <div class="stat-card-head" onclick="toggleStatCard('majorityGroupLoss')">
+          <div class="stat-card-title">📉 Pattern30→1 Majority Group ဆက်တိုက်ရှုံးမှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelMajorityGroup2">300</span>)</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
+        </div>
+        <div class="stat-card-body">
+          <div class="win-rate-box">
+            <div class="win-rate-by-level" id="majorityGroupLosingStreakSummary">
               <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
             </div>
           </div>
@@ -790,7 +807,7 @@ function saveData() {
     localStorage.setItem("savedBsReverseEnabled", bsReverseEnabled ? "1" : "0");
     localStorage.setItem("savedRoadMapVisible", roadMapVisible ? "1" : "0");
     localStorage.setItem("savedMajorityBsModeEnabled", majorityBsModeEnabled ? "1" : "0");
-    localStorage.setItem("savedMajorityBsLevels", JSON.stringify(majorityBsEnabledLevels));
+    localStorage.setItem("savedMajorityGroupModeEnabled", majorityGroupModeEnabled ? "1" : "0");
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -898,19 +915,30 @@ function loadData() {
       if (topMini) topMini.style.display = majorityBsModeEnabled ? "block" : "none";
     }
 
-    // Load independent Majority B/S levels
-    const storedMajorityLevels = localStorage.getItem("savedMajorityBsLevels");
-    if (storedMajorityLevels) {
-      try {
-        const parsed = JSON.parse(storedMajorityLevels);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          majorityBsEnabledLevels = parsed.sort((a, b) => b - a);
-          document.querySelectorAll('#majorityBsLevelSelector input[type="checkbox"]').forEach(b => {
-            b.checked = majorityBsEnabledLevels.includes(parseInt(b.value));
-          });
-        }
-      } catch (e) { /* ignore */ }
+    const storedMajorityBsPickCount = localStorage.getItem("savedMajorityBsPickCount");
+    if (storedMajorityBsPickCount === "3" || storedMajorityBsPickCount === "5" || storedMajorityBsPickCount === "7") {
+      majorityBsPickCount = parseInt(storedMajorityBsPickCount);
     }
+    const majorityPickCountSel = document.getElementById("majorityBsPickCountSelect");
+    if (majorityPickCountSel) majorityPickCountSel.value = String(majorityBsPickCount);
+
+    const storedMajorityGroupMode = localStorage.getItem("savedMajorityGroupModeEnabled");
+    if (storedMajorityGroupMode !== null) {
+      majorityGroupModeEnabled = storedMajorityGroupMode === "1";
+      const majorityGroupToggle = document.getElementById("majorityGroupModeToggle");
+      if (majorityGroupToggle) majorityGroupToggle.checked = majorityGroupModeEnabled;
+      const majorityGroupPanel = document.getElementById("majorityGroupPredictionPanel");
+      if (majorityGroupPanel) majorityGroupPanel.style.display = majorityGroupModeEnabled ? "block" : "none";
+      const topGroupMini = document.getElementById("topMajorityGroupMini");
+      if (topGroupMini) topGroupMini.style.display = majorityGroupModeEnabled ? "block" : "none";
+    }
+
+    const storedMajorityGroupPickCount = localStorage.getItem("savedMajorityGroupPickCount");
+    if (storedMajorityGroupPickCount === "3" || storedMajorityGroupPickCount === "5" || storedMajorityGroupPickCount === "7") {
+      majorityGroupPickCount = parseInt(storedMajorityGroupPickCount);
+    }
+    const majorityGroupPickCountSel = document.getElementById("majorityGroupPickCountSelect");
+    if (majorityGroupPickCountSel) majorityGroupPickCountSel.value = String(majorityGroupPickCount);
 
     const storedRoadMapVisible = localStorage.getItem("savedRoadMapVisible");
     if (storedRoadMapVisible !== null) {
@@ -1274,13 +1302,16 @@ let nextUsedStats = null;
 let nextUsedKeyDisplay = null; 
 
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-let majorityBsEnabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // NEW: independent for Majority B/S
 let excludeLastCategory = false;
 let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) prediction mode
 let bsReverseEnabled = false; // when on, flips the computed B/S pick (B<->S) before it's used anywhere
 let nextBsCalculatedBet = "Waiting"; // latest B/S pick, kept in sync so it can be shown under the main prediction badge
-let majorityBsModeEnabled = false; // independent "majority of selected levels" B/S system
+let majorityBsModeEnabled = false; // independent "majority of first N decisive picks across pattern levels 30->1" B/S system
+let majorityBsPickCount = 3; // how many decisive picks (3, 5, or 7) to gather before deciding majority
 let nextMajorityBsCalculatedBet = "Waiting";
+let majorityGroupModeEnabled = false; // independent "majority of first N decisive Group picks across pattern levels 30->1" system
+let majorityGroupPickCount = 3; // how many decisive picks (3, 5, or 7) to gather before deciding majority
+let nextMajorityGroupCalculatedBet = "Waiting";
 let roadMapVisible = true; // whether the Matrix Trend Map (Big Road) table is shown
 let reverseBetEnabled = false; // when on, the main group prediction picks the LEAST frequent groups instead of the most frequent
 let predictCount = 1;
@@ -1332,28 +1363,6 @@ function applyLevelSelection() {
   updateTableDisplay();
   updatePredictionDisplay();
   updateStats();
-}
-
-// ===== NEW: Independent Majority B/S Level Selection =====
-function applyMajorityBsLevelSelection() {
-  const boxes = document.querySelectorAll('#majorityBsLevelSelector input[type="checkbox"]');
-  const checked = Array.from(boxes)
-    .filter(b => b.checked)
-    .map(b => parseInt(b.value))
-    .sort((a, b) => b - a);
-
-  if (checked.length === 0) {
-    boxes.forEach(b => { if (!b.checked) b.checked = true; });
-    alert("Majority B/S အတွက် Level တစ်ခုမှ မရွေးထားလို့ မရပါ — အနည်းဆုံး တစ်ခုတော့ ရွေးထားပါ။");
-    return;
-  }
-
-  majorityBsEnabledLevels = checked;
-  localStorage.setItem("savedMajorityBsLevels", JSON.stringify(majorityBsEnabledLevels));
-
-  if (majorityBsModeEnabled) {
-    recalculateMajorityBsPredictions();
-  }
 }
 
 // ===== CORE PREDICTION LOGIC =====
@@ -1478,6 +1487,7 @@ function recalculateAllPredictions() {
 
   if (bsModeEnabled) recalculateBsPredictions();
   if (majorityBsModeEnabled) recalculateMajorityBsPredictions();
+  if (majorityGroupModeEnabled) recalculateMajorityGroupPredictions();
 }
 
 // ===== INDEPENDENT BIG/SMALL PREDICTION (digit 0-4 = S, 5-9 = B) =====
@@ -1557,6 +1567,18 @@ function applyMajorityBsModeToggle() {
   } else {
     nextMajorityBsCalculatedBet = "Waiting";
     refreshComboBetBsSummaries();
+  }
+  updateTableDisplay();
+  saveData();
+}
+
+function applyMajorityBsPickCount() {
+  const sel = document.getElementById("majorityBsPickCountSelect");
+  const n = parseInt(sel.value);
+  majorityBsPickCount = (n === 5 || n === 7) ? n : 3;
+  localStorage.setItem("savedMajorityBsPickCount", String(majorityBsPickCount));
+  if (majorityBsModeEnabled) {
+    recalculateMajorityBsPredictions();
   }
   updateTableDisplay();
   saveData();
@@ -1702,15 +1724,22 @@ function updateGroupBsLosingStreakSummary(recentResults) {
   }
 }
 
-// ===== MAJORITY-OF-SELECTED-LEVELS B/S PREDICTION =====
-// Uses ONLY the pattern lengths that the user has checked in the
-// "Majority B/S Level ရွေးရန်" panel — completely independent from
-// the Group system's level selection.
+// ===== MAJORITY-OF-3 B/S PREDICTION (independent of the Group system AND
+// of the other single-cascade B/S system above) =====
+// Cascades through EVERY pattern length from 30 down to 1 (fixed range —
+// ignores the "Pattern Level ရွေးရန်" checkboxes, which only govern the
+// Group prediction and the single-cascade B/S prediction). At each length it
+// looks up what followed the current key historically; if B and S counts are
+// tied, that length is not decisive and is skipped. The first THREE decisive
+// levels found (in 30→1 order) each contribute one B/S vote, and whichever
+// side wins 2-of-3 (or 3-of-3) becomes the final prediction.
 function recalculateMajorityBsPredictions() {
-  const SEQ_LENGTHS = majorityBsEnabledLevels;  // <-- uses the independent levels
+  const ALL_LEVELS = [];
+  for (let len = 30; len >= 1; len--) ALL_LEVELS.push(len);
+
   const makeBsCounter = () => ({ "B": 0, "S": 0 });
   const transitionMaps = {};
-  SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
+  ALL_LEVELS.forEach(len => { transitionMaps[len] = {}; });
   const valid = [];
 
   function buildKey(len) {
@@ -1721,21 +1750,21 @@ function recalculateMajorityBsPredictions() {
   }
 
   function predictMajorityBs() {
-    const picks = []; // each entry: { level, pick, bCount, sCount }
-    for (const len of SEQ_LENGTHS) {
+    const picks = [];
+    for (const len of ALL_LEVELS) {
       const key = buildKey(len);
       if (key === null) continue;
       const stats = transitionMaps[len][key];
       if (!stats) continue;
       const bCount = stats["B"], sCount = stats["S"];
       if (bCount === sCount) continue; // tie at this level — not decisive
-      const pick = bCount > sCount ? "B" : "S";
-      picks.push({ level: len, pick, bCount, sCount });
+      picks.push(bCount > sCount ? "B" : "S");
+      if (picks.length === majorityBsPickCount) break;
     }
-    if (picks.length === 0) return { pick: null, picks: [] };
-    const bTotal = picks.filter(p => p.pick === "B").length;
-    const sTotal = picks.filter(p => p.pick === "S").length;
-    return { pick: bTotal > sTotal ? "B" : (sTotal > bTotal ? "S" : null), picks };
+    if (picks.length < majorityBsPickCount) return { pick: null, picks };
+    const bTotal = picks.filter(p => p === "B").length;
+    const sTotal = picks.filter(p => p === "S").length;
+    return { pick: bTotal > sTotal ? "B" : "S", picks };
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -1751,7 +1780,7 @@ function recalculateMajorityBsPredictions() {
     row.majorityBsPrediction = bsPred;
 
     if (bsVal !== null) {
-      SEQ_LENGTHS.forEach(len => {
+      ALL_LEVELS.forEach(len => {
         const key = buildKey(len);
         if (key !== null) {
           const map = transitionMaps[len];
@@ -1764,7 +1793,7 @@ function recalculateMajorityBsPredictions() {
   }
 
   let nextPred = "Waiting";
-  let nextPicks = [];
+  let nextPicks = null;
   if (valid.length >= 10) {
     const pred = predictMajorityBs();
     nextPred = pred.pick || NO_MATCH;
@@ -1799,26 +1828,7 @@ function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
   const topRatio = document.getElementById("topMajorityBsRatio");
   const topCat = document.getElementById("topMajorityBsCat");
   const topFinal = document.getElementById("topMajorityBsFinal");
-  const breakdownEl = document.getElementById("majorityBsBreakdown");
   if (!card) return;
-
-  // Build breakdown HTML
-  let breakdownHtml = "";
-  if (picks && picks.length > 0) {
-    // Sort by level descending to match the visual order
-    const sortedPicks = [...picks].sort((a, b) => b.level - a.level);
-    sortedPicks.forEach(p => {
-      const pickClass = p.pick === "B" ? "pick-B" : (p.pick === "S" ? "pick-S" : "pick-none");
-      breakdownHtml += `<div class="majority-breakdown-item">
-        <div class="level-label">Level ${p.level}</div>
-        <div class="level-pick ${pickClass}">${p.pick || "—"}</div>
-        <div style="font-size:10px;color:#64748b;">B:${p.bCount} S:${p.sCount}</div>
-      </div>`;
-    });
-  } else {
-    breakdownHtml = `<div style="color:#64748b;font-size:13px;grid-column:1/-1;">ဆုံးဖြတ်ချက်ရတဲ့ Level မရှိသေးပါ</div>`;
-  }
-  if (breakdownEl) breakdownEl.innerHTML = breakdownHtml;
 
   if (pred === "Waiting") {
     card.style.background = "#475569";
@@ -1837,7 +1847,7 @@ function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
     ratioRow.innerText = "❓";
     catRow.innerText = "ခန့်မှန်းမှု မရှိပါ";
     finalRow.innerText = "";
-    detail.innerText = `ရွေးထားတဲ့ Level အားလုံးမှာ B/S ရေတူနေသည် (ဆုံးဖြတ်ချက်မရှိ)`;
+    detail.innerText = `Pattern 30→1 ထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${majorityBsPickCount} ခု မပြည့်သေးပါ`;
     if (topCard) {
       topCard.style.background = "#475569";
       topRatio.innerText = "❓";
@@ -1845,10 +1855,11 @@ function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
       topFinal.innerText = "";
     }
   } else {
-    const totalPicks = picks ? picks.length : 0;
-    const bCount = picks ? picks.filter(p => p.pick === "B").length : 0;
-    const sCount = picks ? picks.filter(p => p.pick === "S").length : 0;
-    const ratioText = `${totalPicks} level${totalPicks !== 1 ? 's' : ''} · B:${bCount} S:${sCount}`;
+    const bCount = picks ? picks.filter(p => p === "B").length : 0;
+    const sCount = picks ? picks.filter(p => p === "S").length : 0;
+    const totalPicks = picks ? picks.length : majorityBsPickCount;
+    const winningCount = pred === "B" ? bCount : sCount;
+    const ratioText = `${totalPicks}/${winningCount}`;
     const bg = pred === "B" ? "linear-gradient(135deg, #ef4444, #dc2626)" : "linear-gradient(135deg, #22c55e, #16a34a)";
     const catText = pred === "B" ? "B (56789)" : "S (01234)";
 
@@ -1856,7 +1867,8 @@ function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
     card.style.background = bg;
     catRow.innerText = catText;
     finalRow.innerText = pred;
-    detail.innerText = `ရွေးထားတဲ့ Level ${totalPicks} ခုရဲ့ အများစု`;
+    const picksLabel = picks ? ` (${picks.join("-")})` : "";
+    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${majorityBsPickCount} ခု${picksLabel} ရဲ့ အများစု`;
 
     if (topCard) {
       topCard.style.background = bg;
@@ -1949,6 +1961,255 @@ function updateMajorityBsLosingStreakSummary(recentResults) {
       `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
     ).join("");
   }
+}
+
+// ===== INDEPENDENT MAJORITY GROUP PREDICTION (Pattern 30->1 majority vote) =====
+// Same idea as the majority B/S system above, but for the Group (Bet) system
+// instead of B/S: walk pattern levels 30 down to 1, and at each level take the
+// single most-frequent following Group (skip if tied). Collect the first N
+// decisive picks, then predict whichever Group won the most votes among them.
+function digitsForGroup(g) {
+  const digits = [];
+  for (let d = 0; d <= 9; d++) {
+    if (DIGIT_CATEGORY_MAP[String(d)] === String(g)) digits.push(d);
+  }
+  return digits.join("");
+}
+
+function recalculateMajorityGroupPredictions() {
+  const ALL_LEVELS = [];
+  for (let len = 30; len >= 1; len--) ALL_LEVELS.push(len);
+
+  const makeCatCounter = () => { const o = {}; CATEGORIES.forEach(c => o[c] = 0); return o; };
+  const transitionMaps = {};
+  ALL_LEVELS.forEach(len => { transitionMaps[len] = {}; });
+  const valid = [];
+
+  function buildKey(len) {
+    if (valid.length < len) return null;
+    const parts = [];
+    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
+    return parts.join(",");
+  }
+
+  function predictMajorityGroup() {
+    const picks = [];
+    for (const len of ALL_LEVELS) {
+      const key = buildKey(len);
+      if (key === null) continue;
+      const stats = transitionMaps[len][key];
+      if (!stats) continue;
+      const seen = CATEGORIES.filter(c => stats[c] > 0);
+      if (seen.length === 0) continue;
+      const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
+      if (sorted.length >= 2 && stats[sorted[0]] === stats[sorted[1]]) continue; // tie at this level — skip
+      picks.push(sorted[0]);
+      if (picks.length === majorityGroupPickCount) break;
+    }
+    if (picks.length < majorityGroupPickCount) return { pick: null, picks, voteCount: 0 };
+
+    const tally = {};
+    picks.forEach(p => tally[p] = (tally[p] || 0) + 1);
+    const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
+    if (ranked.length >= 2 && tally[ranked[0]] === tally[ranked[1]]) {
+      return { pick: null, picks, voteCount: 0 }; // overall tie — not decisive
+    }
+    return { pick: ranked[0], picks, voteCount: tally[ranked[0]] };
+  }
+
+  for (let i = 0; i < trackedResults.length; i++) {
+    const row = trackedResults[i];
+    const cat = row.appResult;
+
+    let mgPred = "Waiting";
+    if (valid.length >= 10) {
+      const pred = predictMajorityGroup();
+      mgPred = pred.pick || NO_MATCH;
+    }
+    row.majorityGroupPrediction = mgPred;
+
+    if (CATEGORIES.includes(cat)) {
+      ALL_LEVELS.forEach(len => {
+        const key = buildKey(len);
+        if (key !== null) {
+          const map = transitionMaps[len];
+          if (!map[key]) map[key] = makeCatCounter();
+          map[key][cat]++;
+        }
+      });
+      valid.push(cat);
+    }
+  }
+
+  let nextPred = "Waiting", nextPicks = null, nextVoteCount = 0;
+  if (valid.length >= 10) {
+    const pred = predictMajorityGroup();
+    nextPred = pred.pick || NO_MATCH;
+    nextPicks = pred.picks;
+    nextVoteCount = pred.voteCount;
+  }
+
+  const recent = trackedResults.slice(-historyDisplayLimit);
+  let winCount = 0, totalCount = 0;
+  recent.forEach(r => {
+    if (r.majorityGroupPrediction && r.majorityGroupPrediction !== "Waiting" && r.majorityGroupPrediction !== NO_MATCH) {
+      totalCount++;
+      if (r.majorityGroupPrediction === r.appResult) winCount++;
+    }
+  });
+
+  nextMajorityGroupCalculatedBet = nextPred;
+  updateMajorityGroupDisplay(nextPred, nextPicks, nextVoteCount, winCount, totalCount);
+  updateMajorityGroupWinningStreakSummary(recent);
+  updateMajorityGroupLosingStreakSummary(recent);
+}
+
+function updateMajorityGroupDisplay(pred, picks, voteCount, winCount, totalCount) {
+  const card = document.getElementById("majorityGroupTripleCard");
+  const ratioRow = document.getElementById("majorityGroupRatioRow");
+  const catRow = document.getElementById("majorityGroupCatRow");
+  const finalRow = document.getElementById("majorityGroupFinalRow");
+  const detail = document.getElementById("majorityGroupPredictionDetail");
+  const topCard = document.getElementById("topMajorityGroupMini");
+  const topRatio = document.getElementById("topMajorityGroupRatio");
+  const topCat = document.getElementById("topMajorityGroupCat");
+  const topFinal = document.getElementById("topMajorityGroupFinal");
+  if (!card) return;
+
+  const palette = ["#3b82f6", "#a855f7", "#f97316", "#ec4899", "#14b8a6", "#eab308", "#ef4444", "#22c55e", "#6366f1", "#0ea5e9"];
+
+  if (pred === "Waiting") {
+    card.style.background = "#475569";
+    ratioRow.innerText = "⏳";
+    catRow.innerText = "ဒေတာ မလုံလောက်သေးပါ";
+    finalRow.innerText = "";
+    detail.innerText = "";
+    if (topCard) {
+      topCard.style.background = "#475569";
+      topRatio.innerText = "⏳";
+      topCat.innerText = "ဒေတာ မလုံလောက်သေးပါ";
+      topFinal.innerText = "";
+    }
+  } else if (pred === NO_MATCH) {
+    card.style.background = "#475569";
+    ratioRow.innerText = "❓";
+    catRow.innerText = "ခန့်မှန်းမှု မရှိပါ (Tie)";
+    finalRow.innerText = "";
+    detail.innerText = `Pattern 30→1 ထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${majorityGroupPickCount} ခု မပြည့်သေးပါ သို့မဟုတ် vote တန်းတူဖြစ်နေပါသည်`;
+    if (topCard) {
+      topCard.style.background = "#475569";
+      topRatio.innerText = "❓";
+      topCat.innerText = "ခန့်မှန်းမှု မရှိပါ (Tie)";
+      topFinal.innerText = "";
+    }
+  } else {
+    const idx = (parseInt(pred) - 1) % palette.length;
+    const color = palette[idx] || "#3b82f6";
+    const bg = `linear-gradient(135deg, ${color}, ${color}cc)`;
+    const ratioText = `${majorityGroupPickCount}/${voteCount}`;
+    const catText = `Group ${pred} (${digitsForGroup(pred)})`;
+
+    card.style.background = bg;
+    ratioRow.innerText = ratioText;
+    catRow.innerText = catText;
+    finalRow.innerText = pred;
+    const picksLabel = picks ? ` (${picks.join("-")})` : "";
+    detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${majorityGroupPickCount} ခု${picksLabel} ရဲ့ အများစု`;
+
+    if (topCard) {
+      topCard.style.background = bg;
+      topRatio.innerText = ratioText;
+      topCat.innerText = catText;
+      topFinal.innerText = pred;
+    }
+  }
+
+  const winRateEl = document.getElementById("majorityGroupWinRate");
+  if (winRateEl) {
+    const pct = totalCount > 0 ? ((winCount / totalCount) * 100).toFixed(1) : "--";
+    winRateEl.innerText = totalCount > 0 ? `${pct}% (${winCount}/${totalCount})` : "--";
+  }
+}
+
+function updateMajorityGroupWinningStreakSummary(recentResults) {
+  const summaryEl = document.getElementById("majorityGroupWinningStreakSummary");
+  if (!summaryEl) return;
+
+  const streakCounts = {};
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    if (!r.majorityGroupPrediction || r.majorityGroupPrediction === "Waiting" || r.majorityGroupPrediction === NO_MATCH) return;
+    const isCorrect = r.majorityGroupPrediction === r.appResult;
+    if (isCorrect) {
+      currentStreak++;
+    } else {
+      if (currentStreak >= 3) streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      currentStreak = 0;
+    }
+  });
+  if (currentStreak >= 3) streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
+  if (lengths.length === 0) {
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်နိုင်မှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်နိုင်</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+function updateMajorityGroupLosingStreakSummary(recentResults) {
+  const summaryEl = document.getElementById("majorityGroupLosingStreakSummary");
+  if (!summaryEl) return;
+
+  const streakCounts = {};
+  let currentStreak = 0;
+
+  recentResults.forEach(r => {
+    if (!r.majorityGroupPrediction || r.majorityGroupPrediction === "Waiting" || r.majorityGroupPrediction === NO_MATCH) return;
+    const isCorrect = r.majorityGroupPrediction === r.appResult;
+    if (isCorrect) {
+      if (currentStreak >= 3) streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+      currentStreak = 0;
+    } else {
+      currentStreak++;
+    }
+  });
+  if (currentStreak >= 3) streakCounts[currentStreak] = (streakCounts[currentStreak] || 0) + 1;
+
+  const lengths = Object.keys(streakCounts).map(Number).sort((a, b) => b - a);
+  if (lengths.length === 0) {
+    summaryEl.innerHTML = `<div class="level-row"><span>၃ ကြိမ်နှင့်အထက် ဆက်တိုက်ရှုံးမှု မရှိသေးပါ</span><span>-</span></div>`;
+  } else {
+    summaryEl.innerHTML = lengths.map(len =>
+      `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
+    ).join("");
+  }
+}
+
+function applyMajorityGroupModeToggle() {
+  majorityGroupModeEnabled = document.getElementById("majorityGroupModeToggle").checked;
+  localStorage.setItem("savedMajorityGroupModeEnabled", majorityGroupModeEnabled ? "1" : "0");
+  const panel = document.getElementById("majorityGroupPredictionPanel");
+  if (panel) panel.style.display = majorityGroupModeEnabled ? "block" : "none";
+  const topMini = document.getElementById("topMajorityGroupMini");
+  if (topMini) topMini.style.display = majorityGroupModeEnabled ? "block" : "none";
+  if (majorityGroupModeEnabled) {
+    recalculateMajorityGroupPredictions();
+  } else {
+    nextMajorityGroupCalculatedBet = "Waiting";
+  }
+  saveData();
+}
+
+function applyMajorityGroupPickCount() {
+  const sel = document.getElementById("majorityGroupPickCountSelect");
+  majorityGroupPickCount = parseInt(sel.value) || 3;
+  localStorage.setItem("savedMajorityGroupPickCount", String(majorityGroupPickCount));
+  if (majorityGroupModeEnabled) recalculateMajorityGroupPredictions();
+  saveData();
 }
 
 function updateGroupBsWinningStreakSummary(recentResults) {
