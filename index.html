@@ -360,9 +360,47 @@
           <div class="win-rate-box">
             <label class="level-chip" style="width:fit-content;">
               <input type="checkbox" id="majorityBsModeToggle" onchange="applyMajorityBsModeToggle()">
-              ဖွင့်ရန် — Settings ထဲက ရွေးထားတဲ့ Level 30 to 1 အထိ အဆင့်တိုင်းရဲ့ B/S ခန့်မှန်းချက်တွေကို စုပြီး အများစုဖက်ကို ခန့်မှန်းမည်
+              ဖွင့်ရန် — အောက်က "Majority B/S Level ရွေးရန်" မှာ ရွေးထားတဲ့ Level တွေရဲ့ B/S ခန့်မှန်းချက်တွေကို စုပြီး အများစုဖက်ကို ခန့်မှန်းမည်
             </label>
-            <div class="input-hint">💡 "Pattern Level ရွေးရန်" checkbox တွေထဲက ရွေးထားတဲ့ Level တွေကိုပဲ သုံးပါမည် — ဥပမာ Level 10,9,8 သာရွေးထားရင် အဲဒီ ၃ ခုထဲကပဲ ခန့်မှန်းပါမည်</div>
+            <div class="input-hint">💡 ဒီ Level ရွေးချယ်မှုက Settings ထဲက "Pattern Level ရွေးရန်" နဲ့ လုံးဝ မဆိုင်ပါ — သီးသန့် ရွေးချယ်လို့ရပါတယ်</div>
+
+            <!-- ===== NEW: Independent level selector for Majority B/S ===== -->
+            <div style="margin-top:10px;">
+              <label style="font-weight:600; color:#93c5fd;">🎚️ Majority B/S Level ရွေးရန် (ဒီ Level တွေကိုပဲ သုံးပါမည်):</label>
+              <div id="majorityBsLevelSelector" class="level-selector">
+                <label class="level-chip"><input type="checkbox" value="30" onchange="applyMajorityBsLevelSelection()"> 30</label>
+                <label class="level-chip"><input type="checkbox" value="29" onchange="applyMajorityBsLevelSelection()"> 29</label>
+                <label class="level-chip"><input type="checkbox" value="28" onchange="applyMajorityBsLevelSelection()"> 28</label>
+                <label class="level-chip"><input type="checkbox" value="27" onchange="applyMajorityBsLevelSelection()"> 27</label>
+                <label class="level-chip"><input type="checkbox" value="26" onchange="applyMajorityBsLevelSelection()"> 26</label>
+                <label class="level-chip"><input type="checkbox" value="25" onchange="applyMajorityBsLevelSelection()"> 25</label>
+                <label class="level-chip"><input type="checkbox" value="24" onchange="applyMajorityBsLevelSelection()"> 24</label>
+                <label class="level-chip"><input type="checkbox" value="23" onchange="applyMajorityBsLevelSelection()"> 23</label>
+                <label class="level-chip"><input type="checkbox" value="22" onchange="applyMajorityBsLevelSelection()"> 22</label>
+                <label class="level-chip"><input type="checkbox" value="21" onchange="applyMajorityBsLevelSelection()"> 21</label>
+                <label class="level-chip"><input type="checkbox" value="20" onchange="applyMajorityBsLevelSelection()"> 20</label>
+                <label class="level-chip"><input type="checkbox" value="19" onchange="applyMajorityBsLevelSelection()"> 19</label>
+                <label class="level-chip"><input type="checkbox" value="18" onchange="applyMajorityBsLevelSelection()"> 18</label>
+                <label class="level-chip"><input type="checkbox" value="17" onchange="applyMajorityBsLevelSelection()"> 17</label>
+                <label class="level-chip"><input type="checkbox" value="16" onchange="applyMajorityBsLevelSelection()"> 16</label>
+                <label class="level-chip"><input type="checkbox" value="15" onchange="applyMajorityBsLevelSelection()"> 15</label>
+                <label class="level-chip"><input type="checkbox" value="14" onchange="applyMajorityBsLevelSelection()"> 14</label>
+                <label class="level-chip"><input type="checkbox" value="13" onchange="applyMajorityBsLevelSelection()"> 13</label>
+                <label class="level-chip"><input type="checkbox" value="12" onchange="applyMajorityBsLevelSelection()"> 12</label>
+                <label class="level-chip"><input type="checkbox" value="11" onchange="applyMajorityBsLevelSelection()"> 11</label>
+                <label class="level-chip"><input type="checkbox" value="10" checked onchange="applyMajorityBsLevelSelection()"> 10</label>
+                <label class="level-chip"><input type="checkbox" value="9" checked onchange="applyMajorityBsLevelSelection()"> 9</label>
+                <label class="level-chip"><input type="checkbox" value="8" checked onchange="applyMajorityBsLevelSelection()"> 8</label>
+                <label class="level-chip"><input type="checkbox" value="7" checked onchange="applyMajorityBsLevelSelection()"> 7</label>
+                <label class="level-chip"><input type="checkbox" value="6" checked onchange="applyMajorityBsLevelSelection()"> 6</label>
+                <label class="level-chip"><input type="checkbox" value="5" checked onchange="applyMajorityBsLevelSelection()"> 5</label>
+                <label class="level-chip"><input type="checkbox" value="4" checked onchange="applyMajorityBsLevelSelection()"> 4</label>
+                <label class="level-chip"><input type="checkbox" value="3" checked onchange="applyMajorityBsLevelSelection()"> 3</label>
+                <label class="level-chip"><input type="checkbox" value="2" checked onchange="applyMajorityBsLevelSelection()"> 2</label>
+                <label class="level-chip"><input type="checkbox" value="1" checked onchange="applyMajorityBsLevelSelection()"> 1</label>
+              </div>
+              <div class="input-hint">💡 ဒီမှာ ရွေးထားတဲ့ Level တွေကိုပဲ Majority B/S အတွက် သုံးပါမယ် — Settings ထဲက Level ရွေးချယ်မှုနဲ့ သီးခြားဖြစ်ပါတယ်</div>
+            </div>
 
             <div id="majorityBsPredictionPanel" style="display:none; margin-top:12px;">
               <div id="majorityBsTripleCard" class="triple-pred" style="background:#475569;">
@@ -431,7 +469,7 @@
       <div id="digitGroupSelector" class="digit-selector-grid"></div>
       <div class="input-hint">💡 "?" ရွေးထားရင် အဲဒီဂဏန်းကို ဘယ် Group မှ မထည့်ပါ — ရှာဖွေတဲ့အခါ ဂရုမစိုက်ပါ။ အနည်းဆုံး Group 2 ခုတော့ ရှိရပါမည်။</div>
 
-      <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ — Majority B/S အတွက်လည်း ဒီရွေးချယ်မှုကိုပဲ သုံးပါမည်):</label>
+      <label>🎚️ Pattern Level ရွေးရန် (ဘယ်အတွဲကို သုံးမလဲ — Group ခန့်မှန်းချက်အတွက်ပဲ သုံးပါမည်၊ Majority B/S အတွက် မဟုတ်ပါ):</label>
       <div id="levelSelector" class="level-selector">
         <label class="level-chip"><input type="checkbox" value="30" onchange="applyLevelSelection()"> 30</label>
         <label class="level-chip"><input type="checkbox" value="29" onchange="applyLevelSelection()"> 29</label>
@@ -752,6 +790,7 @@ function saveData() {
     localStorage.setItem("savedBsReverseEnabled", bsReverseEnabled ? "1" : "0");
     localStorage.setItem("savedRoadMapVisible", roadMapVisible ? "1" : "0");
     localStorage.setItem("savedMajorityBsModeEnabled", majorityBsModeEnabled ? "1" : "0");
+    localStorage.setItem("savedMajorityBsLevels", JSON.stringify(majorityBsEnabledLevels));
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -857,6 +896,20 @@ function loadData() {
       if (majorityPanel) majorityPanel.style.display = majorityBsModeEnabled ? "block" : "none";
       const topMini = document.getElementById("topMajorityBsMini");
       if (topMini) topMini.style.display = majorityBsModeEnabled ? "block" : "none";
+    }
+
+    // Load independent Majority B/S levels
+    const storedMajorityLevels = localStorage.getItem("savedMajorityBsLevels");
+    if (storedMajorityLevels) {
+      try {
+        const parsed = JSON.parse(storedMajorityLevels);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          majorityBsEnabledLevels = parsed.sort((a, b) => b - a);
+          document.querySelectorAll('#majorityBsLevelSelector input[type="checkbox"]').forEach(b => {
+            b.checked = majorityBsEnabledLevels.includes(parseInt(b.value));
+          });
+        }
+      } catch (e) { /* ignore */ }
     }
 
     const storedRoadMapVisible = localStorage.getItem("savedRoadMapVisible");
@@ -1221,6 +1274,7 @@ let nextUsedStats = null;
 let nextUsedKeyDisplay = null; 
 
 let enabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+let majorityBsEnabledLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // NEW: independent for Majority B/S
 let excludeLastCategory = false;
 let bsModeEnabled = false; // independent Big/Small (digit 0-4 vs 5-9) prediction mode
 let bsReverseEnabled = false; // when on, flips the computed B/S pick (B<->S) before it's used anywhere
@@ -1278,6 +1332,28 @@ function applyLevelSelection() {
   updateTableDisplay();
   updatePredictionDisplay();
   updateStats();
+}
+
+// ===== NEW: Independent Majority B/S Level Selection =====
+function applyMajorityBsLevelSelection() {
+  const boxes = document.querySelectorAll('#majorityBsLevelSelector input[type="checkbox"]');
+  const checked = Array.from(boxes)
+    .filter(b => b.checked)
+    .map(b => parseInt(b.value))
+    .sort((a, b) => b - a);
+
+  if (checked.length === 0) {
+    boxes.forEach(b => { if (!b.checked) b.checked = true; });
+    alert("Majority B/S အတွက် Level တစ်ခုမှ မရွေးထားလို့ မရပါ — အနည်းဆုံး တစ်ခုတော့ ရွေးထားပါ။");
+    return;
+  }
+
+  majorityBsEnabledLevels = checked;
+  localStorage.setItem("savedMajorityBsLevels", JSON.stringify(majorityBsEnabledLevels));
+
+  if (majorityBsModeEnabled) {
+    recalculateMajorityBsPredictions();
+  }
 }
 
 // ===== CORE PREDICTION LOGIC =====
@@ -1627,11 +1703,11 @@ function updateGroupBsLosingStreakSummary(recentResults) {
 }
 
 // ===== MAJORITY-OF-SELECTED-LEVELS B/S PREDICTION =====
-// Uses ONLY the pattern lengths that the user has checked in the Settings
-// panel (enabledLevels) — exactly the same set used by the main Group
-// prediction and the single-cascade B/S prediction.
+// Uses ONLY the pattern lengths that the user has checked in the
+// "Majority B/S Level ရွေးရန်" panel — completely independent from
+// the Group system's level selection.
 function recalculateMajorityBsPredictions() {
-  const SEQ_LENGTHS = enabledLevels;  // <-- uses the checked levels only
+  const SEQ_LENGTHS = majorityBsEnabledLevels;  // <-- uses the independent levels
   const makeBsCounter = () => ({ "B": 0, "S": 0 });
   const transitionMaps = {};
   SEQ_LENGTHS.forEach(len => { transitionMaps[len] = {}; });
