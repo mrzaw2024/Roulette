@@ -162,6 +162,11 @@
     .triple-pred .triple-row-ratio { font-size: 13px; opacity: 0.85; letter-spacing: 0.5px; font-weight: 600; }
     .triple-pred .triple-row-cat { font-size: 16px; font-weight: 700; margin-top: 4px; }
     .triple-pred .triple-row-final { font-size: 36px; font-weight: 800; margin-top: 6px; letter-spacing: 2px; }
+    .triple-pred.mini { padding: 10px 14px; }
+    .triple-pred.mini .triple-mini-label { font-size: 11px; opacity: 0.85; margin-bottom: 3px; font-weight: 600; }
+    .triple-pred.mini .triple-row-ratio { font-size: 12px; }
+    .triple-pred.mini .triple-row-cat { font-size: 14px; margin-top: 2px; }
+    .triple-pred.mini .triple-row-final { font-size: 26px; margin-top: 4px; }
 
     table { background: #0d0e1c; }
     th { background: #1c1f36; }
@@ -254,6 +259,13 @@
         <div id="retryCount" class="retry-count" style="display:none;">ပြန်လည်ကြိုးစားမှု: 0 (၃ စက္ကန့်တစ်ခါ)</div>
         <div id="groupSummary" style="font-size:12px; color:#94a3b8;"></div>
         <div id="predictionGroupBreakdown" class="win-rate-by-level" style="width:100%; margin-top:8px;"></div>
+
+        <div id="topMajorityBsMini" class="triple-pred mini" style="display:none; margin-top:10px; width:100%;">
+          <div class="triple-mini-label">🎯 B/S ခန့်မှန်း (Pattern30→1 Majority)</div>
+          <div class="triple-row-ratio" id="topMajorityBsRatio"></div>
+          <div class="triple-row-cat" id="topMajorityBsCat"></div>
+          <div class="triple-row-final" id="topMajorityBsFinal"></div>
+        </div>
       </div>
 
       <h3 style="color:#60a5fa;">📊 Matrix Trend Map (Big Road)</h3>
@@ -826,6 +838,8 @@ function loadData() {
       if (majorityToggle) majorityToggle.checked = majorityBsModeEnabled;
       const majorityPanel = document.getElementById("majorityBsPredictionPanel");
       if (majorityPanel) majorityPanel.style.display = majorityBsModeEnabled ? "block" : "none";
+      const topMini = document.getElementById("topMajorityBsMini");
+      if (topMini) topMini.style.display = majorityBsModeEnabled ? "block" : "none";
     }
 
     const storedMajorityBsPickCount = localStorage.getItem("savedMajorityBsPickCount");
@@ -1451,6 +1465,8 @@ function applyMajorityBsModeToggle() {
   localStorage.setItem("savedMajorityBsModeEnabled", majorityBsModeEnabled ? "1" : "0");
   const panel = document.getElementById("majorityBsPredictionPanel");
   if (panel) panel.style.display = majorityBsModeEnabled ? "block" : "none";
+  const topMini = document.getElementById("topMajorityBsMini");
+  if (topMini) topMini.style.display = majorityBsModeEnabled ? "block" : "none";
   if (majorityBsModeEnabled) {
     recalculateMajorityBsPredictions();
   } else {
@@ -1713,6 +1729,10 @@ function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
   const catRow = document.getElementById("majorityBsCatRow");
   const finalRow = document.getElementById("majorityBsFinalRow");
   const detail = document.getElementById("majorityBsPredictionDetail");
+  const topCard = document.getElementById("topMajorityBsMini");
+  const topRatio = document.getElementById("topMajorityBsRatio");
+  const topCat = document.getElementById("topMajorityBsCat");
+  const topFinal = document.getElementById("topMajorityBsFinal");
   if (!card) return;
 
   if (pred === "Waiting") {
@@ -1721,28 +1741,46 @@ function updateMajorityBsDisplay(pred, picks, winCount, totalCount) {
     catRow.innerText = "ဒေတာ မလုံလောက်သေးပါ";
     finalRow.innerText = "";
     detail.innerText = "";
+    if (topCard) {
+      topCard.style.background = "#475569";
+      topRatio.innerText = "⏳";
+      topCat.innerText = "ဒေတာ မလုံလောက်သေးပါ";
+      topFinal.innerText = "";
+    }
   } else if (pred === NO_MATCH) {
     card.style.background = "#475569";
     ratioRow.innerText = "❓";
     catRow.innerText = "ခန့်မှန်းမှု မရှိပါ";
     finalRow.innerText = "";
     detail.innerText = `Pattern 30→1 ထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${majorityBsPickCount} ခု မပြည့်သေးပါ`;
+    if (topCard) {
+      topCard.style.background = "#475569";
+      topRatio.innerText = "❓";
+      topCat.innerText = "ခန့်မှန်းမှု မရှိပါ";
+      topFinal.innerText = "";
+    }
   } else {
     const bCount = picks ? picks.filter(p => p === "B").length : 0;
     const sCount = picks ? picks.filter(p => p === "S").length : 0;
     const totalPicks = picks ? picks.length : majorityBsPickCount;
     const winningCount = pred === "B" ? bCount : sCount;
-    ratioRow.innerText = `${totalPicks}/${winningCount}`;
-    if (pred === "B") {
-      card.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
-      catRow.innerText = "B (56789)";
-    } else {
-      card.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
-      catRow.innerText = "S (01234)";
-    }
+    const ratioText = `${totalPicks}/${winningCount}`;
+    const bg = pred === "B" ? "linear-gradient(135deg, #ef4444, #dc2626)" : "linear-gradient(135deg, #22c55e, #16a34a)";
+    const catText = pred === "B" ? "B (56789)" : "S (01234)";
+
+    ratioRow.innerText = ratioText;
+    card.style.background = bg;
+    catRow.innerText = catText;
     finalRow.innerText = pred;
     const picksLabel = picks ? ` (${picks.join("-")})` : "";
     detail.innerText = `Pattern 30→1 ထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${majorityBsPickCount} ခု${picksLabel} ရဲ့ အများစု`;
+
+    if (topCard) {
+      topCard.style.background = bg;
+      topRatio.innerText = ratioText;
+      topCat.innerText = catText;
+      topFinal.innerText = pred;
+    }
   }
 
   const winRateEl = document.getElementById("majorityBsWinRate");
