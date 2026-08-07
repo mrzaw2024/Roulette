@@ -108,7 +108,7 @@
     .digit-selector-grid label { font-size: 14px; color: #94a3b8; display: flex; align-items: center; justify-content: space-between; gap: 4px; }
     .digit-selector-grid label span { min-width: 18px; }
 
-    /* Dark Theme Static Style (Kept as original) */
+    /* Dark Theme Static Style */
     :root { --bg-color: #0b0c18; --card-bg: #181a2e; --neon-blue: #38bdf8; --neon-purple: #a855f7; --neon-pink: #f472b6; --glass-border: #2b2e4a; }
     html { background: var(--bg-color); }
     body { background: var(--bg-color); min-height: 100vh; }
@@ -329,11 +329,11 @@
             <div class="input-hint">💡 Group Count နဲ့ Level ရွေးရန် checkbox တွေ အပေါ်မှာ မူတည်ပြီး အလုပ်လုပ်ပါတယ်။ (ဥပမာ - Group 5 ခုနဲ့ Level 10-1 သုံးနေရင် အဲ့ဒါတွေကိုပဲ အခြေခံပြီး Majority ယူမယ်)</div>
 
             <div style="margin-top:10px;">
-              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
+              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ (Bet ကော်လံမှာ ဒီအများဆုံး 2 ခုကို ပြပေးမယ်):</label>
               <select id="majorityGroupPickCountSelect" onchange="applyMajorityGroupPickCount()">
-                <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
-                <option value="5">5 ခုထဲက များတာရွေးမည် (3/5၊ 4/5 သို့ 5/5)</option>
-                <option value="7">7 ခုထဲက များတာရွေးမည် (4/7၊ 5/7၊ 6/7 သို့ 7/7)</option>
+                <option value="3">3 ခုထဲက များတာရွေးမည် (Bet မှာ Top 2 ပြမည်)</option>
+                <option value="5">5 ခုထဲက များတာရွေးမည် (Bet မှာ Top 2 ပြမည်)</option>
+                <option value="7">7 ခုထဲက များတာရွေးမည် (Bet မှာ Top 2 ပြမည်)</option>
               </select>
             </div>
 
@@ -1531,7 +1531,14 @@ function recalculateMajorityGroupPredictions() {
     const countMap = {};
     picks.forEach(p => { countMap[p] = (countMap[p] || 0) + 1; });
     const sortedPicks = Object.keys(countMap).sort((a,b) => countMap[b] - countMap[a]);
-    return { pick: sortedPicks[0], picks };
+    
+    // Return the TOP 2 most frequent choices (or just 1 if that's what you want)
+    // Since you asked for "2 ခု" to show in the Bet column:
+    let topPicks = sortedPicks.slice(0, 2);
+    // If only 1 appeared, return 1. 
+    // If we have 2, we return an array. 
+    // If we want to show Majority Group panel as a list:
+    return { pick: topPicks, picks }; 
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -1706,10 +1713,42 @@ function updateTableDisplay() {
   for (let i = displayResults.length - 1; i >= 0; i--) {
     let row = displayResults[i];
     if (!row) continue;
-    const isArrayPred = Array.isArray(row.betPrediction);
-    let win = isArrayPred && row.betPrediction.includes(row.appResult);
-    let cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
-    let betDisplay = isArrayPred ? row.betPrediction.join(" / ") : (row.betPrediction || "-");
+
+    // --- Main "Bet" Column Logic ---
+    let betDisplay = "-";
+    let cls = "";
+    
+    // 1. Check if "Bet (Group) Majority" mode is ON. If yes, it OVERRIDES the standard bet.
+    if (majorityGroupModeEnabled) {
+        // If Prediction is available
+        if (row.majorityGroupPrediction && row.majorityGroupPrediction !== "Waiting" && row.majorityGroupPrediction !== NO_MATCH) {
+            // Since recalculateMajorityGroupPredictions returns an array for the Bet column
+            if (Array.isArray(row.majorityGroupPrediction)) {
+                betDisplay = row.majorityGroupPrediction.join(" / ");
+                // Check Win/Loss
+                const isWin = row.majorityGroupPrediction.includes(row.appResult);
+                cls = isWin ? "win-match" : "win-miss";
+            } else {
+                betDisplay = row.majorityGroupPrediction; 
+                const isWin = row.majorityGroupPrediction === row.appResult;
+                cls = isWin ? "win-match" : "win-miss";
+            }
+        } else {
+            betDisplay = row.majorityGroupPrediction || "-";
+        }
+    } 
+    // 2. Fallback to Standard Bet if Majority Group Mode is OFF
+    else {
+        const isArrayPred = Array.isArray(row.betPrediction);
+        if (isArrayPred) {
+            let win = row.betPrediction.includes(row.appResult);
+            cls = win ? "win-match" : "win-miss";
+            betDisplay = row.betPrediction.join(" / ");
+        } else {
+            betDisplay = row.betPrediction || "-";
+        }
+    }
+
     let formulaDisplay = row.formulaLength ? `${row.formulaLength} လုံး` : "-";
     let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
     let blockDisplay = row.manual ? `📝 Manual #${Math.abs(row.blockNum)}` : row.blockNum;
@@ -1717,17 +1756,18 @@ function updateTableDisplay() {
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
 
-    // Standard Bet Cell
+    // Standard Bet Cell (Overridden above if Majority Group Mode is ON)
     let betCell = `<td><span class="big-digit-display ${cls}">${betDisplay}</span></td>`;
 
-    // NEW: Majority Group Cell
+    // NEW: Majority Group Cell (If Mode is ON, show the detailed list here)
     let majorityGroupCell = "";
     if (majorityGroupModeEnabled) {
-      const mGroupBet = row.majorityGroupPrediction && row.majorityGroupPrediction !== "Waiting" ? row.majorityGroupPrediction : "-";
-      const mGroupIsPick = row.majorityGroupPrediction !== "Waiting" && row.majorityGroupPrediction !== NO_MATCH;
-      const mGroupWin = mGroupIsPick && row.majorityGroupPrediction === row.appResult;
-      const mGroupCls = mGroupIsPick ? (mGroupWin ? "win-match" : "win-miss") : "";
-      majorityGroupCell = `<td><span class="big-digit-display ${mGroupCls}">${mGroupBet}</span></td>`;
+      // Show the raw list of picks used to decide the majority (the full array)
+      let mGroupList = "-";
+      if (row.majorityGroupPrediction && row.majorityGroupPrediction !== "Waiting" && row.majorityGroupPrediction !== NO_MATCH && Array.isArray(row.majorityGroupPrediction)) {
+        mGroupList = row.majorityGroupPrediction.join("-");
+      }
+      majorityGroupCell = `<td><span class="big-digit-display">${mGroupList}</span></td>`;
     }
 
     // Other B/S Logic (Kept same)
