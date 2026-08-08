@@ -168,6 +168,23 @@
     .triple-pred.mini .triple-row-cat { font-size: 14px; margin-top: 2px; }
     .triple-pred.mini .triple-row-final { font-size: 26px; margin-top: 4px; }
 
+    .level-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .level-mini-card {
+      background: #0d0e1c;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+    .level-mini-title { font-size: 11px; color: #94a3b8; }
+    .level-mini-pick { font-size: 16px; font-weight: 800; margin-top: 2px; }
+    .level-mini-stats { font-size: 10px; color: #64748b; margin-top: 2px; }
+
     table { background: #0d0e1c; }
     th { background: #1c1f36; }
 
@@ -384,23 +401,49 @@
 
       <div class="stat-card" data-key="checkedMajorityBsMode">
         <div class="stat-card-head" onclick="toggleStatCard('checkedMajorityBsMode')">
-          <div class="stat-card-title">✅🎲 B/S ခန့်မှန်းခြင်း <span class="sub">(ရွေးထားသော Level များ Majority)</span></div>
+          <div class="stat-card-title">✅🎲 B/S ခန့်မှန်းခြင်း <span class="sub">(ကိုယ်ပိုင် Level များ Majority)</span></div>
           <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
         </div>
         <div class="stat-card-body">
           <div class="win-rate-box">
             <label class="level-chip" style="width:fit-content;">
               <input type="checkbox" id="checkedMajorityBsModeToggle" onchange="applyCheckedMajorityBsModeToggle()">
-              ဖွင့်ရန် — "Group / Pattern ချိန်ညှိမှု" ထဲက <b>ကိုယ်တိုင်အမှန်ခြစ်ထားသော Pattern Level</b> များကိုသာ (30→1 အကုန် မဟုတ်) အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ ပထမဆုံး B/S အဖြေများကို ယူမည်၊ အများစုဖက်ကို ခန့်မှန်းမည်
+              ဖွင့်ရန် — အောက်မှာ ကိုယ်တိုင်ရွေးထားတဲ့ Level တွေ (Group / Pattern Settings ထဲက Level ရွေးချက်နဲ့ လုံးဝ မသက်ဆိုင်ပါ — ဒီနေရာက သီးသန့်ပါ) အားလုံးက ကိုယ်စီ B/S vote ပေးပြီး၊ အများစုရလဒ်ကို ခန့်မှန်းမည်
             </label>
-            <div class="input-hint">💡 Pattern30→1 Majority B/S စနစ်နဲ့ ကွာသည်က — ဒီစနစ်က "Pattern Level ရွေးရန်" ချက်ဘောက်စ်ထဲမှာ ကိုယ်တိုင် အမှန်ခြစ်ထားသလောက် Level တွေကိုပဲ သုံးပါတယ်</div>
+            <div class="input-hint">💡 Pattern30→1 Majority B/S စနစ်နဲ့ ကွာသည်က — ဒီစနစ်က "ပထမဆုံးဆုံးဖြတ်ချက်ရတဲ့ N ခု" မဟုတ်ဘဲ၊ ကိုယ်တိုင်ရွေးထားသမျှ Level အားလုံးကို တစ်ပြိုင်နက် vote ယူပြီး အများစုသတ်မှတ်ပါတယ်</div>
 
-            <div style="margin-top:10px;">
-              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
-              <select id="checkedMajorityBsPickCountSelect" onchange="applyCheckedMajorityBsPickCount()">
-                <option value="2">2 ခုထဲက များတာရွေးမည် (2/2)</option>
-                <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
-              </select>
+            <div class="input-hint" style="margin-top:10px; font-weight:600;">🔢 ဘယ် Level တွေ သုံးမလဲ ရွေးပါ (ကိုယ်ပိုင် — အောက်ကဟာနဲ့ သီးခြားစီ):</div>
+            <div id="checkedMajorityBsLevelSelector" class="level-selector">
+              <label class="level-chip"><input type="checkbox" value="30" onchange="applyCheckedMajorityBsLevelSelection()"> 30</label>
+              <label class="level-chip"><input type="checkbox" value="29" onchange="applyCheckedMajorityBsLevelSelection()"> 29</label>
+              <label class="level-chip"><input type="checkbox" value="28" onchange="applyCheckedMajorityBsLevelSelection()"> 28</label>
+              <label class="level-chip"><input type="checkbox" value="27" onchange="applyCheckedMajorityBsLevelSelection()"> 27</label>
+              <label class="level-chip"><input type="checkbox" value="26" onchange="applyCheckedMajorityBsLevelSelection()"> 26</label>
+              <label class="level-chip"><input type="checkbox" value="25" onchange="applyCheckedMajorityBsLevelSelection()"> 25</label>
+              <label class="level-chip"><input type="checkbox" value="24" onchange="applyCheckedMajorityBsLevelSelection()"> 24</label>
+              <label class="level-chip"><input type="checkbox" value="23" onchange="applyCheckedMajorityBsLevelSelection()"> 23</label>
+              <label class="level-chip"><input type="checkbox" value="22" onchange="applyCheckedMajorityBsLevelSelection()"> 22</label>
+              <label class="level-chip"><input type="checkbox" value="21" onchange="applyCheckedMajorityBsLevelSelection()"> 21</label>
+              <label class="level-chip"><input type="checkbox" value="20" onchange="applyCheckedMajorityBsLevelSelection()"> 20</label>
+              <label class="level-chip"><input type="checkbox" value="19" onchange="applyCheckedMajorityBsLevelSelection()"> 19</label>
+              <label class="level-chip"><input type="checkbox" value="18" onchange="applyCheckedMajorityBsLevelSelection()"> 18</label>
+              <label class="level-chip"><input type="checkbox" value="17" onchange="applyCheckedMajorityBsLevelSelection()"> 17</label>
+              <label class="level-chip"><input type="checkbox" value="16" onchange="applyCheckedMajorityBsLevelSelection()"> 16</label>
+              <label class="level-chip"><input type="checkbox" value="15" onchange="applyCheckedMajorityBsLevelSelection()"> 15</label>
+              <label class="level-chip"><input type="checkbox" value="14" onchange="applyCheckedMajorityBsLevelSelection()"> 14</label>
+              <label class="level-chip"><input type="checkbox" value="13" onchange="applyCheckedMajorityBsLevelSelection()"> 13</label>
+              <label class="level-chip"><input type="checkbox" value="12" onchange="applyCheckedMajorityBsLevelSelection()"> 12</label>
+              <label class="level-chip"><input type="checkbox" value="11" onchange="applyCheckedMajorityBsLevelSelection()"> 11</label>
+              <label class="level-chip"><input type="checkbox" value="10" checked onchange="applyCheckedMajorityBsLevelSelection()"> 10</label>
+              <label class="level-chip"><input type="checkbox" value="9" checked onchange="applyCheckedMajorityBsLevelSelection()"> 9</label>
+              <label class="level-chip"><input type="checkbox" value="8" checked onchange="applyCheckedMajorityBsLevelSelection()"> 8</label>
+              <label class="level-chip"><input type="checkbox" value="7" checked onchange="applyCheckedMajorityBsLevelSelection()"> 7</label>
+              <label class="level-chip"><input type="checkbox" value="6" checked onchange="applyCheckedMajorityBsLevelSelection()"> 6</label>
+              <label class="level-chip"><input type="checkbox" value="5" checked onchange="applyCheckedMajorityBsLevelSelection()"> 5</label>
+              <label class="level-chip"><input type="checkbox" value="4" checked onchange="applyCheckedMajorityBsLevelSelection()"> 4</label>
+              <label class="level-chip"><input type="checkbox" value="3" checked onchange="applyCheckedMajorityBsLevelSelection()"> 3</label>
+              <label class="level-chip"><input type="checkbox" value="2" checked onchange="applyCheckedMajorityBsLevelSelection()"> 2</label>
+              <label class="level-chip"><input type="checkbox" value="1" checked onchange="applyCheckedMajorityBsLevelSelection()"> 1</label>
             </div>
 
             <div id="checkedMajorityBsPredictionPanel" style="display:none; margin-top:12px;">
@@ -413,6 +456,8 @@
               <div style="margin-top:10px; font-weight:bold;">
                 Win Rate: <span id="checkedMajorityBsWinRate">--</span>
               </div>
+              <div class="input-hint" style="margin-top:12px; font-weight:600;">📊 Level တစ်ခုချင်းစီ၏ ကိုယ်ပိုင် ခန့်မှန်းချက် (ယခုအချိန်):</div>
+              <div id="checkedMajorityBsLevelBreakdown" class="level-mini-grid"></div>
             </div>
           </div>
         </div>
@@ -420,23 +465,57 @@
 
       <div class="stat-card" data-key="checkedMajorityGroupMode">
         <div class="stat-card-head" onclick="toggleStatCard('checkedMajorityGroupMode')">
-          <div class="stat-card-title">✅🔢 Group ခန့်မှန်းခြင်း <span class="sub">(ရွေးထားသော Level များ Majority)</span></div>
+          <div class="stat-card-title">✅🔢 Group ခန့်မှန်းခြင်း <span class="sub">(ကိုယ်ပိုင် Level များ Majority)</span></div>
           <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
         </div>
         <div class="stat-card-body">
           <div class="win-rate-box">
             <label class="level-chip" style="width:fit-content;">
               <input type="checkbox" id="checkedMajorityGroupModeToggle" onchange="applyCheckedMajorityGroupModeToggle()">
-              ဖွင့်ရန် — "Group / Pattern ချိန်ညှိမှု" ထဲက <b>ကိုယ်တိုင်အမှန်ခြစ်ထားသော Pattern Level</b> များကိုသာ (30→1 အကုန် မဟုတ်) အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ ပထမဆုံး Group အဖြေများကို ယူမည်၊ အများဆုံးရလာတဲ့ Group ကို ခန့်မှန်းမည်
+              ဖွင့်ရန် — အောက်မှာ ကိုယ်တိုင်ရွေးထားတဲ့ Level တွေ (Group / Pattern Settings ထဲက Level ရွေးချက်နဲ့ လုံးဝ မသက်ဆိုင်ပါ — ဒီနေရာက သီးသန့်ပါ) အားလုံးက ကိုယ်စီ Group vote ပေးပြီး၊ အများဆုံးရလာတဲ့ Group ကို ခန့်မှန်းမည်
             </label>
-            <div class="input-hint">💡 Pattern30→1 Majority Group စနစ်နဲ့ ကွာသည်က — ဒီစနစ်က "Pattern Level ရွေးရန်" ချက်ဘောက်စ်ထဲမှာ ကိုယ်တိုင် အမှန်ခြစ်ထားသလောက် Level တွေကိုပဲ သုံးပါတယ်</div>
+            <div class="input-hint">💡 Pattern30→1 Majority Group စနစ်နဲ့ ကွာသည်က — ဒီစနစ်က "ပထမဆုံးဆုံးဖြတ်ချက်ရတဲ့ N ခု" မဟုတ်ဘဲ၊ ကိုယ်တိုင်ရွေးထားသမျှ Level အားလုံးကို တစ်ပြိုင်နက် vote ယူပြီး အများဆုံး Group ကို သတ်မှတ်ပါတယ်</div>
 
             <div style="margin-top:10px;">
-              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
-              <select id="checkedMajorityGroupPickCountSelect" onchange="applyCheckedMajorityGroupPickCount()">
-                <option value="2">2 ခုထဲက များတာရွေးမည် (2/2)</option>
-                <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
+              <label>🎯 Group ဘယ်နှစ်ခု ခန့်မှန်းမလဲ:</label>
+              <select id="checkedMajorityGroupPredictCountSelect" onchange="applyCheckedMajorityGroupPredictCount()">
+                <option value="1">1 ခုတည်း ခန့်မှန်းမည် (Vote အများဆုံး Group)</option>
+                <option value="2">2 ခု ခန့်မှန်းမည် (Vote အများဆုံး ၂ ခု)</option>
               </select>
+            </div>
+
+            <div class="input-hint" style="margin-top:10px; font-weight:600;">🔢 ဘယ် Level တွေ သုံးမလဲ ရွေးပါ (ကိုယ်ပိုင် — အောက်ကဟာနဲ့ သီးခြားစီ):</div>
+            <div id="checkedMajorityGroupLevelSelector" class="level-selector">
+              <label class="level-chip"><input type="checkbox" value="30" onchange="applyCheckedMajorityGroupLevelSelection()"> 30</label>
+              <label class="level-chip"><input type="checkbox" value="29" onchange="applyCheckedMajorityGroupLevelSelection()"> 29</label>
+              <label class="level-chip"><input type="checkbox" value="28" onchange="applyCheckedMajorityGroupLevelSelection()"> 28</label>
+              <label class="level-chip"><input type="checkbox" value="27" onchange="applyCheckedMajorityGroupLevelSelection()"> 27</label>
+              <label class="level-chip"><input type="checkbox" value="26" onchange="applyCheckedMajorityGroupLevelSelection()"> 26</label>
+              <label class="level-chip"><input type="checkbox" value="25" onchange="applyCheckedMajorityGroupLevelSelection()"> 25</label>
+              <label class="level-chip"><input type="checkbox" value="24" onchange="applyCheckedMajorityGroupLevelSelection()"> 24</label>
+              <label class="level-chip"><input type="checkbox" value="23" onchange="applyCheckedMajorityGroupLevelSelection()"> 23</label>
+              <label class="level-chip"><input type="checkbox" value="22" onchange="applyCheckedMajorityGroupLevelSelection()"> 22</label>
+              <label class="level-chip"><input type="checkbox" value="21" onchange="applyCheckedMajorityGroupLevelSelection()"> 21</label>
+              <label class="level-chip"><input type="checkbox" value="20" onchange="applyCheckedMajorityGroupLevelSelection()"> 20</label>
+              <label class="level-chip"><input type="checkbox" value="19" onchange="applyCheckedMajorityGroupLevelSelection()"> 19</label>
+              <label class="level-chip"><input type="checkbox" value="18" onchange="applyCheckedMajorityGroupLevelSelection()"> 18</label>
+              <label class="level-chip"><input type="checkbox" value="17" onchange="applyCheckedMajorityGroupLevelSelection()"> 17</label>
+              <label class="level-chip"><input type="checkbox" value="16" onchange="applyCheckedMajorityGroupLevelSelection()"> 16</label>
+              <label class="level-chip"><input type="checkbox" value="15" onchange="applyCheckedMajorityGroupLevelSelection()"> 15</label>
+              <label class="level-chip"><input type="checkbox" value="14" onchange="applyCheckedMajorityGroupLevelSelection()"> 14</label>
+              <label class="level-chip"><input type="checkbox" value="13" onchange="applyCheckedMajorityGroupLevelSelection()"> 13</label>
+              <label class="level-chip"><input type="checkbox" value="12" onchange="applyCheckedMajorityGroupLevelSelection()"> 12</label>
+              <label class="level-chip"><input type="checkbox" value="11" onchange="applyCheckedMajorityGroupLevelSelection()"> 11</label>
+              <label class="level-chip"><input type="checkbox" value="10" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 10</label>
+              <label class="level-chip"><input type="checkbox" value="9" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 9</label>
+              <label class="level-chip"><input type="checkbox" value="8" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 8</label>
+              <label class="level-chip"><input type="checkbox" value="7" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 7</label>
+              <label class="level-chip"><input type="checkbox" value="6" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 6</label>
+              <label class="level-chip"><input type="checkbox" value="5" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 5</label>
+              <label class="level-chip"><input type="checkbox" value="4" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 4</label>
+              <label class="level-chip"><input type="checkbox" value="3" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 3</label>
+              <label class="level-chip"><input type="checkbox" value="2" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 2</label>
+              <label class="level-chip"><input type="checkbox" value="1" checked onchange="applyCheckedMajorityGroupLevelSelection()"> 1</label>
             </div>
 
             <div id="checkedMajorityGroupPredictionPanel" style="display:none; margin-top:12px;">
@@ -449,10 +528,13 @@
               <div style="margin-top:10px; font-weight:bold;">
                 Win Rate: <span id="checkedMajorityGroupWinRate">--</span>
               </div>
+              <div class="input-hint" style="margin-top:12px; font-weight:600;">📊 Level တစ်ခုချင်းစီ၏ ကိုယ်ပိုင် ခန့်မှန်းချက် (ယခုအချိန်):</div>
+              <div id="checkedMajorityGroupLevelBreakdown" class="level-mini-grid"></div>
             </div>
           </div>
         </div>
       </div>
+
 
       <div class="stat-card" data-key="winRateTracker">
         <div class="stat-card-head" onclick="toggleStatCard('winRateTracker')">
@@ -792,9 +874,10 @@ function saveData() {
     localStorage.setItem("savedMajorityBsModeEnabled", majorityBsModeEnabled ? "1" : "0");
     localStorage.setItem("savedMajorityGroupModeEnabled", majorityGroupModeEnabled ? "1" : "0");
     localStorage.setItem("savedCheckedMajorityBsModeEnabled", checkedMajorityBsModeEnabled ? "1" : "0");
-    localStorage.setItem("savedCheckedMajorityBsPickCount", String(checkedMajorityBsPickCount));
+    localStorage.setItem("savedCheckedMajorityBsLevels", JSON.stringify(checkedMajorityBsLevels));
     localStorage.setItem("savedCheckedMajorityGroupModeEnabled", checkedMajorityGroupModeEnabled ? "1" : "0");
-    localStorage.setItem("savedCheckedMajorityGroupPickCount", String(checkedMajorityGroupPickCount));
+    localStorage.setItem("savedCheckedMajorityGroupLevels", JSON.stringify(checkedMajorityGroupLevels));
+    localStorage.setItem("savedCheckedMajorityGroupPredictCount", String(checkedMajorityGroupPredictCount));
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -920,12 +1003,18 @@ function loadData() {
       const cPanel = document.getElementById("checkedMajorityBsPredictionPanel");
       if (cPanel) cPanel.style.display = checkedMajorityBsModeEnabled ? "block" : "none";
     }
-    const storedCheckedMajorityBsPickCount = localStorage.getItem("savedCheckedMajorityBsPickCount");
-    if (storedCheckedMajorityBsPickCount === "2" || storedCheckedMajorityBsPickCount === "3") {
-      checkedMajorityBsPickCount = parseInt(storedCheckedMajorityBsPickCount);
+    const storedCheckedMajorityBsLevels = localStorage.getItem("savedCheckedMajorityBsLevels");
+    if (storedCheckedMajorityBsLevels) {
+      try {
+        const parsed = JSON.parse(storedCheckedMajorityBsLevels);
+        if (Array.isArray(parsed) && parsed.every(n => Number.isInteger(n) && n >= 1 && n <= 30)) {
+          checkedMajorityBsLevels = parsed;
+        }
+      } catch (e) {}
     }
-    const checkedMajorityBsPickCountSel = document.getElementById("checkedMajorityBsPickCountSelect");
-    if (checkedMajorityBsPickCountSel) checkedMajorityBsPickCountSel.value = String(checkedMajorityBsPickCount);
+    document.querySelectorAll('#checkedMajorityBsLevelSelector input[type="checkbox"]').forEach(b => {
+      b.checked = checkedMajorityBsLevels.includes(parseInt(b.value));
+    });
 
     const storedCheckedMajorityGroupMode = localStorage.getItem("savedCheckedMajorityGroupModeEnabled");
     if (storedCheckedMajorityGroupMode !== null) {
@@ -935,12 +1024,24 @@ function loadData() {
       const cgPanel = document.getElementById("checkedMajorityGroupPredictionPanel");
       if (cgPanel) cgPanel.style.display = checkedMajorityGroupModeEnabled ? "block" : "none";
     }
-    const storedCheckedMajorityGroupPickCount = localStorage.getItem("savedCheckedMajorityGroupPickCount");
-    if (storedCheckedMajorityGroupPickCount === "2" || storedCheckedMajorityGroupPickCount === "3") {
-      checkedMajorityGroupPickCount = parseInt(storedCheckedMajorityGroupPickCount);
+    const storedCheckedMajorityGroupLevels = localStorage.getItem("savedCheckedMajorityGroupLevels");
+    if (storedCheckedMajorityGroupLevels) {
+      try {
+        const parsed = JSON.parse(storedCheckedMajorityGroupLevels);
+        if (Array.isArray(parsed) && parsed.every(n => Number.isInteger(n) && n >= 1 && n <= 30)) {
+          checkedMajorityGroupLevels = parsed;
+        }
+      } catch (e) {}
     }
-    const checkedMajorityGroupPickCountSel = document.getElementById("checkedMajorityGroupPickCountSelect");
-    if (checkedMajorityGroupPickCountSel) checkedMajorityGroupPickCountSel.value = String(checkedMajorityGroupPickCount);
+    document.querySelectorAll('#checkedMajorityGroupLevelSelector input[type="checkbox"]').forEach(b => {
+      b.checked = checkedMajorityGroupLevels.includes(parseInt(b.value));
+    });
+    const storedCheckedMajorityGroupPredictCount = localStorage.getItem("savedCheckedMajorityGroupPredictCount");
+    if (storedCheckedMajorityGroupPredictCount === "1" || storedCheckedMajorityGroupPredictCount === "2") {
+      checkedMajorityGroupPredictCount = parseInt(storedCheckedMajorityGroupPredictCount);
+    }
+    const checkedMajorityGroupPredictCountSel = document.getElementById("checkedMajorityGroupPredictCountSelect");
+    if (checkedMajorityGroupPredictCountSel) checkedMajorityGroupPredictCountSel.value = String(checkedMajorityGroupPredictCount);
 
     const storedRoadMapVisible = localStorage.getItem("savedRoadMapVisible");
     if (storedRoadMapVisible !== null) {
@@ -1313,12 +1414,13 @@ let nextMajorityBsCalculatedBet = "Waiting";
 let majorityGroupModeEnabled = false; // independent "majority of first N decisive Group picks across pattern levels 30->1" system
 let majorityGroupPickCount = 3; // how many decisive picks (3, 5, or 7) to gather before deciding majority
 
-let checkedMajorityBsModeEnabled = false; // like majorityBsMode, but only scans the user's manually-checked Pattern Levels (enabledLevels), not all 30
-let checkedMajorityBsPickCount = 2; // how many decisive picks (2 or 3) to gather before deciding majority
+let checkedMajorityBsModeEnabled = false; // like majorityBsMode, but uses its OWN independent Level checklist (checkedMajorityBsLevels) and votes across ALL of them, not a fixed 30->1 range shared with main settings
+let checkedMajorityBsLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // independent from enabledLevels
 let nextCheckedMajorityBsCalculatedBet = "Waiting";
 
-let checkedMajorityGroupModeEnabled = false; // like majorityGroupMode, but only scans the user's manually-checked Pattern Levels (enabledLevels), not all 30
-let checkedMajorityGroupPickCount = 2; // how many decisive picks (2 or 3) to gather before deciding majority
+let checkedMajorityGroupModeEnabled = false; // like majorityGroupMode, but uses its OWN independent Level checklist (checkedMajorityGroupLevels) and votes across ALL of them
+let checkedMajorityGroupLevels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // independent from enabledLevels
+let checkedMajorityGroupPredictCount = 1; // how many top-voted Groups to predict at once (1 or 2)
 let nextCheckedMajorityGroupCalculatedBet = "Waiting";
 let nextMajorityGroupCalculatedBet = "Waiting";
 let roadMapVisible = true; // whether the Matrix Trend Map (Big Road) table is shown
@@ -2200,41 +2302,41 @@ function updateMajorityGroupLosingStreakSummary(recentResults) {
   }
 }
 
-// ===== CHECKED-LEVEL-ONLY MAJORITY B/S (like Majority B/S above, but scans
-// only the Pattern Levels the user has manually ticked in "Pattern Level
-// ရွေးရန်" — i.e. `enabledLevels` — instead of the fixed 30→1 range) =====
-function recalculateCheckedMajorityBsPredictions() {
-  const ALL_LEVELS = enabledLevels; // already sorted descending
+// ===== CHECKED-LEVEL-ONLY MAJORITY B/S ("Majority of All [independently
+// checked] Levels") — uses its OWN Level checklist (checkedMajorityBsLevels),
+// completely separate from the main "Pattern Level ရွေးရန်" settings. Every
+// checked level casts its own B/S vote (based on that level's own historical
+// stats for the current pattern key); the overall prediction is whichever
+// side (B or S) gets more level-votes. =====
+function buildLevelKey(len, valid) {
+  if (valid.length < len) return null;
+  const parts = [];
+  for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
+  return parts.join(",");
+}
 
+function recalculateCheckedMajorityBsPredictions() {
+  const ALL_LEVELS = checkedMajorityBsLevels.slice().sort((a, b) => b - a);
   const makeBsCounter = () => ({ "B": 0, "S": 0 });
   const transitionMaps = {};
   ALL_LEVELS.forEach(len => { transitionMaps[len] = {}; });
   const valid = [];
 
-  function buildKey(len) {
-    if (valid.length < len) return null;
-    const parts = [];
-    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
-    return parts.join(",");
-  }
-
-  function predictCheckedMajorityBs() {
-    const picks = [];
+  function computeLevelVotes() {
+    const levelResults = [];
+    let bTotal = 0, sTotal = 0;
     for (const len of ALL_LEVELS) {
-      const key = buildKey(len);
-      if (key === null) continue;
+      const key = buildLevelKey(len, valid);
+      if (key === null) { levelResults.push({ level: len, pick: null, b: 0, s: 0 }); continue; }
       const stats = transitionMaps[len][key];
-      if (!stats) continue;
-      const bCount = stats["B"], sCount = stats["S"];
-      if (bCount === sCount) continue;
-      picks.push(bCount > sCount ? "B" : "S");
-      if (picks.length === checkedMajorityBsPickCount) break;
+      if (!stats) { levelResults.push({ level: len, pick: null, b: 0, s: 0 }); continue; }
+      const b = stats["B"], s = stats["S"];
+      if (b === s) { levelResults.push({ level: len, pick: null, b, s }); continue; }
+      const pick = b > s ? "B" : "S";
+      levelResults.push({ level: len, pick, b, s });
+      if (pick === "B") bTotal++; else sTotal++;
     }
-    if (picks.length < checkedMajorityBsPickCount) return { pick: null, picks };
-    const bTotal = picks.filter(p => p === "B").length;
-    const sTotal = picks.filter(p => p === "S").length;
-    if (bTotal === sTotal) return { pick: null, picks };
-    return { pick: bTotal > sTotal ? "B" : "S", picks };
+    return { levelResults, bTotal, sTotal };
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -2244,14 +2346,15 @@ function recalculateCheckedMajorityBsPredictions() {
 
     let bsPred = "Waiting";
     if (valid.length >= 10) {
-      const pred = predictCheckedMajorityBs();
-      bsPred = pred.pick || NO_MATCH;
+      const v = computeLevelVotes();
+      if (v.bTotal === 0 && v.sTotal === 0) bsPred = NO_MATCH;
+      else bsPred = v.bTotal === v.sTotal ? NO_MATCH : (v.bTotal > v.sTotal ? "B" : "S");
     }
     row.checkedMajorityBsPrediction = bsPred;
 
     if (bsVal !== null) {
       ALL_LEVELS.forEach(len => {
-        const key = buildKey(len);
+        const key = buildLevelKey(len, valid);
         if (key !== null) {
           const map = transitionMaps[len];
           if (!map[key]) map[key] = makeBsCounter();
@@ -2262,11 +2365,11 @@ function recalculateCheckedMajorityBsPredictions() {
     }
   }
 
-  let nextPred = "Waiting", nextPicks = null;
+  let nextPred = "Waiting", nextVotes = null;
   if (valid.length >= 10) {
-    const pred = predictCheckedMajorityBs();
-    nextPred = pred.pick || NO_MATCH;
-    nextPicks = pred.picks;
+    nextVotes = computeLevelVotes();
+    if (nextVotes.bTotal === 0 && nextVotes.sTotal === 0) nextPred = NO_MATCH;
+    else nextPred = nextVotes.bTotal === nextVotes.sTotal ? NO_MATCH : (nextVotes.bTotal > nextVotes.sTotal ? "B" : "S");
   }
 
   const recent = trackedResults.slice(-historyDisplayLimit);
@@ -2279,15 +2382,16 @@ function recalculateCheckedMajorityBsPredictions() {
   });
 
   nextCheckedMajorityBsCalculatedBet = nextPred;
-  updateCheckedMajorityBsDisplay(nextPred, nextPicks, winCount, totalCount);
+  updateCheckedMajorityBsDisplay(nextPred, nextVotes, ALL_LEVELS.length, winCount, totalCount);
 }
 
-function updateCheckedMajorityBsDisplay(pred, picks, winCount, totalCount) {
+function updateCheckedMajorityBsDisplay(pred, votes, levelCount, winCount, totalCount) {
   const card = document.getElementById("checkedMajorityBsTripleCard");
   const ratioRow = document.getElementById("checkedMajorityBsRatioRow");
   const catRow = document.getElementById("checkedMajorityBsCatRow");
   const finalRow = document.getElementById("checkedMajorityBsFinalRow");
   const detail = document.getElementById("checkedMajorityBsPredictionDetail");
+  const breakdownEl = document.getElementById("checkedMajorityBsLevelBreakdown");
   if (!card) return;
 
   if (pred === "Waiting") {
@@ -2298,32 +2402,34 @@ function updateCheckedMajorityBsDisplay(pred, picks, winCount, totalCount) {
     detail.innerText = "";
   } else if (pred === NO_MATCH) {
     card.style.background = "#475569";
-    ratioRow.innerText = "❓";
+    ratioRow.innerText = votes ? `${levelCount} levels · B:${votes.bTotal} S:${votes.sTotal}` : "❓";
     catRow.innerText = "ခန့်မှန်းမှု မရှိပါ (Tie)";
     finalRow.innerText = "";
-    detail.innerText = `ရွေးထားသော Level ${enabledLevels.length} ခုအထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${checkedMajorityBsPickCount} ခု မပြည့်သေးပါ`;
+    detail.innerText = `ရွေးထားသော Level ${levelCount} ခုရဲ့ vote တန်းတူဖြစ်နေပါသည်`;
   } else {
-    const bCount = picks ? picks.filter(p => p === "B").length : 0;
-    const sCount = picks ? picks.filter(p => p === "S").length : 0;
-    const totalPicks = picks ? picks.length : checkedMajorityBsPickCount;
-    const winningCount = pred === "B" ? bCount : sCount;
-    ratioRow.innerText = `${totalPicks}/${winningCount}`;
-    if (pred === "B") {
-      card.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
-      catRow.innerText = "B (56789)";
-    } else {
-      card.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
-      catRow.innerText = "S (01234)";
-    }
+    card.style.background = pred === "B" ? "linear-gradient(135deg, #ef4444, #dc2626)" : "linear-gradient(135deg, #22c55e, #16a34a)";
+    ratioRow.innerText = `${levelCount} levels · B:${votes.bTotal} S:${votes.sTotal}`;
+    catRow.innerText = pred === "B" ? "B (56789)" : "S (01234)";
     finalRow.innerText = pred;
-    const picksLabel = picks ? ` (${picks.join("-")})` : "";
-    detail.innerText = `ရွေးထားသော Level များထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${checkedMajorityBsPickCount} ခု${picksLabel} ရဲ့ အများစု`;
+    detail.innerText = `ရွေးထားသော Level ${levelCount} ခုရဲ့ Vote အများစုအလိုက် ခန့်မှန်းထားသည်`;
   }
 
   const winRateEl = document.getElementById("checkedMajorityBsWinRate");
   if (winRateEl) {
     const pct = totalCount > 0 ? ((winCount / totalCount) * 100).toFixed(1) : "--";
     winRateEl.innerText = totalCount > 0 ? `${pct}% (${winCount}/${totalCount})` : "--";
+  }
+
+  if (breakdownEl) {
+    if (!votes || !votes.levelResults) {
+      breakdownEl.innerHTML = "";
+    } else {
+      breakdownEl.innerHTML = votes.levelResults.map(lr => {
+        const label = lr.pick || "-";
+        const color = lr.pick === "B" ? "#ef4444" : (lr.pick === "S" ? "#22c55e" : "#64748b");
+        return `<div class="level-mini-card"><div class="level-mini-title">Level ${lr.level}</div><div class="level-mini-pick" style="color:${color};">${label}</div><div class="level-mini-stats">B:${lr.b} S:${lr.s}</div></div>`;
+      }).join("");
+    }
   }
 }
 
@@ -2340,55 +2446,56 @@ function applyCheckedMajorityBsModeToggle() {
   saveData();
 }
 
-function applyCheckedMajorityBsPickCount() {
-  const sel = document.getElementById("checkedMajorityBsPickCountSelect");
-  const n = parseInt(sel.value);
-  checkedMajorityBsPickCount = (n === 3) ? 3 : 2;
-  localStorage.setItem("savedCheckedMajorityBsPickCount", String(checkedMajorityBsPickCount));
+function applyCheckedMajorityBsLevelSelection() {
+  const boxes = document.querySelectorAll('#checkedMajorityBsLevelSelector input[type="checkbox"]');
+  const checked = Array.from(boxes).filter(b => b.checked).map(b => parseInt(b.value)).sort((a, b) => b - a);
+  if (checked.length === 0) {
+    boxes.forEach(b => { if (!b.checked) b.checked = true; });
+    alert("Level တစ်ခုမှ မရွေးထားလို့ မရပါ — အနည်းဆုံး တစ်ခုတော့ ရွေးထားပါ။");
+    return;
+  }
+  checkedMajorityBsLevels = checked;
+  localStorage.setItem("savedCheckedMajorityBsLevels", JSON.stringify(checkedMajorityBsLevels));
   if (checkedMajorityBsModeEnabled) recalculateCheckedMajorityBsPredictions();
   saveData();
 }
 
-// ===== CHECKED-LEVEL-ONLY MAJORITY GROUP (same idea, for the Group/Bet
-// prediction instead of B/S) =====
+// ===== CHECKED-LEVEL-ONLY MAJORITY GROUP (same "vote across all independently
+// checked levels" idea, for the Group/Bet prediction instead of B/S; can
+// predict the single top Group, or the top-2 by vote count) =====
 function recalculateCheckedMajorityGroupPredictions() {
-  const ALL_LEVELS = enabledLevels;
-
+  const ALL_LEVELS = checkedMajorityGroupLevels.slice().sort((a, b) => b - a);
   const makeCatCounter = () => { const o = {}; CATEGORIES.forEach(c => o[c] = 0); return o; };
   const transitionMaps = {};
   ALL_LEVELS.forEach(len => { transitionMaps[len] = {}; });
   const valid = [];
 
-  function buildKey(len) {
-    if (valid.length < len) return null;
-    const parts = [];
-    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
-    return parts.join(",");
+  function computeLevelVotes() {
+    const levelResults = [];
+    const tally = {};
+    for (const len of ALL_LEVELS) {
+      const key = buildLevelKey(len, valid);
+      if (key === null) { levelResults.push({ level: len, pick: null, counts: null }); continue; }
+      const stats = transitionMaps[len][key];
+      if (!stats) { levelResults.push({ level: len, pick: null, counts: null }); continue; }
+      const seen = CATEGORIES.filter(c => stats[c] > 0);
+      if (seen.length === 0) { levelResults.push({ level: len, pick: null, counts: stats }); continue; }
+      const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
+      if (sorted.length >= 2 && stats[sorted[0]] === stats[sorted[1]]) {
+        levelResults.push({ level: len, pick: null, counts: stats });
+        continue;
+      }
+      const pick = sorted[0];
+      levelResults.push({ level: len, pick, counts: stats });
+      tally[pick] = (tally[pick] || 0) + 1;
+    }
+    return { levelResults, tally };
   }
 
-  function predictCheckedMajorityGroup() {
-    const picks = [];
-    for (const len of ALL_LEVELS) {
-      const key = buildKey(len);
-      if (key === null) continue;
-      const stats = transitionMaps[len][key];
-      if (!stats) continue;
-      const seen = CATEGORIES.filter(c => stats[c] > 0);
-      if (seen.length === 0) continue;
-      const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
-      if (sorted.length >= 2 && stats[sorted[0]] === stats[sorted[1]]) continue;
-      picks.push(sorted[0]);
-      if (picks.length === checkedMajorityGroupPickCount) break;
-    }
-    if (picks.length < checkedMajorityGroupPickCount) return { pick: null, picks, voteCount: 0 };
-
-    const tally = {};
-    picks.forEach(p => tally[p] = (tally[p] || 0) + 1);
-    const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
-    if (ranked.length >= 2 && tally[ranked[0]] === tally[ranked[1]]) {
-      return { pick: null, picks, voteCount: 0 };
-    }
-    return { pick: ranked[0], picks, voteCount: tally[ranked[0]] };
+  function decideFromTally(tally) {
+    const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a] || parseInt(a) - parseInt(b));
+    if (ranked.length === 0) return null;
+    return ranked.slice(0, checkedMajorityGroupPredictCount);
   }
 
   for (let i = 0; i < trackedResults.length; i++) {
@@ -2397,14 +2504,15 @@ function recalculateCheckedMajorityGroupPredictions() {
 
     let mgPred = "Waiting";
     if (valid.length >= 10) {
-      const pred = predictCheckedMajorityGroup();
-      mgPred = pred.pick || NO_MATCH;
+      const v = computeLevelVotes();
+      const picks = decideFromTally(v.tally);
+      mgPred = (picks && picks.length > 0) ? picks : NO_MATCH;
     }
     row.checkedMajorityGroupPrediction = mgPred;
 
     if (CATEGORIES.includes(cat)) {
       ALL_LEVELS.forEach(len => {
-        const key = buildKey(len);
+        const key = buildLevelKey(len, valid);
         if (key !== null) {
           const map = transitionMaps[len];
           if (!map[key]) map[key] = makeCatCounter();
@@ -2415,36 +2523,38 @@ function recalculateCheckedMajorityGroupPredictions() {
     }
   }
 
-  let nextPred = "Waiting", nextPicks = null, nextVoteCount = 0;
+  let nextPred = "Waiting", nextVotes = null;
   if (valid.length >= 10) {
-    const pred = predictCheckedMajorityGroup();
-    nextPred = pred.pick || NO_MATCH;
-    nextPicks = pred.picks;
-    nextVoteCount = pred.voteCount;
+    nextVotes = computeLevelVotes();
+    const picks = decideFromTally(nextVotes.tally);
+    nextPred = (picks && picks.length > 0) ? picks : NO_MATCH;
   }
 
   const recent = trackedResults.slice(-historyDisplayLimit);
   let winCount = 0, totalCount = 0;
   recent.forEach(r => {
-    if (r.checkedMajorityGroupPrediction && r.checkedMajorityGroupPrediction !== "Waiting" && r.checkedMajorityGroupPrediction !== NO_MATCH) {
+    const p = r.checkedMajorityGroupPrediction;
+    if (Array.isArray(p)) {
       totalCount++;
-      if (r.checkedMajorityGroupPrediction === r.appResult) winCount++;
+      if (p.includes(r.appResult)) winCount++;
     }
   });
 
   nextCheckedMajorityGroupCalculatedBet = nextPred;
-  updateCheckedMajorityGroupDisplay(nextPred, nextPicks, nextVoteCount, winCount, totalCount);
+  updateCheckedMajorityGroupDisplay(nextPred, nextVotes, ALL_LEVELS.length, winCount, totalCount);
 }
 
-function updateCheckedMajorityGroupDisplay(pred, picks, voteCount, winCount, totalCount) {
+function updateCheckedMajorityGroupDisplay(pred, votes, levelCount, winCount, totalCount) {
   const card = document.getElementById("checkedMajorityGroupTripleCard");
   const ratioRow = document.getElementById("checkedMajorityGroupRatioRow");
   const catRow = document.getElementById("checkedMajorityGroupCatRow");
   const finalRow = document.getElementById("checkedMajorityGroupFinalRow");
   const detail = document.getElementById("checkedMajorityGroupPredictionDetail");
+  const breakdownEl = document.getElementById("checkedMajorityGroupLevelBreakdown");
   if (!card) return;
 
   const palette = ["#3b82f6", "#a855f7", "#f97316", "#ec4899", "#14b8a6", "#eab308", "#ef4444", "#22c55e", "#6366f1", "#0ea5e9"];
+  const colorFor = g => palette[(parseInt(g) - 1) % palette.length] || "#3b82f6";
 
   if (pred === "Waiting") {
     card.style.background = "#475569";
@@ -2452,27 +2562,41 @@ function updateCheckedMajorityGroupDisplay(pred, picks, voteCount, winCount, tot
     catRow.innerText = "ဒေတာ မလုံလောက်သေးပါ";
     finalRow.innerText = "";
     detail.innerText = "";
-  } else if (pred === NO_MATCH) {
+  } else if (pred === NO_MATCH || !Array.isArray(pred)) {
     card.style.background = "#475569";
-    ratioRow.innerText = "❓";
-    catRow.innerText = "ခန့်မှန်းမှု မရှိပါ (Tie)";
+    ratioRow.innerText = votes ? `${levelCount} levels voted` : "❓";
+    catRow.innerText = "ခန့်မှန်းမှု မရှိပါ";
     finalRow.innerText = "";
-    detail.innerText = `ရွေးထားသော Level ${enabledLevels.length} ခုအထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${checkedMajorityGroupPickCount} ခု မပြည့်သေးပါ`;
+    detail.innerText = `ရွေးထားသော Level ${levelCount} ခုအထဲက ဆုံးဖြတ်ချက် မရသေးပါ`;
   } else {
-    const idx = (parseInt(pred) - 1) % palette.length;
-    const color = palette[idx] || "#3b82f6";
-    card.style.background = `linear-gradient(135deg, ${color}, ${color}cc)`;
-    ratioRow.innerText = `${checkedMajorityGroupPickCount}/${voteCount}`;
-    catRow.innerText = `Group ${pred} (${digitsForGroup(pred)})`;
-    finalRow.innerText = pred;
-    const picksLabel = picks ? ` (${picks.join("-")})` : "";
-    detail.innerText = `ရွေးထားသော Level များထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${checkedMajorityGroupPickCount} ခု${picksLabel} ရဲ့ အများစု`;
+    const c0 = colorFor(pred[0]);
+    card.style.background = pred.length > 1
+      ? `linear-gradient(135deg, ${c0}, ${colorFor(pred[1])})`
+      : `linear-gradient(135deg, ${c0}, ${c0}cc)`;
+    const voteCounts = pred.map(g => (votes && votes.tally && votes.tally[g]) || 0);
+    ratioRow.innerText = `${levelCount} levels · ${pred.map((g, idx) => `G${g}:${voteCounts[idx]}`).join(" / ")}`;
+    catRow.innerText = pred.map(g => `Group ${g} (${digitsForGroup(g)})`).join(" + ");
+    finalRow.innerText = pred.join(" / ");
+    detail.innerText = `ရွေးထားသော Level ${levelCount} ခုရဲ့ Vote အများဆုံး ${checkedMajorityGroupPredictCount} ခုကို ခန့်မှန်းထားသည်`;
   }
 
   const winRateEl = document.getElementById("checkedMajorityGroupWinRate");
   if (winRateEl) {
     const pct = totalCount > 0 ? ((winCount / totalCount) * 100).toFixed(1) : "--";
     winRateEl.innerText = totalCount > 0 ? `${pct}% (${winCount}/${totalCount})` : "--";
+  }
+
+  if (breakdownEl) {
+    if (!votes || !votes.levelResults) {
+      breakdownEl.innerHTML = "";
+    } else {
+      breakdownEl.innerHTML = votes.levelResults.map(lr => {
+        const label = lr.pick || "-";
+        const color = lr.pick ? colorFor(lr.pick) : "#64748b";
+        const statsStr = lr.counts ? CATEGORIES.map(c => `${c}:${lr.counts[c]}`).join(" ") : "-";
+        return `<div class="level-mini-card"><div class="level-mini-title">Level ${lr.level}</div><div class="level-mini-pick" style="color:${color};">${label}</div><div class="level-mini-stats">${statsStr}</div></div>`;
+      }).join("");
+    }
   }
 }
 
@@ -2489,14 +2613,29 @@ function applyCheckedMajorityGroupModeToggle() {
   saveData();
 }
 
-function applyCheckedMajorityGroupPickCount() {
-  const sel = document.getElementById("checkedMajorityGroupPickCountSelect");
-  const n = parseInt(sel.value);
-  checkedMajorityGroupPickCount = (n === 3) ? 3 : 2;
-  localStorage.setItem("savedCheckedMajorityGroupPickCount", String(checkedMajorityGroupPickCount));
+function applyCheckedMajorityGroupLevelSelection() {
+  const boxes = document.querySelectorAll('#checkedMajorityGroupLevelSelector input[type="checkbox"]');
+  const checked = Array.from(boxes).filter(b => b.checked).map(b => parseInt(b.value)).sort((a, b) => b - a);
+  if (checked.length === 0) {
+    boxes.forEach(b => { if (!b.checked) b.checked = true; });
+    alert("Level တစ်ခုမှ မရွေးထားလို့ မရပါ — အနည်းဆုံး တစ်ခုတော့ ရွေးထားပါ။");
+    return;
+  }
+  checkedMajorityGroupLevels = checked;
+  localStorage.setItem("savedCheckedMajorityGroupLevels", JSON.stringify(checkedMajorityGroupLevels));
   if (checkedMajorityGroupModeEnabled) recalculateCheckedMajorityGroupPredictions();
   saveData();
 }
+
+function applyCheckedMajorityGroupPredictCount() {
+  const sel = document.getElementById("checkedMajorityGroupPredictCountSelect");
+  const n = parseInt(sel.value);
+  checkedMajorityGroupPredictCount = (n === 2) ? 2 : 1;
+  localStorage.setItem("savedCheckedMajorityGroupPredictCount", String(checkedMajorityGroupPredictCount));
+  if (checkedMajorityGroupModeEnabled) recalculateCheckedMajorityGroupPredictions();
+  saveData();
+}
+
 
 function applyMajorityGroupModeToggle() {
   majorityGroupModeEnabled = document.getElementById("majorityGroupModeToggle").checked;
