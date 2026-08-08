@@ -306,37 +306,6 @@
         </div>
       </div>
 
-      <div class="stat-card" data-key="bsMode">
-        <div class="stat-card-head" onclick="toggleStatCard('bsMode')">
-          <div class="stat-card-title">🎲 Big/Small ခန့်မှန်းခြင်း <span class="sub">(Group system အပြင် ထပ်ပြရန်)</span></div>
-          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
-        </div>
-        <div class="stat-card-body">
-          <div class="win-rate-box">
-            <label class="level-chip" style="width:fit-content;">
-              <input type="checkbox" id="bsModeToggle" onchange="applyBsModeToggle()">
-              ဖွင့်ရန် — 0,1,2,3,4 = <b style="color:#22c55e;">S (Small)</b> / 5,6,7,8,9 = <b style="color:#ef4444;">B (Big)</b>
-            </label>
-            <div class="input-hint">💡 Group Count ဘယ်လောက်ထားထား ဒီ B/S ခွဲခြင်းက အမြဲ digit 0-4 vs 5-9 ကိုပဲ အခြေခံပါတယ် — Group system ကနေ လုံးဝ သီးခြားစီ အလုပ်လုပ်ပါတယ်</div>
-
-            <label class="level-chip" style="width:fit-content; margin-top:8px;">
-              <input type="checkbox" id="bsReverseToggle" onchange="applyBsReverseToggle()">
-              🔄 ပြောင်းပြန်ခန့်မှန်း — B ထွက်မယ်လို့ တွက်ရင် S လောင်း၊ S ထွက်မယ်လို့ တွက်ရင် B လောင်း (Group B/S ကလည်း အလိုက်သင့် ပြောင်းသွားမည်)
-            </label>
-
-            <div id="bsPredictionPanel" style="display:none; margin-top:12px;">
-              <div id="bsPredictionBadge" class="pred-badge" style="background:#475569;">⏳ ဒေတာ မလုံလောက်သေးပါ</div>
-              <div id="bsPredictionDetail" class="input-hint" style="text-align:center;"></div>
-              <div style="display:flex; gap:20px; margin-top:10px; font-weight:bold;">
-                <div>B: <span id="bsCountB" style="color:#ef4444;">0</span></div>
-                <div>S: <span id="bsCountS" style="color:#22c55e;">0</span></div>
-                <div>Win Rate: <span id="bsWinRate">--</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="stat-card" data-key="majorityBsMode">
         <div class="stat-card-head" onclick="toggleStatCard('majorityBsMode')">
           <div class="stat-card-title">🎲🎯 B/S ခန့်မှန်းခြင်း <span class="sub">(Pattern 30→1 Majority)</span></div>
@@ -407,6 +376,78 @@
               <div id="majorityGroupPredictionDetail" class="input-hint" style="text-align:center; margin-top:8px;"></div>
               <div style="margin-top:10px; font-weight:bold;">
                 Win Rate: <span id="majorityGroupWinRate">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card" data-key="checkedMajorityBsMode">
+        <div class="stat-card-head" onclick="toggleStatCard('checkedMajorityBsMode')">
+          <div class="stat-card-title">✅🎲 B/S ခန့်မှန်းခြင်း <span class="sub">(ရွေးထားသော Level များ Majority)</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
+        </div>
+        <div class="stat-card-body">
+          <div class="win-rate-box">
+            <label class="level-chip" style="width:fit-content;">
+              <input type="checkbox" id="checkedMajorityBsModeToggle" onchange="applyCheckedMajorityBsModeToggle()">
+              ဖွင့်ရန် — "Group / Pattern ချိန်ညှိမှု" ထဲက <b>ကိုယ်တိုင်အမှန်ခြစ်ထားသော Pattern Level</b> များကိုသာ (30→1 အကုန် မဟုတ်) အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ ပထမဆုံး B/S အဖြေများကို ယူမည်၊ အများစုဖက်ကို ခန့်မှန်းမည်
+            </label>
+            <div class="input-hint">💡 Pattern30→1 Majority B/S စနစ်နဲ့ ကွာသည်က — ဒီစနစ်က "Pattern Level ရွေးရန်" ချက်ဘောက်စ်ထဲမှာ ကိုယ်တိုင် အမှန်ခြစ်ထားသလောက် Level တွေကိုပဲ သုံးပါတယ်</div>
+
+            <div style="margin-top:10px;">
+              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
+              <select id="checkedMajorityBsPickCountSelect" onchange="applyCheckedMajorityBsPickCount()">
+                <option value="2">2 ခုထဲက များတာရွေးမည် (2/2)</option>
+                <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
+              </select>
+            </div>
+
+            <div id="checkedMajorityBsPredictionPanel" style="display:none; margin-top:12px;">
+              <div id="checkedMajorityBsTripleCard" class="triple-pred" style="background:#475569;">
+                <div class="triple-row-ratio" id="checkedMajorityBsRatioRow">⏳</div>
+                <div class="triple-row-cat" id="checkedMajorityBsCatRow">ဒေတာ မလုံလောက်သေးပါ</div>
+                <div class="triple-row-final" id="checkedMajorityBsFinalRow"></div>
+              </div>
+              <div id="checkedMajorityBsPredictionDetail" class="input-hint" style="text-align:center; margin-top:8px;"></div>
+              <div style="margin-top:10px; font-weight:bold;">
+                Win Rate: <span id="checkedMajorityBsWinRate">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card" data-key="checkedMajorityGroupMode">
+        <div class="stat-card-head" onclick="toggleStatCard('checkedMajorityGroupMode')">
+          <div class="stat-card-title">✅🔢 Group ခန့်မှန်းခြင်း <span class="sub">(ရွေးထားသော Level များ Majority)</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
+        </div>
+        <div class="stat-card-body">
+          <div class="win-rate-box">
+            <label class="level-chip" style="width:fit-content;">
+              <input type="checkbox" id="checkedMajorityGroupModeToggle" onchange="applyCheckedMajorityGroupModeToggle()">
+              ဖွင့်ရန် — "Group / Pattern ချိန်ညှိမှု" ထဲက <b>ကိုယ်တိုင်အမှန်ခြစ်ထားသော Pattern Level</b> များကိုသာ (30→1 အကုန် မဟုတ်) အစဉ်လိုက်စစ်ပြီး ဆုံးဖြတ်ချက်ရတဲ့ ပထမဆုံး Group အဖြေများကို ယူမည်၊ အများဆုံးရလာတဲ့ Group ကို ခန့်မှန်းမည်
+            </label>
+            <div class="input-hint">💡 Pattern30→1 Majority Group စနစ်နဲ့ ကွာသည်က — ဒီစနစ်က "Pattern Level ရွေးရန်" ချက်ဘောက်စ်ထဲမှာ ကိုယ်တိုင် အမှန်ခြစ်ထားသလောက် Level တွေကိုပဲ သုံးပါတယ်</div>
+
+            <div style="margin-top:10px;">
+              <label>🔢 အဖြေ ဘယ်နှစ်ခုထဲက များတာရွေးမလဲ:</label>
+              <select id="checkedMajorityGroupPickCountSelect" onchange="applyCheckedMajorityGroupPickCount()">
+                <option value="2">2 ခုထဲက များတာရွေးမည် (2/2)</option>
+                <option value="3">3 ခုထဲက များတာရွေးမည် (2/3 သို့ 3/3)</option>
+              </select>
+            </div>
+
+            <div id="checkedMajorityGroupPredictionPanel" style="display:none; margin-top:12px;">
+              <div id="checkedMajorityGroupTripleCard" class="triple-pred" style="background:#475569;">
+                <div class="triple-row-ratio" id="checkedMajorityGroupRatioRow">⏳</div>
+                <div class="triple-row-cat" id="checkedMajorityGroupCatRow">ဒေတာ မလုံလောက်သေးပါ</div>
+                <div class="triple-row-final" id="checkedMajorityGroupFinalRow"></div>
+              </div>
+              <div id="checkedMajorityGroupPredictionDetail" class="input-hint" style="text-align:center; margin-top:8px;"></div>
+              <div style="margin-top:10px; font-weight:bold;">
+                Win Rate: <span id="checkedMajorityGroupWinRate">--</span>
               </div>
             </div>
           </div>
@@ -571,72 +612,14 @@
         </div>
       </div>
 
-      <div class="stat-card" data-key="groupBsWin">
-        <div class="stat-card-head" onclick="toggleStatCard('groupBsWin')">
-          <div class="stat-card-title">🎯📈 Group B/S ဆက်တိုက်နိုင်မှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelGroupBs">300</span>)</span></div>
-          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
-        </div>
-        <div class="stat-card-body">
-          <div class="win-rate-box">
-            <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 Group ခန့်မှန်းချက်ထဲက B/S နဲ့ ကိုက်ညီတဲ့ Group တွေကို result နဲ့ နှိုင်းယှဉ်ထားသည် (ဆက်တိုက် နိုင်ခဲ့မှု):</div>
-            <div class="win-rate-by-level" id="groupBsWinningStreakSummary">
-              <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card" data-key="groupBsLoss">
-        <div class="stat-card-head" onclick="toggleStatCard('groupBsLoss')">
-          <div class="stat-card-title">🎯📉 Group B/S ဆက်တိုက်ရှုံးမှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelGroupBs2">300</span>)</span></div>
-          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
-        </div>
-        <div class="stat-card-body">
-          <div class="win-rate-box">
-            <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 Group ခန့်မှန်းချက်ထဲက B/S နဲ့ ကိုက်ညီတဲ့ Group တွေကို result နဲ့ နှိုင်းယှဉ်ထားသည် (ဆက်တိုက် ရှုံးခဲ့မှု):</div>
-            <div class="win-rate-by-level" id="groupBsLosingStreakSummary">
-              <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card" data-key="bsWin">
-        <div class="stat-card-head" onclick="toggleStatCard('bsWin')">
-          <div class="stat-card-title">📈 B/S ဆက်တိုက်နိုင်မှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelBs">300</span>)</span></div>
-          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
-        </div>
-        <div class="stat-card-body">
-          <div class="win-rate-box">
-            <div class="win-rate-by-level" id="bsWinningStreakSummary">
-              <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card" data-key="bsLoss">
-        <div class="stat-card-head" onclick="toggleStatCard('bsLoss')">
-          <div class="stat-card-title">📉 B/S ဆက်တိုက်ရှုံးမှု <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelBs2">300</span>)</span></div>
-          <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
-        </div>
-        <div class="stat-card-body">
-          <div class="win-rate-box">
-            <div class="win-rate-by-level" id="bsLosingStreakSummary">
-              <div class="level-row"><span>ဒေတာ မလုံလောက်သေးပါ</span><span>-</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="stat-card" data-key="comboResult">
         <div class="stat-card-head" onclick="toggleStatCard('comboResult')">
-          <div class="stat-card-title">🧮 Bet + Bet B/S ပေါင်းစပ်ရလဒ် <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelComboBs1">300</span>)</span></div>
+          <div class="stat-card-title">🧮 Bet + Majority B/S ပေါင်းစပ်ရလဒ် <span class="sub">(နောက်ဆုံး <span id="historyLimitLabelComboBs1">300</span>)</span></div>
           <div style="display:flex; align-items:center; gap:10px;"><span class="stat-card-chevron">▾</span><div class="stat-toggle"></div></div>
         </div>
         <div class="stat-card-body">
           <div class="win-rate-box">
-            <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 Bet (Group) နှင့် ဖွင့်ထားတဲ့ B/S system(s) (Bet B/S / Majority B/S) ထဲက တစ်ခုခု နိုင်ရင် "အမှန်"၊ ဖွင့်ထားသမျှ အားလုံး ရှုံးမှသာ "အမှား" — ပိတ်ထားတဲ့ B/S system ကိုတော့ ဒီတွက်ချက်မှုထဲ လုံးဝထည့်မတွက်ပါ (Bet B/S ခလုပ်နဲ့ Majority B/S ခလုပ် နှစ်ခုလုံးဖွင့်ရင် ၃ ခုပေါင်း၊ တစ်ခုပဲဖွင့်ရင် ၂ ခုပေါင်း ဖြစ်ပါမည်):</div>
+            <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">📊 Bet (Group) နှင့် Majority B/S ထဲက တစ်ခုခု နိုင်ရင် "အမှန်"၊ နှစ်ခုလုံး ရှုံးမှသာ "အမှား" — Majority B/S ပိတ်ထားရင် Bet (Group) တစ်ခုတည်းသာ တွက်ချက်ပါမည်:</div>
             <div style="display:flex; gap:20px; font-weight:bold;">
               <div>✅ <span id="comboCorrectCount" style="color:#22c55e;">0</span></div>
               <div>❌ <span id="comboWrongCount" style="color:#ef4444;">0</span></div>
@@ -808,6 +791,10 @@ function saveData() {
     localStorage.setItem("savedRoadMapVisible", roadMapVisible ? "1" : "0");
     localStorage.setItem("savedMajorityBsModeEnabled", majorityBsModeEnabled ? "1" : "0");
     localStorage.setItem("savedMajorityGroupModeEnabled", majorityGroupModeEnabled ? "1" : "0");
+    localStorage.setItem("savedCheckedMajorityBsModeEnabled", checkedMajorityBsModeEnabled ? "1" : "0");
+    localStorage.setItem("savedCheckedMajorityBsPickCount", String(checkedMajorityBsPickCount));
+    localStorage.setItem("savedCheckedMajorityGroupModeEnabled", checkedMajorityGroupModeEnabled ? "1" : "0");
+    localStorage.setItem("savedCheckedMajorityGroupPickCount", String(checkedMajorityGroupPickCount));
     localStorage.setItem("savedTimestamp", Date.now());
     hasCachedData = true;
     updateCacheInfo();
@@ -864,10 +851,6 @@ function loadData() {
     document.getElementById("historyLimitInput").value = historyDisplayLimit;
     document.getElementById("historyLimitLabel1").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
-    document.getElementById("historyLimitLabelBs").innerText = historyDisplayLimit;
-    document.getElementById("historyLimitLabelBs2").innerText = historyDisplayLimit;
-    document.getElementById("historyLimitLabelGroupBs").innerText = historyDisplayLimit;
-    document.getElementById("historyLimitLabelGroupBs2").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabelComboBs1").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabelComboBs2").innerText = historyDisplayLimit;
     document.getElementById("historyLimitLabelComboBs3").innerText = historyDisplayLimit;
@@ -888,21 +871,10 @@ function loadData() {
       if (reverseBetToggle) reverseBetToggle.checked = reverseBetEnabled;
     }
 
-    const storedBsMode = localStorage.getItem("savedBsModeEnabled");
-    if (storedBsMode !== null) {
-      bsModeEnabled = storedBsMode === "1";
-      const bsToggle = document.getElementById("bsModeToggle");
-      if (bsToggle) bsToggle.checked = bsModeEnabled;
-      const bsPanel = document.getElementById("bsPredictionPanel");
-      if (bsPanel) bsPanel.style.display = bsModeEnabled ? "block" : "none";
-    }
-
-    const storedBsReverse = localStorage.getItem("savedBsReverseEnabled");
-    if (storedBsReverse !== null) {
-      bsReverseEnabled = storedBsReverse === "1";
-      const bsReverseToggle = document.getElementById("bsReverseToggle");
-      if (bsReverseToggle) bsReverseToggle.checked = bsReverseEnabled;
-    }
+    // Big/Small (bsMode) card was removed — force this legacy system permanently off
+    // regardless of what's in localStorage from before it existed.
+    bsModeEnabled = false;
+    bsReverseEnabled = false;
 
     const storedMajorityBsMode = localStorage.getItem("savedMajorityBsModeEnabled");
     if (storedMajorityBsMode !== null) {
@@ -939,6 +911,36 @@ function loadData() {
     }
     const majorityGroupPickCountSel = document.getElementById("majorityGroupPickCountSelect");
     if (majorityGroupPickCountSel) majorityGroupPickCountSel.value = String(majorityGroupPickCount);
+
+    const storedCheckedMajorityBsMode = localStorage.getItem("savedCheckedMajorityBsModeEnabled");
+    if (storedCheckedMajorityBsMode !== null) {
+      checkedMajorityBsModeEnabled = storedCheckedMajorityBsMode === "1";
+      const cToggle = document.getElementById("checkedMajorityBsModeToggle");
+      if (cToggle) cToggle.checked = checkedMajorityBsModeEnabled;
+      const cPanel = document.getElementById("checkedMajorityBsPredictionPanel");
+      if (cPanel) cPanel.style.display = checkedMajorityBsModeEnabled ? "block" : "none";
+    }
+    const storedCheckedMajorityBsPickCount = localStorage.getItem("savedCheckedMajorityBsPickCount");
+    if (storedCheckedMajorityBsPickCount === "2" || storedCheckedMajorityBsPickCount === "3") {
+      checkedMajorityBsPickCount = parseInt(storedCheckedMajorityBsPickCount);
+    }
+    const checkedMajorityBsPickCountSel = document.getElementById("checkedMajorityBsPickCountSelect");
+    if (checkedMajorityBsPickCountSel) checkedMajorityBsPickCountSel.value = String(checkedMajorityBsPickCount);
+
+    const storedCheckedMajorityGroupMode = localStorage.getItem("savedCheckedMajorityGroupModeEnabled");
+    if (storedCheckedMajorityGroupMode !== null) {
+      checkedMajorityGroupModeEnabled = storedCheckedMajorityGroupMode === "1";
+      const cgToggle = document.getElementById("checkedMajorityGroupModeToggle");
+      if (cgToggle) cgToggle.checked = checkedMajorityGroupModeEnabled;
+      const cgPanel = document.getElementById("checkedMajorityGroupPredictionPanel");
+      if (cgPanel) cgPanel.style.display = checkedMajorityGroupModeEnabled ? "block" : "none";
+    }
+    const storedCheckedMajorityGroupPickCount = localStorage.getItem("savedCheckedMajorityGroupPickCount");
+    if (storedCheckedMajorityGroupPickCount === "2" || storedCheckedMajorityGroupPickCount === "3") {
+      checkedMajorityGroupPickCount = parseInt(storedCheckedMajorityGroupPickCount);
+    }
+    const checkedMajorityGroupPickCountSel = document.getElementById("checkedMajorityGroupPickCountSelect");
+    if (checkedMajorityGroupPickCountSel) checkedMajorityGroupPickCountSel.value = String(checkedMajorityGroupPickCount);
 
     const storedRoadMapVisible = localStorage.getItem("savedRoadMapVisible");
     if (storedRoadMapVisible !== null) {
@@ -1178,10 +1180,6 @@ function applyHistoryLimit() {
   localStorage.setItem("savedHistoryLimit", String(historyDisplayLimit));
   document.getElementById("historyLimitLabel1").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabel2").innerText = historyDisplayLimit;
-  document.getElementById("historyLimitLabelBs").innerText = historyDisplayLimit;
-  document.getElementById("historyLimitLabelBs2").innerText = historyDisplayLimit;
-  document.getElementById("historyLimitLabelGroupBs").innerText = historyDisplayLimit;
-  document.getElementById("historyLimitLabelGroupBs2").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabelComboBs1").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabelComboBs2").innerText = historyDisplayLimit;
   document.getElementById("historyLimitLabelComboBs3").innerText = historyDisplayLimit;
@@ -1191,6 +1189,9 @@ function applyHistoryLimit() {
   updateWinRateStats();
   if (bsModeEnabled) recalculateBsPredictions();
   if (majorityBsModeEnabled) recalculateMajorityBsPredictions();
+  if (majorityGroupModeEnabled) recalculateMajorityGroupPredictions();
+  if (checkedMajorityBsModeEnabled) recalculateCheckedMajorityBsPredictions();
+  if (checkedMajorityGroupModeEnabled) recalculateCheckedMajorityGroupPredictions();
   saveData();
 }
 
@@ -1311,6 +1312,14 @@ let majorityBsPickCount = 3; // how many decisive picks (3, 5, or 7) to gather b
 let nextMajorityBsCalculatedBet = "Waiting";
 let majorityGroupModeEnabled = false; // independent "majority of first N decisive Group picks across pattern levels 30->1" system
 let majorityGroupPickCount = 3; // how many decisive picks (3, 5, or 7) to gather before deciding majority
+
+let checkedMajorityBsModeEnabled = false; // like majorityBsMode, but only scans the user's manually-checked Pattern Levels (enabledLevels), not all 30
+let checkedMajorityBsPickCount = 2; // how many decisive picks (2 or 3) to gather before deciding majority
+let nextCheckedMajorityBsCalculatedBet = "Waiting";
+
+let checkedMajorityGroupModeEnabled = false; // like majorityGroupMode, but only scans the user's manually-checked Pattern Levels (enabledLevels), not all 30
+let checkedMajorityGroupPickCount = 2; // how many decisive picks (2 or 3) to gather before deciding majority
+let nextCheckedMajorityGroupCalculatedBet = "Waiting";
 let nextMajorityGroupCalculatedBet = "Waiting";
 let roadMapVisible = true; // whether the Matrix Trend Map (Big Road) table is shown
 let reverseBetEnabled = false; // when on, the main group prediction picks the LEAST frequent groups instead of the most frequent
@@ -1488,6 +1497,8 @@ function recalculateAllPredictions() {
   if (bsModeEnabled) recalculateBsPredictions();
   if (majorityBsModeEnabled) recalculateMajorityBsPredictions();
   if (majorityGroupModeEnabled) recalculateMajorityGroupPredictions();
+  if (checkedMajorityBsModeEnabled) recalculateCheckedMajorityBsPredictions();
+  if (checkedMajorityGroupModeEnabled) recalculateCheckedMajorityGroupPredictions();
 }
 
 // ===== INDEPENDENT BIG/SMALL PREDICTION (digit 0-4 = S, 5-9 = B) =====
@@ -2187,6 +2198,304 @@ function updateMajorityGroupLosingStreakSummary(recentResults) {
       `<div class="level-row"><span>${len} ကြိမ်ဆက်ရှုံး</span><span>${streakCounts[len]} ကြိမ်</span></div>`
     ).join("");
   }
+}
+
+// ===== CHECKED-LEVEL-ONLY MAJORITY B/S (like Majority B/S above, but scans
+// only the Pattern Levels the user has manually ticked in "Pattern Level
+// ရွေးရန်" — i.e. `enabledLevels` — instead of the fixed 30→1 range) =====
+function recalculateCheckedMajorityBsPredictions() {
+  const ALL_LEVELS = enabledLevels; // already sorted descending
+
+  const makeBsCounter = () => ({ "B": 0, "S": 0 });
+  const transitionMaps = {};
+  ALL_LEVELS.forEach(len => { transitionMaps[len] = {}; });
+  const valid = [];
+
+  function buildKey(len) {
+    if (valid.length < len) return null;
+    const parts = [];
+    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
+    return parts.join(",");
+  }
+
+  function predictCheckedMajorityBs() {
+    const picks = [];
+    for (const len of ALL_LEVELS) {
+      const key = buildKey(len);
+      if (key === null) continue;
+      const stats = transitionMaps[len][key];
+      if (!stats) continue;
+      const bCount = stats["B"], sCount = stats["S"];
+      if (bCount === sCount) continue;
+      picks.push(bCount > sCount ? "B" : "S");
+      if (picks.length === checkedMajorityBsPickCount) break;
+    }
+    if (picks.length < checkedMajorityBsPickCount) return { pick: null, picks };
+    const bTotal = picks.filter(p => p === "B").length;
+    const sTotal = picks.filter(p => p === "S").length;
+    if (bTotal === sTotal) return { pick: null, picks };
+    return { pick: bTotal > sTotal ? "B" : "S", picks };
+  }
+
+  for (let i = 0; i < trackedResults.length; i++) {
+    const row = trackedResults[i];
+    const bsVal = digitToBS(row.digit);
+    row.checkedMajorityBsResult = bsVal;
+
+    let bsPred = "Waiting";
+    if (valid.length >= 10) {
+      const pred = predictCheckedMajorityBs();
+      bsPred = pred.pick || NO_MATCH;
+    }
+    row.checkedMajorityBsPrediction = bsPred;
+
+    if (bsVal !== null) {
+      ALL_LEVELS.forEach(len => {
+        const key = buildKey(len);
+        if (key !== null) {
+          const map = transitionMaps[len];
+          if (!map[key]) map[key] = makeBsCounter();
+          map[key][bsVal]++;
+        }
+      });
+      valid.push(bsVal);
+    }
+  }
+
+  let nextPred = "Waiting", nextPicks = null;
+  if (valid.length >= 10) {
+    const pred = predictCheckedMajorityBs();
+    nextPred = pred.pick || NO_MATCH;
+    nextPicks = pred.picks;
+  }
+
+  const recent = trackedResults.slice(-historyDisplayLimit);
+  let winCount = 0, totalCount = 0;
+  recent.forEach(r => {
+    if (r.checkedMajorityBsPrediction === "B" || r.checkedMajorityBsPrediction === "S") {
+      totalCount++;
+      if (r.checkedMajorityBsPrediction === r.checkedMajorityBsResult) winCount++;
+    }
+  });
+
+  nextCheckedMajorityBsCalculatedBet = nextPred;
+  updateCheckedMajorityBsDisplay(nextPred, nextPicks, winCount, totalCount);
+}
+
+function updateCheckedMajorityBsDisplay(pred, picks, winCount, totalCount) {
+  const card = document.getElementById("checkedMajorityBsTripleCard");
+  const ratioRow = document.getElementById("checkedMajorityBsRatioRow");
+  const catRow = document.getElementById("checkedMajorityBsCatRow");
+  const finalRow = document.getElementById("checkedMajorityBsFinalRow");
+  const detail = document.getElementById("checkedMajorityBsPredictionDetail");
+  if (!card) return;
+
+  if (pred === "Waiting") {
+    card.style.background = "#475569";
+    ratioRow.innerText = "⏳";
+    catRow.innerText = "ဒေတာ မလုံလောက်သေးပါ";
+    finalRow.innerText = "";
+    detail.innerText = "";
+  } else if (pred === NO_MATCH) {
+    card.style.background = "#475569";
+    ratioRow.innerText = "❓";
+    catRow.innerText = "ခန့်မှန်းမှု မရှိပါ (Tie)";
+    finalRow.innerText = "";
+    detail.innerText = `ရွေးထားသော Level ${enabledLevels.length} ခုအထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${checkedMajorityBsPickCount} ခု မပြည့်သေးပါ`;
+  } else {
+    const bCount = picks ? picks.filter(p => p === "B").length : 0;
+    const sCount = picks ? picks.filter(p => p === "S").length : 0;
+    const totalPicks = picks ? picks.length : checkedMajorityBsPickCount;
+    const winningCount = pred === "B" ? bCount : sCount;
+    ratioRow.innerText = `${totalPicks}/${winningCount}`;
+    if (pred === "B") {
+      card.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
+      catRow.innerText = "B (56789)";
+    } else {
+      card.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
+      catRow.innerText = "S (01234)";
+    }
+    finalRow.innerText = pred;
+    const picksLabel = picks ? ` (${picks.join("-")})` : "";
+    detail.innerText = `ရွေးထားသော Level များထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${checkedMajorityBsPickCount} ခု${picksLabel} ရဲ့ အများစု`;
+  }
+
+  const winRateEl = document.getElementById("checkedMajorityBsWinRate");
+  if (winRateEl) {
+    const pct = totalCount > 0 ? ((winCount / totalCount) * 100).toFixed(1) : "--";
+    winRateEl.innerText = totalCount > 0 ? `${pct}% (${winCount}/${totalCount})` : "--";
+  }
+}
+
+function applyCheckedMajorityBsModeToggle() {
+  checkedMajorityBsModeEnabled = document.getElementById("checkedMajorityBsModeToggle").checked;
+  localStorage.setItem("savedCheckedMajorityBsModeEnabled", checkedMajorityBsModeEnabled ? "1" : "0");
+  const panel = document.getElementById("checkedMajorityBsPredictionPanel");
+  if (panel) panel.style.display = checkedMajorityBsModeEnabled ? "block" : "none";
+  if (checkedMajorityBsModeEnabled) {
+    recalculateCheckedMajorityBsPredictions();
+  } else {
+    nextCheckedMajorityBsCalculatedBet = "Waiting";
+  }
+  saveData();
+}
+
+function applyCheckedMajorityBsPickCount() {
+  const sel = document.getElementById("checkedMajorityBsPickCountSelect");
+  const n = parseInt(sel.value);
+  checkedMajorityBsPickCount = (n === 3) ? 3 : 2;
+  localStorage.setItem("savedCheckedMajorityBsPickCount", String(checkedMajorityBsPickCount));
+  if (checkedMajorityBsModeEnabled) recalculateCheckedMajorityBsPredictions();
+  saveData();
+}
+
+// ===== CHECKED-LEVEL-ONLY MAJORITY GROUP (same idea, for the Group/Bet
+// prediction instead of B/S) =====
+function recalculateCheckedMajorityGroupPredictions() {
+  const ALL_LEVELS = enabledLevels;
+
+  const makeCatCounter = () => { const o = {}; CATEGORIES.forEach(c => o[c] = 0); return o; };
+  const transitionMaps = {};
+  ALL_LEVELS.forEach(len => { transitionMaps[len] = {}; });
+  const valid = [];
+
+  function buildKey(len) {
+    if (valid.length < len) return null;
+    const parts = [];
+    for (let k = len; k >= 1; k--) parts.push(valid[valid.length - k]);
+    return parts.join(",");
+  }
+
+  function predictCheckedMajorityGroup() {
+    const picks = [];
+    for (const len of ALL_LEVELS) {
+      const key = buildKey(len);
+      if (key === null) continue;
+      const stats = transitionMaps[len][key];
+      if (!stats) continue;
+      const seen = CATEGORIES.filter(c => stats[c] > 0);
+      if (seen.length === 0) continue;
+      const sorted = seen.slice().sort((a, b) => stats[b] - stats[a]);
+      if (sorted.length >= 2 && stats[sorted[0]] === stats[sorted[1]]) continue;
+      picks.push(sorted[0]);
+      if (picks.length === checkedMajorityGroupPickCount) break;
+    }
+    if (picks.length < checkedMajorityGroupPickCount) return { pick: null, picks, voteCount: 0 };
+
+    const tally = {};
+    picks.forEach(p => tally[p] = (tally[p] || 0) + 1);
+    const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
+    if (ranked.length >= 2 && tally[ranked[0]] === tally[ranked[1]]) {
+      return { pick: null, picks, voteCount: 0 };
+    }
+    return { pick: ranked[0], picks, voteCount: tally[ranked[0]] };
+  }
+
+  for (let i = 0; i < trackedResults.length; i++) {
+    const row = trackedResults[i];
+    const cat = row.appResult;
+
+    let mgPred = "Waiting";
+    if (valid.length >= 10) {
+      const pred = predictCheckedMajorityGroup();
+      mgPred = pred.pick || NO_MATCH;
+    }
+    row.checkedMajorityGroupPrediction = mgPred;
+
+    if (CATEGORIES.includes(cat)) {
+      ALL_LEVELS.forEach(len => {
+        const key = buildKey(len);
+        if (key !== null) {
+          const map = transitionMaps[len];
+          if (!map[key]) map[key] = makeCatCounter();
+          map[key][cat]++;
+        }
+      });
+      valid.push(cat);
+    }
+  }
+
+  let nextPred = "Waiting", nextPicks = null, nextVoteCount = 0;
+  if (valid.length >= 10) {
+    const pred = predictCheckedMajorityGroup();
+    nextPred = pred.pick || NO_MATCH;
+    nextPicks = pred.picks;
+    nextVoteCount = pred.voteCount;
+  }
+
+  const recent = trackedResults.slice(-historyDisplayLimit);
+  let winCount = 0, totalCount = 0;
+  recent.forEach(r => {
+    if (r.checkedMajorityGroupPrediction && r.checkedMajorityGroupPrediction !== "Waiting" && r.checkedMajorityGroupPrediction !== NO_MATCH) {
+      totalCount++;
+      if (r.checkedMajorityGroupPrediction === r.appResult) winCount++;
+    }
+  });
+
+  nextCheckedMajorityGroupCalculatedBet = nextPred;
+  updateCheckedMajorityGroupDisplay(nextPred, nextPicks, nextVoteCount, winCount, totalCount);
+}
+
+function updateCheckedMajorityGroupDisplay(pred, picks, voteCount, winCount, totalCount) {
+  const card = document.getElementById("checkedMajorityGroupTripleCard");
+  const ratioRow = document.getElementById("checkedMajorityGroupRatioRow");
+  const catRow = document.getElementById("checkedMajorityGroupCatRow");
+  const finalRow = document.getElementById("checkedMajorityGroupFinalRow");
+  const detail = document.getElementById("checkedMajorityGroupPredictionDetail");
+  if (!card) return;
+
+  const palette = ["#3b82f6", "#a855f7", "#f97316", "#ec4899", "#14b8a6", "#eab308", "#ef4444", "#22c55e", "#6366f1", "#0ea5e9"];
+
+  if (pred === "Waiting") {
+    card.style.background = "#475569";
+    ratioRow.innerText = "⏳";
+    catRow.innerText = "ဒေတာ မလုံလောက်သေးပါ";
+    finalRow.innerText = "";
+    detail.innerText = "";
+  } else if (pred === NO_MATCH) {
+    card.style.background = "#475569";
+    ratioRow.innerText = "❓";
+    catRow.innerText = "ခန့်မှန်းမှု မရှိပါ (Tie)";
+    finalRow.innerText = "";
+    detail.innerText = `ရွေးထားသော Level ${enabledLevels.length} ခုအထဲက ဆုံးဖြတ်ချက်ရတဲ့ အဖြေ ${checkedMajorityGroupPickCount} ခု မပြည့်သေးပါ`;
+  } else {
+    const idx = (parseInt(pred) - 1) % palette.length;
+    const color = palette[idx] || "#3b82f6";
+    card.style.background = `linear-gradient(135deg, ${color}, ${color}cc)`;
+    ratioRow.innerText = `${checkedMajorityGroupPickCount}/${voteCount}`;
+    catRow.innerText = `Group ${pred} (${digitsForGroup(pred)})`;
+    finalRow.innerText = pred;
+    const picksLabel = picks ? ` (${picks.join("-")})` : "";
+    detail.innerText = `ရွေးထားသော Level များထဲက ပထမဆုံးရလာတဲ့ အဖြေ ${checkedMajorityGroupPickCount} ခု${picksLabel} ရဲ့ အများစု`;
+  }
+
+  const winRateEl = document.getElementById("checkedMajorityGroupWinRate");
+  if (winRateEl) {
+    const pct = totalCount > 0 ? ((winCount / totalCount) * 100).toFixed(1) : "--";
+    winRateEl.innerText = totalCount > 0 ? `${pct}% (${winCount}/${totalCount})` : "--";
+  }
+}
+
+function applyCheckedMajorityGroupModeToggle() {
+  checkedMajorityGroupModeEnabled = document.getElementById("checkedMajorityGroupModeToggle").checked;
+  localStorage.setItem("savedCheckedMajorityGroupModeEnabled", checkedMajorityGroupModeEnabled ? "1" : "0");
+  const panel = document.getElementById("checkedMajorityGroupPredictionPanel");
+  if (panel) panel.style.display = checkedMajorityGroupModeEnabled ? "block" : "none";
+  if (checkedMajorityGroupModeEnabled) {
+    recalculateCheckedMajorityGroupPredictions();
+  } else {
+    nextCheckedMajorityGroupCalculatedBet = "Waiting";
+  }
+  saveData();
+}
+
+function applyCheckedMajorityGroupPickCount() {
+  const sel = document.getElementById("checkedMajorityGroupPickCountSelect");
+  const n = parseInt(sel.value);
+  checkedMajorityGroupPickCount = (n === 3) ? 3 : 2;
+  localStorage.setItem("savedCheckedMajorityGroupPickCount", String(checkedMajorityGroupPickCount));
+  if (checkedMajorityGroupModeEnabled) recalculateCheckedMajorityGroupPredictions();
+  saveData();
 }
 
 function applyMajorityGroupModeToggle() {
@@ -2899,20 +3208,58 @@ function updateTableDisplay() {
     document.getElementById("output").innerHTML = "<p style='color:#94a3b8; text-align:center;'>ဒေတာမရှိသေးပါ</p>";
     return;
   }
-  
+
   const displayResults = trackedResults.slice(-historyDisplayLimit);
-  const matchHeader = bsModeEnabled ? `<th>Group B/S</th>` : "";
-  const betBsHeader = bsModeEnabled ? `<th>Bet B/S</th>` : "";
+
+  // Figure out, for each row (in chronological order), whether the currently
+  // displayed "Bet" was a win/loss, and how long the current win/loss streak
+  // is at that point — used to render the ✅/❌ + streak column.
+  function isRowWin(row) {
+    if (majorityGroupModeEnabled) {
+      const mgPred = row.majorityGroupPrediction;
+      const isPick = mgPred && mgPred !== "Waiting" && mgPred !== NO_MATCH;
+      if (!isPick || !CATEGORIES.includes(row.appResult)) return null;
+      return mgPred === row.appResult;
+    }
+    const isArrayPred = Array.isArray(row.betPrediction);
+    if (!isArrayPred || !CATEGORIES.includes(row.appResult)) return null;
+    return row.betPrediction.includes(row.appResult);
+  }
+
+  const streakInfo = [];
+  {
+    let currentType = null, currentStreak = 0;
+    for (let i = 0; i < displayResults.length; i++) {
+      const isWin = isRowWin(displayResults[i]);
+      if (isWin === null) { streakInfo.push(null); continue; }
+      const type = isWin ? "win" : "loss";
+      currentStreak = (type === currentType) ? currentStreak + 1 : 1;
+      currentType = type;
+      streakInfo.push({ type, streak: currentStreak });
+    }
+  }
+
   const majorityBsHeader = majorityBsModeEnabled ? `<th>Majority B/S</th>` : "";
-  const actualBsHeader = (bsModeEnabled || majorityBsModeEnabled) ? `<th>B/S</th>` : "";
-  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th>${matchHeader}${betBsHeader}${majorityBsHeader}${actualBsHeader}<th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
+  const actualBsHeader = majorityBsModeEnabled ? `<th>B/S</th>` : "";
+  let table = `<table><thead><tr><th>Block</th><th>Bet</th><th>Result</th><th>Category</th><th>ရလဒ်</th>${majorityBsHeader}${actualBsHeader}<th>Formula</th><th>ဖျက်ရန်</th></tr></thead><tbody>`;
   for (let i = displayResults.length - 1; i >= 0; i--) {
     let row = displayResults[i];
     if (!row) continue;
-    const isArrayPred = Array.isArray(row.betPrediction);
-    let win = isArrayPred && row.betPrediction.includes(row.appResult);
-    let cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
-    let betDisplay = isArrayPred ? row.betPrediction.join(" / ") : (row.betPrediction || "-");
+
+    let win, cls, betDisplay;
+    if (majorityGroupModeEnabled) {
+      const mgPred = row.majorityGroupPrediction;
+      const isPick = mgPred && mgPred !== "Waiting" && mgPred !== NO_MATCH;
+      win = isPick && mgPred === row.appResult;
+      cls = isPick ? (win ? "win-match" : "win-miss") : "";
+      betDisplay = isPick ? `Group ${mgPred}` : "-";
+    } else {
+      const isArrayPred = Array.isArray(row.betPrediction);
+      win = isArrayPred && row.betPrediction.includes(row.appResult);
+      cls = isArrayPred ? (win ? "win-match" : "win-miss") : "";
+      betDisplay = isArrayPred ? row.betPrediction.join(" / ") : (row.betPrediction || "-");
+    }
+
     let formulaDisplay = row.formulaLength ? `${row.formulaLength} လုံး` : "-";
     let digitDisplay = row.digit !== undefined && row.digit !== "-" ? row.digit : "-";
     let blockDisplay = row.manual ? `📝 Manual #${Math.abs(row.blockNum)}` : row.blockNum;
@@ -2920,24 +3267,14 @@ function updateTableDisplay() {
       ? `<div class="circle color-${row.appResult}" style="margin:0 auto;">${row.appResult}</div>`
       : "-";
 
-    let matchCell = "";
-    if (bsModeEnabled) {
-      const matched = groupsMatchingBs(row);
-      const matchDisplay = matched && matched.length > 0 ? matched.join("/") : "-";
-      const hasResult = CATEGORIES.includes(row.appResult);
-      const matchCls = (matched && matched.length > 0 && hasResult)
-        ? (matched.includes(row.appResult) ? "win-match" : "win-miss")
-        : "";
-      matchCell = `<td><span class="big-digit-display ${matchCls}">${matchDisplay}</span></td>`;
-    }
-
-    let betBsCell = "";
-    if (bsModeEnabled) {
-      const bsBet = row.bsPrediction && row.bsPrediction !== "Waiting" ? row.bsPrediction : "-";
-      const bsIsPick = row.bsPrediction === "B" || row.bsPrediction === "S";
-      const bsWin = bsIsPick && row.bsPrediction === row.bsResult;
-      const bsCls = bsIsPick ? (bsWin ? "win-match" : "win-miss") : "";
-      betBsCell = `<td><span class="big-digit-display ${bsCls}">${bsBet}</span></td>`;
+    const si = streakInfo[i];
+    let streakCell;
+    if (si) {
+      const icon = si.type === "win" ? "✅" : "❌";
+      const color = si.type === "win" ? "#22c55e" : "#ef4444";
+      streakCell = `<td><span style="color:${color}; font-weight:bold; white-space:nowrap;">${icon} ${si.streak}</span></td>`;
+    } else {
+      streakCell = `<td>-</td>`;
     }
 
     let majorityBsCell = "";
@@ -2950,13 +3287,13 @@ function updateTableDisplay() {
     }
 
     let actualBsCell = "";
-    if (bsModeEnabled || majorityBsModeEnabled) {
-      const bsResult = row.bsResult || row.majorityBsResult || "-";
+    if (majorityBsModeEnabled) {
+      const bsResult = row.majorityBsResult || "-";
       const bsColor = bsResult === "B" ? "color:#ef4444;" : (bsResult === "S" ? "color:#22c55e;" : "");
       actualBsCell = `<td><span class="big-digit-display" style="${bsColor}">${bsResult}</span></td>`;
     }
 
-    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td>${matchCell}${betBsCell}${majorityBsCell}${actualBsCell}<td>${formulaDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
+    table += `<tr><td>${blockDisplay}</td><td>${betDisplay}</td><td><span class="big-digit-display ${cls}">${digitDisplay}</span></td><td>${catDisplay}</td>${streakCell}${majorityBsCell}${actualBsCell}<td>${formulaDisplay}</td><td><button class="delete-row-btn" onclick="deleteRecord(${row.blockNum})" title="ဒီမှတ်တမ်းကိုဖျက်ရန်">🗑️</button></td></tr>`;
   }
   document.getElementById("output").innerHTML = table + "</tbody></table>";
   
